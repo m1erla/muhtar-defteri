@@ -34,10 +34,10 @@ app/
     map-list.tsx
     report-detail.tsx
     how-it-works.tsx
-  components/
-  lib/
-    supabase.ts
-    session.ts        -- anonymous session id, local persistence
+components/            -- sibling of app/, NOT inside it — expo-router
+lib/                   -- treats files under app/ as routes
+  supabase.ts
+  session.ts           -- anonymous session id, local persistence
 supabase/
   schema.sql           -- mirrors PRD.md §10, keep in sync
   seed/

@@ -27,6 +27,10 @@ Supabase SQL editor to create the three tables (`channels`, `reports`, `confirma
 ## Build & deploy
 
 ```sh
-npx expo export --platform web   # outputs static site to dist/
-npx vercel deploy dist --prod    # deploy (project is linked to Vercel)
+npx expo export --platform web   # local check of the static build (outputs dist/)
+npx vercel deploy --prod         # deploy from repo root — Vercel builds via vercel.json
 ```
+
+Always deploy from the repo root, never `vercel deploy dist` — the root `vercel.json`
+(build command, `cleanUrls`) doesn't apply when deploying the prebuilt folder, and
+deep links like `/home` would 404.
