@@ -5,6 +5,8 @@ herkese açık bir şeffaflık haritasına kaydeden, topluluk temelli bir web uy
 Resmî bir devlet kanalı değildir — mevcut kanalların (Alo 181, Alo 155, CİMER,
 ALO 153, e-belediye) yanında çalışan bir yönlendirme ve şeffaflık katmanıdır.
 
+**Live:** https://dijital-muhtar-puce.vercel.app
+
 Full product context: [PRD.md](PRD.md) · Design system: [FRONTEND.md](FRONTEND.md) · Operating rules: [CLAUDE.md](CLAUDE.md)
 
 ## Stack
