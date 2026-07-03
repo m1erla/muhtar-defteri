@@ -38,3 +38,8 @@ npm run deploy      # build + upload dist/ to Cloudflare Pages (needs `npx wrang
 Hosted on Cloudflare Pages (project `dijital-muhtar`). Clean URLs (`/home` →
 `home.html`) are native Pages behavior. The 404.html copy step matters: without
 it, Pages treats the site as an SPA and serves unknown paths as 200s.
+
+`vercel.json` exists only for the interim Vercel fallback (reachable from
+Turkish networks while `*.pages.dev` is ISP-blocked): refresh it with
+`npx -y vercel@48.0.0 deploy --prod --yes`. Delete the file and the Vercel
+project once the custom domain is live.
