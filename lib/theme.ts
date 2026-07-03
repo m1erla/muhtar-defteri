@@ -7,3 +7,12 @@ export const colors = {
   terracotta: '#BC5A3C', // status: open / needs attention
   moss: '#5B7052', // status: resolved / handled
 } as const;
+
+// FRONTEND.md §1: mono for "logged" moments (counts, dates, IDs, contact
+// details), humanist sans for everything else. Families loaded in app/_layout.
+export const fonts = {
+  sans: 'WorkSans_400Regular',
+  sansSemiBold: 'WorkSans_600SemiBold',
+  mono: 'IBMPlexMono_400Regular',
+  monoMedium: 'IBMPlexMono_500Medium',
+} as const;

@@ -61,7 +61,7 @@ Three tables — `channels`, `reports`, `confirmations`. Full DDL and field-leve
 
 - **Maps on web:** `react-native-maps` wraps native iOS/Android SDKs and renders nothing on Expo's web target. Use `react-leaflet` with OpenStreetMap tiles — free, no API key, works immediately on web.
 - **Adana's "153" line:** ALO 153 is Adana Büyükşehir Belediyesi's own municipal call center, not to be confused with unrelated "153"-pattern numbers used by other institutions. Don't let in-app copy conflate them.
-- **The ALO 153 WhatsApp number in seed data is unverified** — sourced from an older article. Flag it, don't silently trust it in production copy.
+- **The ALO 153 WhatsApp number (0535 454 01 01) was verified on the official adana.bel.tr unit page on 2026-07-03** — but that page's content is old (2016-era, Word-exported HTML). Do a live send-test before the competition demo. Also verified then: Alo 155 no longer exists standalone in Adana (consolidated into 112), and EGM's online ihbar form moved to ihbar.ng112.gov.tr — don't reintroduce "Alo 155" from the PRD's older channel list.
 - **Don't add complex geo-clustering.** Group nearby reports by the `neighborhood` text field or a coarse coordinate rounding, not a spatial radius query — full PostGIS clustering is scope this project doesn't need.
 - **Photo picker on web must fire from a direct user interaction** (a button's onPress), not from a `useEffect` or after an `await`. Browsers silently block `ImagePicker.launchImageLibraryAsync()` otherwise — no error, it just does nothing.
 - **Test camera and location flows on real iOS Safari, not just Android Chrome.** Safari has historically been the pickier of the two for file-input capture and geolocation behavior.
