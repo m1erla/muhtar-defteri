@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import PrimaryButton from '@/components/primary-button';
 import { getDraft, resetDraft } from '@/lib/report-draft';
 import { submitReport } from '@/lib/reports';
+import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 
 type SubmitState = 'idle' | 'locating' | 'submitting' | 'error';
@@ -64,12 +65,7 @@ export default function AddToMap() {
       router.replace('/map-list');
     } catch (err) {
       setState('error');
-      const message = err instanceof Error ? err.message : String(err);
-      setErrorText(
-        message.startsWith('Supabase is not configured')
-          ? 'Veritabanı bağlantısı henüz kurulmadı — kayıt şu an eklenemiyor.'
-          : 'Kayıt eklenemedi. Bağlantını kontrol edip tekrar dene.'
-      );
+      setErrorText(friendlyDbError(err, 'Kayıt eklenemedi. Bağlantını kontrol edip tekrar dene.'));
     }
   };
 

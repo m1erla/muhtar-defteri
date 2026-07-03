@@ -1,5 +1,10 @@
-import { IBMPlexMono_400Regular, IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
-import { useFonts, WorkSans_400Regular, WorkSans_600SemiBold } from '@expo-google-fonts/work-sans';
+// Subpath imports on purpose: importing from the package index makes Metro
+// bundle every weight/italic variant (~5MB of TTFs for the 4 we use).
+import { IBMPlexMono_400Regular } from '@expo-google-fonts/ibm-plex-mono/400Regular';
+import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono/500Medium';
+import { WorkSans_400Regular } from '@expo-google-fonts/work-sans/400Regular';
+import { WorkSans_600SemiBold } from '@expo-google-fonts/work-sans/600SemiBold';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
 

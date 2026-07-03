@@ -2,8 +2,8 @@
 
 Adana'daki yerel bir sorunu doğru resmi kanala yönlendiren ve isteğe bağlı olarak
 herkese açık bir şeffaflık haritasına kaydeden, topluluk temelli bir web uygulaması.
-Resmî bir devlet kanalı değildir — mevcut kanalların (Alo 181, Alo 155, CİMER,
-ALO 153, e-belediye) yanında çalışan bir yönlendirme ve şeffaflık katmanıdır.
+Resmî bir devlet kanalı değildir — mevcut kanalların (ALO 153, e-belediye, 112,
+Alo 181, CİMER) yanında çalışan bir yönlendirme ve şeffaflık katmanıdır.
 
 **Live:** https://dijital-muhtar.pages.dev — ⚠️ `*.pages.dev` is SNI-blocked on some
 Turkish ISPs; a custom domain (pending purchase) will be the real public URL.

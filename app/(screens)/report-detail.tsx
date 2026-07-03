@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
 import { getCategory } from '@/lib/categories';
@@ -15,117 +16,115 @@ import {
   type ConfirmationType,
   type Report,
 } from '@/lib/reports';
+import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
+import { useLoad } from '@/lib/use-load';
 
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'missing' }
-  | { status: 'ready'; report: Report; mine: ConfirmationType | null };
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type DetailData = { report: Report | null; mine: ConfirmationType | null };
 
 export default function ReportDetail() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const raw = Array.isArray(params.id) ? params.id[0] : params.id;
+  // A malformed id (truncated share link) must land on "not found", not on a
+  // retry loop against a Postgres uuid parse error.
+  const id = raw && UUID_RE.test(raw) ? raw : null;
+
+  const { state, reload, mutate } = useLoad<DetailData>(
+    async () => {
+      if (!id) return { report: null, mine: null };
+      const [report, mine] = await Promise.all([fetchReport(id), fetchMyConfirmation(id)]);
+      return { report, mine };
+    },
+    [id]
+  );
+
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    if (!id) return;
-    setState({ status: 'loading' });
-    try {
-      const report = await fetchReport(id);
-      if (!report) {
-        setState({ status: 'missing' });
-        return;
-      }
-      const mine = await fetchMyConfirmation(id);
-      setState({ status: 'ready', report, mine });
-    } catch (err) {
-      setState({ status: 'error', message: err instanceof Error ? err.message : String(err) });
-    }
-  }, [id]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const confirm = async (type: ConfirmationType) => {
-    if (state.status !== 'ready' || confirming) return;
+    if (state.status !== 'ready' || !state.data.report || confirming) return;
+    const report = state.data.report;
     setConfirming(true);
     setConfirmError(null);
     try {
-      await confirmReport(state.report.id, type);
-      await load();
-    } catch {
-      setConfirmError('Kaydedilemedi. Bağlantını kontrol edip tekrar dene.');
+      await confirmReport(report.id, type);
+      // The result is fully known locally — no round-trips, no spinner flash.
+      mutate({
+        report: {
+          ...report,
+          status: type === 'resolved' ? 'resolved' : report.status,
+          confirmations: [{ count: confirmationCount(report) + 1 }],
+        },
+        mine: type,
+      });
+    } catch (err) {
+      setConfirmError(friendlyDbError(err, 'Kaydedilemedi. Bağlantını kontrol edip tekrar dene.'));
+      // The insert may have committed even though the call failed — refetch so
+      // the buttons hide if it did, instead of inviting a duplicate retry.
+      reload();
     } finally {
       setConfirming(false);
     }
   };
 
+  const ready = state.status === 'ready' ? state.data : null;
+
   return (
     <>
       <Stack.Screen options={{ title: 'Bildirim' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {!id || state.status === 'missing' ? (
-          <Text style={styles.stateText}>Bu kayıt bulunamadı.</Text>
-        ) : null}
-
-        {id && state.status === 'loading' ? (
-          <View style={styles.stateBox}>
-            <ActivityIndicator color={colors.petrol} />
-          </View>
-        ) : null}
+        {state.status === 'loading' ? <LoadStateView loading /> : null}
 
         {state.status === 'error' ? (
-          <View style={styles.stateBox}>
-            <Text style={styles.stateText}>
-              {state.message.startsWith('Supabase is not configured')
-                ? 'Veritabanı bağlantısı henüz kurulmadı.'
-                : 'Kayıt yüklenemedi. Bağlantını kontrol edip tekrar dene.'}
-            </Text>
-            <Pressable accessibilityRole="button" onPress={load}>
-              <Text style={styles.retry}>Tekrar dene</Text>
-            </Pressable>
-          </View>
+          <LoadStateView
+            message={friendlyDbError(
+              state.error,
+              'Kayıt yüklenemedi. Bağlantını kontrol edip tekrar dene.'
+            )}
+            onRetry={reload}
+          />
         ) : null}
 
-        {state.status === 'ready' ? (
+        {ready && !ready.report ? <LoadStateView message="Bu kayıt bulunamadı." /> : null}
+
+        {ready?.report ? (
           <>
             <View style={styles.headerRow}>
-              <StatusStamp status={state.report.status} size="large" />
+              <StatusStamp status={ready.report.status} size="large" />
               <Text style={styles.category}>
-                {getCategory(state.report.category)?.emoji}{' '}
-                {getCategory(state.report.category)?.label}
+                {getCategory(ready.report.category)?.emoji}{' '}
+                {getCategory(ready.report.category)?.label}
               </Text>
             </View>
 
-            <Text style={styles.place}>{state.report.neighborhood ?? 'Adana'}</Text>
+            <Text style={styles.place}>{ready.report.neighborhood ?? 'Adana'}</Text>
 
-            {state.report.description ? (
-              <Text style={styles.description}>{state.report.description}</Text>
+            {ready.report.description ? (
+              <Text style={styles.description}>{ready.report.description}</Text>
             ) : null}
 
-            {state.report.photo_url ? (
+            {ready.report.photo_url ? (
               <Image
-                source={{ uri: state.report.photo_url }}
+                source={{ uri: ready.report.photo_url }}
                 style={styles.photo}
                 contentFit="cover"
               />
             ) : null}
 
             <View style={styles.ledgerBlock}>
-              <Text style={styles.mono}>İlk bildirilme: {daysAgoLabel(state.report.created_at)}</Text>
               <Text style={styles.mono}>
-                {confirmationCount(state.report)} kişi bunu doğruladı
+                İlk bildirilme: {daysAgoLabel(ready.report.created_at)}
               </Text>
+              <Text style={styles.mono}>{confirmationCount(ready.report)} kişi bunu doğruladı</Text>
             </View>
 
             {confirmError ? <Text style={styles.error}>{confirmError}</Text> : null}
 
-            {state.mine ? (
+            {ready.mine ? (
               <Text style={styles.confirmedNote}>
-                {state.mine === 'resolved'
+                {ready.mine === 'resolved'
                   ? 'Bu kaydı "düzeldi" olarak işaretledin ✓'
                   : 'Bu kaydı doğruladın ✓'}
               </Text>
@@ -220,24 +219,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     color: colors.terracottaText,
-  },
-  stateBox: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    gap: 12,
-  },
-  stateText: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    color: colors.ink,
-    opacity: 0.75,
-    textAlign: 'center',
-  },
-  retry: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 15,
-    color: colors.petrol,
-    paddingVertical: 12,
-    minHeight: 44,
   },
 });

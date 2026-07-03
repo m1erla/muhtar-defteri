@@ -1,7 +1,5 @@
-import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-
 import type { CategorySlug } from './categories';
-import { getSessionId } from './session';
+import { generateId, getSessionId } from './session';
 import { getSupabase } from './supabase';
 
 // Row shape of the reports table — supabase/schema.sql / PRD §10.
@@ -82,13 +80,16 @@ async function reverseNeighborhood(latitude: number, longitude: number): Promise
 // multi-MB photos; the map never needs more than ~1280px.
 async function uploadPhoto(photoUri: string): Promise<string | null> {
   try {
+    // Dynamic import: the manipulator only runs on the submit-with-photo path
+    // and has no business in the entry bundle every visitor parses.
+    const { ImageManipulator, SaveFormat } = await import('expo-image-manipulator');
     const context = ImageManipulator.manipulate(photoUri);
     context.resize({ width: 1280 });
     const image = await context.renderAsync();
     const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.7 });
 
     const blob = await (await fetch(saved.uri)).blob();
-    const path = `${crypto.randomUUID()}.jpg`;
+    const path = `${generateId()}.jpg`;
     const { error } = await getSupabase()
       .storage.from('report-photos')
       .upload(path, blob, { contentType: 'image/jpeg' });

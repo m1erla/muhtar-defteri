@@ -1,16 +1,21 @@
-import { Link, Redirect, Stack } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Link, Redirect, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import LoadStateView from '@/components/load-state-view';
 import { getCategory } from '@/lib/categories';
 import { fetchChannels, type Channel } from '@/lib/channels';
 import { getDraft } from '@/lib/report-draft';
+import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
+import { useLoad } from '@/lib/use-load';
 
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; channels: Channel[] };
+function openContactUrl(url: string) {
+  // Channel rows come from the DB — only ever open web URLs from them.
+  if (url.startsWith('https://') || url.startsWith('http://')) {
+    Linking.openURL(url);
+  }
+}
 
 function ChannelCard({ channel }: { channel: Channel }) {
   const [copied, setCopied] = useState(false);
@@ -34,7 +39,7 @@ function ChannelCard({ channel }: { channel: Channel }) {
       <View style={styles.cardHeader}>
         <Text style={styles.scopeTag}>{channel.scope === 'adana' ? 'ADANA' : 'ULUSAL'}</Text>
         <Pressable accessibilityRole="button" onPress={copy}>
-          <Text style={styles.copyLink}>{copied ? 'Kopyalandı ✓' : 'Bilgileri Kopyala'}</Text>
+          <Text style={styles.actionLink}>{copied ? 'Kopyalandı ✓' : 'Bilgileri Kopyala'}</Text>
         </Pressable>
       </View>
       <Text style={styles.channelName}>{channel.name}</Text>
@@ -49,7 +54,7 @@ function ChannelCard({ channel }: { channel: Channel }) {
         </Pressable>
       ) : null}
       {channel.contact_url ? (
-        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(channel.contact_url!)}>
+        <Pressable accessibilityRole="link" onPress={() => openContactUrl(channel.contact_url!)}>
           <Text style={styles.mono}>🔗 {channel.contact_url.replace(/^https?:\/\//, '')}</Text>
         </Pressable>
       ) : null}
@@ -80,23 +85,15 @@ function ChannelCard({ channel }: { channel: Channel }) {
 }
 
 export default function RoutingResult() {
-  const category = getCategory(getDraft().category);
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  // Param first (survives reload/tab eviction, shareable), draft as fallback.
+  const params = useLocalSearchParams<{ category?: string | string[] }>();
+  const paramCategory = Array.isArray(params.category) ? params.category[0] : params.category;
+  const category = getCategory(paramCategory) ?? getCategory(getDraft().category);
 
-  const load = useCallback(async () => {
-    if (!category) return;
-    setState({ status: 'loading' });
-    try {
-      const channels = await fetchChannels(category.slug);
-      setState({ status: 'ready', channels });
-    } catch (err) {
-      setState({ status: 'error', message: err instanceof Error ? err.message : String(err) });
-    }
-  }, [category?.slug]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const { state, reload } = useLoad(
+    () => fetchChannels(category!.slug),
+    [category?.slug]
+  );
 
   if (!category) {
     return <Redirect href="/report-category" />;
@@ -112,34 +109,23 @@ export default function RoutingResult() {
           bir kanal değildir — seni doğru yere yönlendirir.
         </Text>
 
-        {state.status === 'loading' ? (
-          <View style={styles.stateBox}>
-            <ActivityIndicator color={colors.petrol} />
-            <Text style={styles.stateText}>Kanallar yükleniyor…</Text>
-          </View>
-        ) : null}
-
+        {state.status === 'loading' ? <LoadStateView loading /> : null}
         {state.status === 'error' ? (
-          <View style={styles.stateBox}>
-            <Text style={styles.stateText}>
-              {state.message.startsWith('Supabase is not configured')
-                ? 'Veritabanı bağlantısı henüz kurulmadı.'
-                : 'Kanallar yüklenemedi. Bağlantını kontrol edip tekrar dene.'}
-            </Text>
-            <Pressable accessibilityRole="button" onPress={load}>
-              <Text style={styles.copyLink}>Tekrar dene</Text>
-            </Pressable>
-          </View>
+          <LoadStateView
+            message={friendlyDbError(
+              state.error,
+              'Kanallar yüklenemedi. Bağlantını kontrol edip tekrar dene.'
+            )}
+            onRetry={reload}
+          />
         ) : null}
 
-        {state.status === 'ready' && state.channels.length === 0 ? (
-          <View style={styles.stateBox}>
-            <Text style={styles.stateText}>Bu kategori için kayıtlı kanal bulunamadı.</Text>
-          </View>
+        {state.status === 'ready' && state.data.length === 0 ? (
+          <LoadStateView message="Bu kategori için kayıtlı kanal bulunamadı." />
         ) : null}
 
         {state.status === 'ready'
-          ? state.channels.map((c) => <ChannelCard key={c.id} channel={c} />)
+          ? state.data.map((c) => <ChannelCard key={c.id} channel={c} />)
           : null}
 
         <Link href="/add-to-map" style={styles.mapLink}>
@@ -175,18 +161,6 @@ const styles = StyleSheet.create({
     color: colors.ink,
     opacity: 0.75,
   },
-  stateBox: {
-    paddingVertical: 32,
-    alignItems: 'center',
-    gap: 12,
-  },
-  stateText: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    color: colors.ink,
-    opacity: 0.75,
-    textAlign: 'center',
-  },
   card: {
     borderWidth: 1.5,
     borderColor: colors.ink,
@@ -205,11 +179,12 @@ const styles = StyleSheet.create({
     color: colors.petrol,
     letterSpacing: 1,
   },
-  copyLink: {
+  actionLink: {
     fontFamily: fonts.sansSemiBold,
     fontSize: 15,
     color: colors.petrol,
-    paddingVertical: 6,
+    paddingVertical: 12,
+    minHeight: 44,
   },
   channelName: {
     fontFamily: fonts.sansSemiBold,
@@ -226,7 +201,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.monoMedium,
     fontSize: 16,
     color: colors.petrol,
-    paddingVertical: 6,
+    paddingVertical: 12,
+    minHeight: 44,
   },
   checklist: {
     gap: 2,
@@ -242,7 +218,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    minHeight: 40,
+    minHeight: 44,
   },
   checkbox: {
     width: 22,
@@ -280,6 +256,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.petrol,
     paddingVertical: 12,
+    minHeight: 44,
     textAlign: 'center',
   },
 });

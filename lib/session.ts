@@ -4,11 +4,13 @@ const SESSION_KEY = 'dm_session_id';
 
 let cached: string | null = null;
 
-function generateId(): string {
+// Exported for reuse anywhere a collision-resistant id is needed:
+// crypto.randomUUID is missing on older Safari and on ANY insecure origin
+// (http://192.168.x.x phone testing), so never call it unguarded.
+export function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  // Fallback for environments without Web Crypto (should not happen on web targets)
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 

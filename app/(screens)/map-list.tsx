@@ -1,26 +1,15 @@
-import { Stack, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState, type ComponentType } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
+import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES, type CategorySlug } from '@/lib/categories';
-import { fetchReports, type Report } from '@/lib/reports';
+import { fetchReports } from '@/lib/reports';
+import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
-
-type MapProps = { reports: Report[]; onSelect: (id: string) => void };
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; reports: Report[] };
+import { useLazyMap } from '@/lib/use-lazy-map';
+import { useLoad } from '@/lib/use-load';
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
@@ -38,79 +27,43 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 export default function MapList() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const wide = width >= 768;
+  // Map is progressive enhancement for wider WEB viewports (FRONTEND.md §2).
+  const showMapPane = width >= 768 && Platform.OS === 'web';
 
   const [category, setCategory] = useState<CategorySlug | null>(null);
   const [status, setStatus] = useState<'open' | 'resolved' | null>(null);
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
 
-  const load = useCallback(async () => {
-    setState({ status: 'loading' });
-    try {
-      const reports = await fetchReports({ category, status });
-      setState({ status: 'ready', reports });
-    } catch (err) {
-      setState({ status: 'error', message: err instanceof Error ? err.message : String(err) });
-    }
-  }, [category, status]);
+  // Focus refetch: returning from a detail where the user confirmed/resolved
+  // must show fresh data — but keep the rendered list during the reload.
+  const { state, reload } = useLoad(() => fetchReports({ category, status }), [category, status], {
+    refetchOnFocus: true,
+    keepDataWhileReloading: true,
+  });
 
-  // Focus, not mount: the list must refresh when the user comes back from a
-  // report detail where they may have just confirmed or resolved something.
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
-
-  // Map is progressive enhancement for wider WEB viewports (FRONTEND.md §2) —
-  // the pane below is gated on the same condition, so it can always resolve.
-  const showMapPane = wide && Platform.OS === 'web';
-  const [MapView, setMapView] = useState<ComponentType<MapProps> | null>(null);
-  useEffect(() => {
-    if (!showMapPane || MapView) return;
-    let live = true;
-    import('@/components/maps').then(
-      (mod) => live && setMapView(() => mod.ReportsMap),
-      () => undefined
-    );
-    return () => {
-      live = false;
-    };
-  }, [showMapPane, MapView]);
+  const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('ReportsMap', showMapPane);
 
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
   const list = (
     <>
-      {state.status === 'loading' ? (
-        <View style={styles.stateBox}>
-          <ActivityIndicator color={colors.petrol} />
-        </View>
-      ) : null}
+      {state.status === 'loading' ? <LoadStateView loading /> : null}
 
       {state.status === 'error' ? (
-        <View style={styles.stateBox}>
-          <Text style={styles.stateText}>
-            {state.message.startsWith('Supabase is not configured')
-              ? 'Veritabanı bağlantısı henüz kurulmadı.'
-              : 'Kayıtlar yüklenemedi. Bağlantını kontrol edip tekrar dene.'}
-          </Text>
-          <Pressable accessibilityRole="button" onPress={load}>
-            <Text style={styles.retry}>Tekrar dene</Text>
-          </Pressable>
-        </View>
+        <LoadStateView
+          message={friendlyDbError(
+            state.error,
+            'Kayıtlar yüklenemedi. Bağlantını kontrol edip tekrar dene.'
+          )}
+          onRetry={reload}
+        />
       ) : null}
 
-      {state.status === 'ready' && state.reports.length === 0 ? (
-        <View style={styles.stateBox}>
-          <Text style={styles.stateText}>
-            Bu filtreyle kayıt yok. İlk kaydı sen ekleyebilirsin — ana sayfadan bir sorun bildir.
-          </Text>
-        </View>
+      {state.status === 'ready' && state.data.length === 0 ? (
+        <LoadStateView message="Bu filtreyle kayıt yok. İlk kaydı sen ekleyebilirsin — ana sayfadan bir sorun bildir." />
       ) : null}
 
       {state.status === 'ready'
-        ? state.reports.map((r) => <LedgerRow key={r.id} report={r} onPress={() => openDetail(r.id)} />)
+        ? state.data.map((r) => <LedgerRow key={r.id} report={r} onPress={() => openDetail(r.id)} />)
         : null}
     </>
   );
@@ -151,13 +104,13 @@ export default function MapList() {
             <View style={styles.mapPane}>
               {MapView ? (
                 <MapView
-                  reports={state.status === 'ready' ? state.reports : []}
+                  reports={state.status === 'ready' ? state.data : []}
                   onSelect={openDetail}
                 />
+              ) : mapFailed ? (
+                <LoadStateView message="Harita yüklenemedi." onRetry={retryMap} />
               ) : (
-                <View style={styles.stateBox}>
-                  <Text style={styles.stateText}>Harita yükleniyor…</Text>
-                </View>
+                <LoadStateView loading message="Harita yükleniyor…" />
               )}
             </View>
             <ScrollView style={styles.listPane} contentContainerStyle={styles.listContent}>
@@ -223,6 +176,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRightWidth: StyleSheet.hairlineWidth,
     borderRightColor: colors.ink,
+    justifyContent: 'center',
   },
   listPane: {
     flex: 1,
@@ -233,24 +187,5 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     width: '100%',
     alignSelf: 'center',
-  },
-  stateBox: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    gap: 12,
-  },
-  stateText: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    color: colors.ink,
-    opacity: 0.75,
-    textAlign: 'center',
-  },
-  retry: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 15,
-    color: colors.petrol,
-    paddingVertical: 12,
-    minHeight: 44,
   },
 });
