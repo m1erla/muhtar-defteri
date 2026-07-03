@@ -5,7 +5,9 @@ herkese açık bir şeffaflık haritasına kaydeden, topluluk temelli bir web uy
 Resmî bir devlet kanalı değildir — mevcut kanalların (Alo 181, Alo 155, CİMER,
 ALO 153, e-belediye) yanında çalışan bir yönlendirme ve şeffaflık katmanıdır.
 
-**Live:** https://dijital-muhtar-puce.vercel.app
+**Live:** https://dijital-muhtar.pages.dev — ⚠️ `*.pages.dev` is SNI-blocked on some
+Turkish ISPs; a custom domain (pending purchase) will be the real public URL.
+Interim fallback reachable from Turkey: https://dijital-muhtar-puce.vercel.app
 
 Full product context: [PRD.md](PRD.md) · Design system: [FRONTEND.md](FRONTEND.md) · Operating rules: [CLAUDE.md](CLAUDE.md)
 
@@ -29,10 +31,10 @@ Supabase SQL editor to create the three tables (`channels`, `reports`, `confirma
 ## Build & deploy
 
 ```sh
-npx expo export --platform web   # local check of the static build (outputs dist/)
-npx vercel deploy --prod         # deploy from repo root — Vercel builds via vercel.json
+npm run build:web   # expo export + copies +not-found.html to 404.html for Cloudflare
+npm run deploy      # build + upload dist/ to Cloudflare Pages (needs `npx wrangler login` once)
 ```
 
-Always deploy from the repo root, never `vercel deploy dist` — the root `vercel.json`
-(build command, `cleanUrls`) doesn't apply when deploying the prebuilt folder, and
-deep links like `/home` would 404.
+Hosted on Cloudflare Pages (project `dijital-muhtar`). Clean URLs (`/home` →
+`home.html`) are native Pages behavior. The 404.html copy step matters: without
+it, Pages treats the site as an SPA and serves unknown paths as 200s.
