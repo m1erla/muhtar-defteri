@@ -33,7 +33,13 @@ export default function AddToMap() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') throw new Error('denied');
-        const pos = await Location.getCurrentPositionAsync({});
+        // Race a hard timeout: dismissing (not denying) the browser's location
+        // prompt can leave getCurrentPositionAsync pending forever, which would
+        // strand the screen in 'locating' with every button unmounted.
+        const pos = await Promise.race([
+          Location.getCurrentPositionAsync({}),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10_000)),
+        ]);
         latitude = pos.coords.latitude;
         longitude = pos.coords.longitude;
       } catch {
@@ -144,7 +150,7 @@ const styles = StyleSheet.create({
   error: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.terracotta,
+    color: colors.terracottaText,
     lineHeight: 21,
   },
   busyRow: {
@@ -159,5 +165,6 @@ const styles = StyleSheet.create({
     color: colors.petrol,
     textAlign: 'center',
     paddingVertical: 12,
+    minHeight: 44,
   },
 });

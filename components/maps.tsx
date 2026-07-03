@@ -67,7 +67,22 @@ export function LocationPickerMap({
   );
 }
 
-// Read-only pins for the map/list view; pin color mirrors the status stamps.
+// Read-only pins for the map/list view. Status is never color-only
+// (FRONTEND.md §7): resolved pins carry a check glyph, open pins are plain.
+function statusPinIcon(status: 'open' | 'resolved') {
+  const color = status === 'open' ? colors.terracotta : colors.moss;
+  const check =
+    status === 'resolved'
+      ? `<span style="color:${colors.paper};font-size:11px;line-height:18px;display:block;text-align:center;font-weight:bold;">✓</span>`
+      : '';
+  return divIcon({
+    className: '',
+    html: `<div title="${status === 'open' ? 'Açık' : 'Çözüldü'}" style="width:18px;height:18px;border-radius:9px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 3px rgba(0,0,0,0.4);">${check}</div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
+}
+
 export function ReportsMap({
   reports,
   onSelect,
@@ -85,7 +100,7 @@ export function ReportsMap({
         <Marker
           key={r.id}
           position={[r.latitude, r.longitude]}
-          icon={dotIcon(r.status === 'open' ? colors.terracotta : colors.moss, 18)}
+          icon={statusPinIcon(r.status)}
           eventHandlers={{ click: () => onSelect(r.id) }}
         />
       ))}

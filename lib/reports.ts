@@ -59,9 +59,13 @@ export async function fetchReport(id: string): Promise<Report | null> {
 // grouping falls back to coordinates and rows display "Adana".
 async function reverseNeighborhood(latitude: number, longitude: number): Promise<string | null> {
   try {
+    // Feature-detect: AbortSignal.timeout is missing on older Safari — without
+    // the guard the TypeError would silently disable geocoding entirely.
+    const signal =
+      typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(4000) : undefined;
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&accept-language=tr&zoom=14`,
-      { signal: AbortSignal.timeout(4000) }
+      { signal }
     );
     if (!res.ok) return null;
     const json = (await res.json()) as {
@@ -90,8 +94,11 @@ async function uploadPhoto(photoUri: string): Promise<string | null> {
       .upload(path, blob, { contentType: 'image/jpeg' });
     if (error) throw new Error(error.message);
     return getSupabase().storage.from('report-photos').getPublicUrl(path).data.publicUrl;
-  } catch {
-    // A report without its photo is still worth logging — don't fail the submit.
+  } catch (err) {
+    // A report without its photo is still worth logging — don't fail the
+    // submit. But deterministic breakage (missing bucket, manipulator failure)
+    // must stay visible somewhere:
+    console.warn('report photo upload failed:', err);
     return null;
   }
 }
@@ -103,9 +110,14 @@ export async function submitReport(input: {
   latitude: number;
   longitude: number;
 }): Promise<string> {
+  // The opt-in copy promises "yaklaşık konum" — store ~110m precision
+  // (3 decimals), which also gives coarse grouping for free later.
+  const latitude = Math.round(input.latitude * 1000) / 1000;
+  const longitude = Math.round(input.longitude * 1000) / 1000;
+
   const [photo_url, neighborhood] = await Promise.all([
     input.photoUri ? uploadPhoto(input.photoUri) : Promise.resolve(null),
-    reverseNeighborhood(input.latitude, input.longitude),
+    reverseNeighborhood(latitude, longitude),
   ]);
 
   const { data, error } = await getSupabase()
@@ -114,8 +126,8 @@ export async function submitReport(input: {
       category: input.category,
       description: input.description.trim() || null,
       photo_url,
-      latitude: input.latitude,
-      longitude: input.longitude,
+      latitude,
+      longitude,
       neighborhood,
       session_id: getSessionId(),
     })
@@ -144,8 +156,14 @@ export async function confirmReport(reportId: string, type: ConfirmationType): P
   if (error) throw new Error(error.message);
 
   // "Bu düzeldi" flips the community-maintained status; the confirmation row
-  // above keeps the audit trail either way.
+  // above keeps the audit trail either way. supabase-js doesn't throw on DB
+  // errors — an unchecked failure here would strand the report visibly "open"
+  // while telling this session it marked it resolved.
   if (type === 'resolved') {
-    await getSupabase().from('reports').update({ status: 'resolved' }).eq('id', reportId);
+    const { error: updateError } = await getSupabase()
+      .from('reports')
+      .update({ status: 'resolved' })
+      .eq('id', reportId);
+    if (updateError) throw new Error(updateError.message);
   }
 }

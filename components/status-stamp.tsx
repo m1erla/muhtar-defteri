@@ -5,7 +5,8 @@ import { colors, fonts } from '@/lib/theme';
 // FRONTEND.md §3: small circular stamp mark, terracotta open / moss resolved.
 // Never color alone — the label always rides along.
 export default function StatusStamp({ status, size = 'small' }: { status: 'open' | 'resolved'; size?: 'small' | 'large' }) {
-  const color = status === 'open' ? colors.terracotta : colors.moss;
+  const dotColor = status === 'open' ? colors.terracotta : colors.moss;
+  const textColor = status === 'open' ? colors.terracottaText : colors.mossText;
   const label = status === 'open' ? 'Açık' : 'Çözüldü';
   const large = size === 'large';
   return (
@@ -14,10 +15,10 @@ export default function StatusStamp({ status, size = 'small' }: { status: 'open'
         style={[
           styles.dot,
           large && styles.dotLarge,
-          { borderColor: color, backgroundColor: `${color}22` },
+          { borderColor: dotColor, backgroundColor: `${dotColor}22` },
         ]}
       />
-      <Text style={[styles.label, large && styles.labelLarge, { color }]}>{label}</Text>
+      <Text style={[styles.label, large && styles.labelLarge, { color: textColor }]}>{label}</Text>
     </View>
   );
 }

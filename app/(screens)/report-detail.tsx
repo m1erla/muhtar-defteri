@@ -133,13 +133,13 @@ export default function ReportDetail() {
               <View style={styles.actions}>
                 <OutlineButton
                   label="Ben de Gördüm"
-                  color={colors.terracotta}
+                  color={colors.terracottaText}
                   disabled={confirming}
                   onPress={() => confirm('still_open')}
                 />
                 <OutlineButton
                   label="Bu Düzeldi"
-                  color={colors.moss}
+                  color={colors.mossText}
                   disabled={confirming}
                   onPress={() => confirm('resolved')}
                 />
@@ -212,14 +212,14 @@ const styles = StyleSheet.create({
   confirmedNote: {
     fontFamily: fonts.sansSemiBold,
     fontSize: 15,
-    color: colors.moss,
+    color: colors.mossText,
     textAlign: 'center',
     paddingVertical: 8,
   },
   error: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.terracotta,
+    color: colors.terracottaText,
   },
   stateBox: {
     paddingVertical: 40,
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansSemiBold,
     fontSize: 15,
     color: colors.petrol,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    minHeight: 44,
   },
 });

@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState, type ComponentType } from 'react';
 import {
   ActivityIndicator,
@@ -54,15 +54,20 @@ export default function MapList() {
     }
   }, [category, status]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Focus, not mount: the list must refresh when the user comes back from a
+  // report detail where they may have just confirmed or resolved something.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
-  // Map is progressive enhancement for wider viewports (FRONTEND.md §2) —
-  // only load the chunk when it will actually render.
+  // Map is progressive enhancement for wider WEB viewports (FRONTEND.md §2) —
+  // the pane below is gated on the same condition, so it can always resolve.
+  const showMapPane = wide && Platform.OS === 'web';
   const [MapView, setMapView] = useState<ComponentType<MapProps> | null>(null);
   useEffect(() => {
-    if (!wide || Platform.OS !== 'web' || MapView) return;
+    if (!showMapPane || MapView) return;
     let live = true;
     import('@/components/maps').then(
       (mod) => live && setMapView(() => mod.ReportsMap),
@@ -71,7 +76,7 @@ export default function MapList() {
     return () => {
       live = false;
     };
-  }, [wide, MapView]);
+  }, [showMapPane, MapView]);
 
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
@@ -141,7 +146,7 @@ export default function MapList() {
           />
         </ScrollView>
 
-        {wide ? (
+        {showMapPane ? (
           <View style={styles.wideRow}>
             <View style={styles.mapPane}>
               {MapView ? (
@@ -188,7 +193,7 @@ const styles = StyleSheet.create({
     borderColor: colors.ink,
     borderRadius: 999,
     paddingHorizontal: 14,
-    minHeight: 40,
+    minHeight: 44,
     justifyContent: 'center',
   },
   chipActive: {
@@ -245,6 +250,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansSemiBold,
     fontSize: 15,
     color: colors.petrol,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    minHeight: 44,
   },
 });

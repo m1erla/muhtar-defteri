@@ -1,5 +1,5 @@
-import { Link, Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Link, Stack, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
@@ -13,17 +13,21 @@ export default function Home() {
 
   // Home's preview stays quiet on failure (unconfigured DB, offline): an empty
   // ledger must look intentional, not broken (PRD §9) — errors surface on the
-  // screens where the user is actually acting.
-  useEffect(() => {
-    let live = true;
-    fetchReports({}, 4).then(
-      (reports) => live && setRecent(reports),
-      () => live && setRecent([])
-    );
-    return () => {
-      live = false;
-    };
-  }, []);
+  // screens where the user is actually acting. Refetch on focus, not mount:
+  // home sits at the bottom of the stack while a report gets submitted, and
+  // the just-added report should be in the ledger when the user returns.
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      fetchReports({}, 4).then(
+        (reports) => live && setRecent(reports),
+        () => live && setRecent([])
+      );
+      return () => {
+        live = false;
+      };
+    }, [])
+  );
 
   return (
     <>
@@ -104,7 +108,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansSemiBold,
     fontSize: 14,
     color: colors.petrol,
-    paddingVertical: 6,
+    paddingVertical: 14,
+    minHeight: 44,
   },
   empty: {
     fontFamily: fonts.sans,
@@ -119,6 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.petrol,
     textAlign: 'center',
-    paddingVertical: 10,
+    paddingVertical: 14,
+    minHeight: 44,
   },
 });
