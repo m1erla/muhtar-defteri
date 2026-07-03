@@ -38,8 +38,8 @@ export default function ReportDetails() {
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     let live = true;
-    import('@/components/location-picker-map').then(
-      (mod) => live && setMapView(() => mod.default),
+    import('@/components/maps').then(
+      (mod) => live && setMapView(() => mod.LocationPickerMap),
       () => undefined
     );
     return () => {

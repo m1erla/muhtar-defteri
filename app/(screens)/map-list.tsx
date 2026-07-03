@@ -64,8 +64,8 @@ export default function MapList() {
   useEffect(() => {
     if (!wide || Platform.OS !== 'web' || MapView) return;
     let live = true;
-    import('@/components/reports-map').then(
-      (mod) => live && setMapView(() => mod.default),
+    import('@/components/maps').then(
+      (mod) => live && setMapView(() => mod.ReportsMap),
       () => undefined
     );
     return () => {
