@@ -25,8 +25,13 @@ cp .env.example .env   # then fill in the Supabase URL + anon key
 npx expo start --web   # local dev
 ```
 
-Database schema lives in [supabase/schema.sql](supabase/schema.sql) — run it in the
-Supabase SQL editor to create the three tables (`channels`, `reports`, `confirmations`).
+Supabase setup (dashboard):
+1. Run [supabase/schema.sql](supabase/schema.sql) in the SQL editor — creates
+   `channels`, `reports`, `confirmations`.
+2. Run [supabase/seed/channels.sql](supabase/seed/channels.sql) — loads the verified
+   Adana + national routing data.
+3. Create a **public** storage bucket named `report-photos` (Storage → New bucket)
+   — report photo uploads land there.
 
 ## Build & deploy
 

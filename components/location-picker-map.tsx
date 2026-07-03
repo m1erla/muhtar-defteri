@@ -36,9 +36,11 @@ export default function LocationPickerMap({ latitude, longitude, onMove }: Props
       center={[latitude, longitude]}
       zoom={16}
       style={{ width: '100%', height: '100%' }}
-      attributionControl={false}
     >
-      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      />
       <RecenterOnChange latitude={latitude} longitude={longitude} />
       <Marker
         position={[latitude, longitude]}
