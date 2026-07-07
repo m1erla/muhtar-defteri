@@ -39,7 +39,13 @@ export function useLoad<T>(
       if (seq === requestSeq.current) setState({ status: 'ready', data });
     } catch (err) {
       if (seq === requestSeq.current) {
-        setState({ status: 'error', error: err });
+        // Stale-while-revalidate: a failed reload keeps the data already on
+        // screen instead of blanking it to an error (mirrors the loading path
+        // above). Prevents a transient refetch blip on refocus from wiping a
+        // good list; it self-heals on the next focus or retry.
+        setState((prev) =>
+          keepDataWhileReloading && prev.status === 'ready' ? prev : { status: 'error', error: err }
+        );
       }
     }
   }, deps);

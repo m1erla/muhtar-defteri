@@ -37,7 +37,11 @@ export default function ReportDetail() {
       const [report, mine] = await Promise.all([fetchReport(id), fetchMyConfirmation(id)]);
       return { report, mine };
     },
-    [id]
+    [id],
+    // Keep the report on screen if the post-confirm reload fails (offline is the
+    // common confirm-failure mode), so the "Kaydedilemedi" message stays visible
+    // instead of the whole report collapsing to a load-error view.
+    { keepDataWhileReloading: true }
   );
 
   const [confirming, setConfirming] = useState(false);

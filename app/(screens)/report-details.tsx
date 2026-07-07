@@ -133,7 +133,7 @@ export default function ReportDetails() {
               ) : mapFailed ? (
                 <LoadStateView message="Harita yüklenemedi." onRetry={retryMap} />
               ) : (
-                <Text style={styles.mapLoading}>Harita yükleniyor…</Text>
+                <LoadStateView loading message="Harita yükleniyor…" />
               )}
             </View>
             <Text style={styles.mapHint}>
@@ -229,13 +229,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'stretch',
     justifyContent: 'center',
-  },
-  mapLoading: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    color: colors.ink,
-    opacity: 0.6,
-    textAlign: 'center',
   },
   mapHint: {
     fontFamily: fonts.sans,
