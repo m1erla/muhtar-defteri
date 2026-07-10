@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import PrimaryButton from '@/components/primary-button';
+import { signalReportAdded } from '@/lib/flash';
 import { getDraft, resetDraft } from '@/lib/report-draft';
 import { submitReport } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
@@ -61,8 +62,9 @@ export default function AddToMap() {
         latitude,
         longitude,
       });
+      signalReportAdded();
       resetDraft();
-      router.replace({ pathname: '/map-list', params: { added: '1' } });
+      router.replace('/map-list');
     } catch (err) {
       setState('error');
       setErrorText(friendlyDbError(err, 'Kayıt eklenemedi. Bağlantını kontrol edip tekrar dene.'));

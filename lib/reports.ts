@@ -168,7 +168,14 @@ export async function fetchMyConfirmation(reportId: string): Promise<Confirmatio
 // Postgres unique_violation: this session already confirmed this report.
 const UNIQUE_VIOLATION = '23505';
 
-export async function confirmReport(reportId: string, type: ConfirmationType): Promise<void> {
+// Returns whether this call actually recorded a NEW confirmation. false means
+// this session had already confirmed the report (23505) and nothing changed —
+// the caller must NOT then optimistically flip its own UI (e.g. to "resolved"),
+// or it would diverge from the DB, which skipped the status update below.
+export async function confirmReport(
+  reportId: string,
+  type: ConfirmationType
+): Promise<boolean> {
   const { error } = await getSupabase()
     .from('confirmations')
     .insert({ report_id: reportId, type, session_id: getSessionId() });
@@ -189,4 +196,5 @@ export async function confirmReport(reportId: string, type: ConfirmationType): P
       .eq('id', reportId);
     if (updateError) throw new Error(updateError.message);
   }
+  return inserted;
 }

@@ -1,11 +1,12 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES, type CategorySlug } from '@/lib/categories';
 import { clusterCounts, clusterKey } from '@/lib/cluster';
+import { consumeReportAdded } from '@/lib/flash';
 import { fetchReports } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -27,7 +28,6 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 
 export default function MapList() {
   const router = useRouter();
-  const { added } = useLocalSearchParams<{ added?: string }>();
   const { width } = useWindowDimensions();
   // Map is progressive enhancement for wider WEB viewports (FRONTEND.md §2).
   const showMapPane = width >= 768 && Platform.OS === 'web';
@@ -35,11 +35,23 @@ export default function MapList() {
   const [category, setCategory] = useState<CategorySlug | null>(null);
   const [status, setStatus] = useState<'open' | 'resolved' | null>(null);
 
-  // Fetch the full set unfiltered and filter client-side, so the ⟳/pin same-spot
-  // counts are computed over ALL reports and stay stable when chips toggle
-  // (server-filtering made a spot's count shift with the active filter). Focus
-  // refetch keeps it fresh after a confirm/resolve on the detail screen.
-  const { state, reload } = useLoad(() => fetchReports({}), [], {
+  // One-shot success toast after add-to-map — read from a module flag (consumed
+  // once, resets on full reload) so it never re-appears on back-nav/reload.
+  // Auto-hides after 5s.
+  const [showAdded, setShowAdded] = useState(consumeReportAdded);
+  useEffect(() => {
+    if (!showAdded) return;
+    const t = setTimeout(() => setShowAdded(false), 5000);
+    return () => clearTimeout(t);
+  }, [showAdded]);
+
+  // Fetch unfiltered and filter client-side, so the ⟳/pin same-spot counts are
+  // computed over ALL reports and stay stable when chips toggle (server-filtering
+  // made a spot's count shift with the active filter). The cap bounds this to the
+  // newest 500 reports — ample for this scale; report-detail's fetchSameSpotCount
+  // is the authoritative full-table count. Focus refetch keeps it fresh after a
+  // confirm/resolve on the detail screen.
+  const { state, reload } = useLoad(() => fetchReports({}, 500), [], {
     refetchOnFocus: true,
     keepDataWhileReloading: true,
   });
@@ -94,7 +106,7 @@ export default function MapList() {
     <>
       <Stack.Screen options={{ title: 'Mahalle Kaydı' }} />
       <View style={styles.container}>
-        {added ? (
+        {showAdded ? (
           <Text style={styles.successBanner} accessibilityRole="alert">
             Kaydın mahalle defterine eklendi ✓
           </Text>

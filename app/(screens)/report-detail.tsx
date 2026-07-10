@@ -59,17 +59,24 @@ export default function ReportDetail() {
     setConfirming(true);
     setConfirmError(null);
     try {
-      await confirmReport(report.id, type);
-      // The result is fully known locally — no round-trips, no spinner flash.
-      mutate({
-        report: {
-          ...report,
-          status: type === 'resolved' ? 'resolved' : report.status,
-          confirmations: [{ count: confirmationCount(report) + 1 }],
-        },
-        mine: type,
-        sameSpot: state.data.sameSpot,
-      });
+      const recorded = await confirmReport(report.id, type);
+      if (recorded) {
+        // The result is fully known locally — no round-trips, no spinner flash.
+        mutate({
+          report: {
+            ...report,
+            status: type === 'resolved' ? 'resolved' : report.status,
+            confirmations: [{ count: confirmationCount(report) + 1 }],
+          },
+          mine: type,
+          sameSpot: state.data.sameSpot,
+        });
+      } else {
+        // This session had already confirmed (e.g. a second tab); nothing changed
+        // in the DB, so refetch the true state instead of an optimistic guess
+        // that could show "resolved" while the row is still open.
+        reload();
+      }
     } catch (err) {
       setConfirmError(friendlyDbError(err, 'Kaydedilemedi. Bağlantını kontrol edip tekrar dene.'));
       // The insert may have committed even though the call failed — refetch so
