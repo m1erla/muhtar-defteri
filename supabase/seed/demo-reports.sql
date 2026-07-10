@@ -1,4 +1,4 @@
--- Dijital Muhtar — demo reports for the competition walkthrough.
+-- Mahalle Defteri — demo reports for the competition walkthrough.
 -- OPTIONAL and owner-run (SQL editor). These are illustrative community
 -- reports so the map/list/home aren't empty during a demo; they are NOT real
 -- civic reports. Remove them before any real launch (see the bottom of this file).

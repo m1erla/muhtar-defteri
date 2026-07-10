@@ -1,6 +1,6 @@
 # FRONTEND.md
 
-UI architecture and design direction for Dijital Muhtar. Product requirements live in `PRD.md`; this file covers how it should look, feel, and be structured.
+UI architecture and design direction for Mahalle Defteri. Product requirements live in `PRD.md`; this file covers how it should look, feel, and be structured.
 
 ---
 

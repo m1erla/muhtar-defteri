@@ -23,7 +23,7 @@ export default function RootLayout() {
   return (
     <>
       <Head>
-        <title>Dijital Muhtar</title>
+        <title>Mahalle Defteri</title>
       </Head>
       <Stack
         screenOptions={{

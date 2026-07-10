@@ -4,7 +4,7 @@ Instructions for Claude Code working in this repository. Full product context li
 
 ## Project snapshot
 
-Dijital Muhtar: a web app (Expo, deployed to web) that routes Adana residents to the correct official channel for a local civic problem, and logs an optional public report to a community transparency map. Solo build, competition deadline July 17, 2026. See `PRD.md` §1–2 for the full problem statement.
+Mahalle Defteri: a web app (Expo, deployed to web) that routes Adana residents to the correct official channel for a local civic problem, and logs an optional public report to a community transparency map. Solo build, competition deadline July 17, 2026. See `PRD.md` §1–2 for the full problem statement.
 
 ## Stack
 
@@ -17,7 +17,7 @@ Dijital Muhtar: a web app (Expo, deployed to web) that routes Adana residents to
 
 - **Adana only.** Never add multi-city logic, city selectors, or "expand to other provinces" scaffolding unless explicitly asked. This is the single most common way this project accidentally grows out of scope.
 - **Category picker is the primary classification UI**, not free-text AI parsing. If adding AI-assisted suggestions, they must be optional and sit alongside the tap-to-select flow, never replace it.
-- **Never write copy implying this is an official government channel.** "Muhtar" is a metaphor, not a claim of authority. Every screen touching the routing result should read as helpful, not official.
+- **Never write copy implying this is an official government channel.** The product is "Mahalle Defteri" (neighborhood ledger) — a community record, deliberately not an official portal. The name was changed from "Dijital Muhtar" precisely to avoid colliding with the official Muhtar Bilgi Sistemi / e-Muhtar services and reading as authoritative; don't reintroduce "Muhtar" in the product name or copy. The muhtar's-desk *ledger* remains the visual design metaphor (FRONTEND.md), which is fine. Every screen touching the routing result should read as helpful, not official.
 - **Don't build user accounts.** If a feature seems to need identity beyond the anonymous session id, that's a signal to simplify the feature, not add auth.
 - **channels is seed data**, not user-editable through the app UI. Reports and confirmations are the only user-writable tables.
 

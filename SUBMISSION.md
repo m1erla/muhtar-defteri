@@ -1,4 +1,4 @@
-# Yarışma başvuru metni — Dijital Muhtar
+# Yarışma başvuru metni — Mahalle Defteri
 
 TRT Geleceğin İletişimcileri Yarışması · Dijital Ürün Geliştirme.
 
@@ -10,7 +10,7 @@ değerlendirme), ve amacı, hedef kitleyi ve kaynakları belirtir.
 
 ## Proje açıklaması
 
-Dijital Muhtar, Adana'da yaşayanların karşılaştığı yerel sorunları — çöp ve
+Mahalle Defteri, Adana'da yaşayanların karşılaştığı yerel sorunları — çöp ve
 temizlik, hatalı park, bozuk kaldırım ve altyapı, okul çevresi güvenliği — doğru
 resmi kanala saniyeler içinde yönlendiren, mobil öncelikli bir web
 uygulamasıdır. Kullanıcı sorununun türünü birkaç dokunuşla seçer; uygulama ona
@@ -23,7 +23,7 @@ ve çözülüp çözülmediği herkes için görünür olur; tekrarlayan sorunla
 fark edilir.
 
 Hedef kitlesi, yerel bir sorunla karşılaşıp nereye başvuracağını bilmeyen ya da
-daha önce başvurup sonuç alamamış Adanalı vatandaşlardır. Dijital Muhtar resmi
+daha önce başvurup sonuç alamamış Adanalı vatandaşlardır. Mahalle Defteri resmi
 bir devlet ya da belediye kanalı değildir; mevcut kanalların yerine geçmez,
 onların yanında çalışan bir yönlendirme ve şeffaflık katmanıdır ve hiçbir sonucu
 garanti etmez.

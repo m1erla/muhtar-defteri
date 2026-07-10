@@ -1,4 +1,4 @@
-# Dijital Muhtar — Product Requirements Document
+# Mahalle Defteri — Product Requirements Document
 
 **Status:** Draft for build · **Context:** TRT Geleceğin İletişimcileri Yarışması, Dijital Ürün Geliştirme category · **Deadline:** July 17, 2026
 
@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-Dijital Muhtar is a mobile-friendly web app that tells Adana residents exactly which official channel handles a local civic problem, and makes visible — on a public, community-maintained map — how many times the same problem has been reported and whether it's actually been resolved. It is a routing and transparency layer sitting on top of existing official infrastructure, not a replacement for it.
+Mahalle Defteri is a mobile-friendly web app that tells Adana residents exactly which official channel handles a local civic problem, and makes visible — on a public, community-maintained map — how many times the same problem has been reported and whether it's actually been resolved. It is a routing and transparency layer sitting on top of existing official infrastructure, not a replacement for it.
 
 ## 2. Problem
 
@@ -15,7 +15,7 @@ Turkey already has extensive complaint infrastructure: Alo 181 (environment), Al
 1. **Routing confusion.** Citizens don't reliably know which channel handles which problem — confusing enough that it's taught as a school civics exercise in Turkey generally.
 2. **No accountability layer.** Once something is reported, there's no visibility into what happens next. Recurring, unresolved complaints about the same spot (potholes, blocked sidewalks, pest problems) are common on public complaint sites and go nowhere visible.
 
-Dijital Muhtar closes both gaps without duplicating any existing intake system.
+Mahalle Defteri closes both gaps without duplicating any existing intake system.
 
 ## 3. Competition constraints that shape this PRD
 

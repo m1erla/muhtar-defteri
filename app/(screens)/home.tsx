@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Dijital Muhtar' }} />
+      <Stack.Screen options={{ title: 'Mahalle Defteri' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.tagline}>
           Adana'daki bir sorunu doğru resmi kanala bildir — istersen mahallenin kaydına da ekle.
@@ -56,7 +56,7 @@ export default function Home() {
         </View>
 
         <Link href="/how-it-works" style={styles.footerLink}>
-          Dijital Muhtar nedir, ne değildir?
+          Mahalle Defteri nedir, ne değildir?
         </Link>
       </ScrollView>
     </>

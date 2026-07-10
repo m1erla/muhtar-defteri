@@ -1,4 +1,4 @@
-# Dijital Muhtar — Claude Design Prompt
+# Mahalle Defteri — Claude Design Prompt
 
 Paste the block under **"The prompt"** as your opening message in a new Claude Design project. Start the project in **high-fidelity mode** — these need to read close to submission-quality, not rough wireframes. Claude Design can also take file uploads directly; if that's available in your session, attach `FRONTEND.md` alongside this prompt for extra grounding, since it carries the same system in slightly more detail.
 
@@ -6,7 +6,7 @@ Paste the block under **"The prompt"** as your opening message in a new Claude D
 
 ## The prompt
 
-Design the core UI for Dijital Muhtar, a mobile-first civic web app for Adana, Turkey. It routes residents to the correct official channel for a local problem (illegal parking, overflowing bins, broken sidewalks, unsafe school routes) and shows a public, transparent record of how often each problem has been reported and whether it's been resolved. This is explicitly not an official government app — it's a community routing and accountability layer that sits alongside real channels like Alo 181, CİMER, and Adana's own ALO 153 line, and the design should never look like it's impersonating one of them.
+Design the core UI for Mahalle Defteri, a mobile-first civic web app for Adana, Turkey. It routes residents to the correct official channel for a local problem (illegal parking, overflowing bins, broken sidewalks, unsafe school routes) and shows a public, transparent record of how often each problem has been reported and whether it's been resolved. This is explicitly not an official government app — it's a community routing and accountability layer that sits alongside real channels like Alo 181, CİMER, and Adana's own ALO 153 line, and the design should never look like it's impersonating one of them.
 
 **Design system to use throughout:**
 
@@ -41,7 +41,7 @@ Spend the visual personality there, on the ledger rows, and keep every other scr
 
 7. **Report detail** — A stamp mark (terracotta for open, moss for resolved) with its text label, the description and photo if present, a line reading "İlk bildirilme: X gün önce" and "X kişi bunu doğruladı," and two outlined buttons: "Ben de Gördüm" and "Bu Düzeldi."
 
-8. **How it works** — Header "Dijital Muhtar nedir, ne değildir?" Plain body text, no illustration — this screen's only job is stating clearly that this is a community routing and transparency layer, not an official government channel, and that it doesn't guarantee any outcome.
+8. **How it works** — Header "Mahalle Defteri nedir, ne değildir?" Plain body text, no illustration — this screen's only job is stating clearly that this is a community routing and transparency layer, not an official government channel, and that it doesn't guarantee any outcome.
 
 **Non-negotiables:** every screen must work at mobile width first — that's the primary deliverable, desktop is secondary. Tap targets at least 44px (64px for the category picker). Status is never color-only. Text should scale, nothing locked to a fixed pixel size that fights system font settings. All copy is in Turkish, exactly as written above — don't translate it or substitute English placeholder text.
 

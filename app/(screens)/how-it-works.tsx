@@ -10,11 +10,11 @@ export default function HowItWorks() {
     <>
       <Stack.Screen options={{ title: 'Nasıl Çalışır?' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Dijital Muhtar nedir, ne değildir?</Text>
+        <Text style={styles.heading}>Mahalle Defteri nedir, ne değildir?</Text>
 
         <Text style={styles.subheading}>Nedir</Text>
         <Text style={styles.body}>
-          Dijital Muhtar, Adana'daki yerel bir sorunu hangi resmi kanala bildirmen gerektiğini
+          Mahalle Defteri, Adana'daki yerel bir sorunu hangi resmi kanala bildirmen gerektiğini
           gösteren, topluluk temelli bir yönlendirme aracıdır. Sorunun türünü seçersin; sana doğru
           telefon numarasını, formu ve yanına alman gerekenleri söyler.
         </Text>
@@ -25,7 +25,7 @@ export default function HowItWorks() {
 
         <Text style={styles.subheading}>Ne değildir</Text>
         <Text style={styles.body}>
-          Dijital Muhtar resmi bir devlet ya da belediye kanalı değildir. Buraya eklediğin kayıt,
+          Mahalle Defteri resmi bir devlet ya da belediye kanalı değildir. Buraya eklediğin kayıt,
           resmi bir başvuru yerine geçmez — sorunun çözülmesi için yönlendirdiğimiz resmi kanalı
           kullanman gerekir.
         </Text>

@@ -1,4 +1,4 @@
-# Dijital Muhtar
+# Mahalle Defteri
 
 Adana'daki yerel bir sorunu doğru resmi kanala yönlendiren ve isteğe bağlı olarak
 herkese açık bir şeffaflık haritasına kaydeden, topluluk temelli bir web uygulaması.

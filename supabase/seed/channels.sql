@@ -1,4 +1,4 @@
--- Dijital Muhtar — channels seed data (Adana + national routing list, PRD §11)
+-- Mahalle Defteri — channels seed data (Adana + national routing list, PRD §11)
 --
 -- All facts verified against primary sources on 2026-07-03:
 --   ALO 153:   https://www.adana.bel.tr/tr/birim-detay/48 (WhatsApp hattı, e-posta,

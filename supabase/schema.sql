@@ -1,4 +1,4 @@
--- Dijital Muhtar — database schema
+-- Mahalle Defteri — database schema
 -- Single source of truth for the migration. PRD.md §10 mirrors this — keep in sync.
 --
 -- Three tables, no auth. The Supabase anon key ships publicly inside the web

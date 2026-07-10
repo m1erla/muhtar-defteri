@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Dijital Muhtar",
-    "slug": "dijital-muhtar",
+    "name": "Mahalle Defteri",
+    "slug": "mahalle-defteri",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "dijitalmuhtar",
+    "scheme": "mahalledefteri",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
