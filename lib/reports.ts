@@ -150,11 +150,17 @@ export async function fetchMyConfirmation(reportId: string): Promise<Confirmatio
   return (data?.[0]?.type as ConfirmationType) ?? null;
 }
 
+// Postgres unique_violation: this session already confirmed this report.
+const UNIQUE_VIOLATION = '23505';
+
 export async function confirmReport(reportId: string, type: ConfirmationType): Promise<void> {
   const { error } = await getSupabase()
     .from('confirmations')
     .insert({ report_id: reportId, type, session_id: getSessionId() });
-  if (error) throw new Error(error.message);
+  // The confirmations_one_per_session constraint makes this insert idempotent.
+  // Hitting it (double tap, second tab) means the confirmation already exists,
+  // which is the outcome the user wanted — not an error they can act on.
+  if (error && error.code !== UNIQUE_VIOLATION) throw new Error(error.message);
 
   // "Bu düzeldi" flips the community-maintained status; the confirmation row
   // above keeps the audit trail either way. supabase-js doesn't throw on DB

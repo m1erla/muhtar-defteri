@@ -85,7 +85,7 @@ No persona requires technical sophistication. Copy and interaction design should
 
 ## 10. Data model
 
-Three tables, no auth required. Full DDL:
+Three tables, no auth required. Core DDL below; `supabase/schema.sql` is the authoritative migration and additionally carries the RLS policies, integrity constraints, and storage rules summarised after it.
 
 ```sql
 create table channels (
@@ -123,6 +123,17 @@ create table confirmations (
 ```
 
 `channels` is seed data, populated once from the researched Adana + national routing list, not user-generated. `reports` and `confirmations` are the live community layer.
+
+**Row level security.** The Supabase anon key ships inside the public web bundle by design, so RLS — not key secrecy — is what protects the data. `supabase/schema.sql` enables RLS on all three tables and grants the anonymous role exactly:
+
+- `channels` — select only. No insert/update/delete policy exists, so the seed list cannot be edited through the API.
+- `reports` — select and insert. Update is allowed but narrowed to the `status` column via a column-level `GRANT` (RLS gates rows, not columns), so the "Bu Düzeldi" flow can't be used to rewrite someone else's description, photo, or coordinates. No delete.
+- `confirmations` — select and insert, with `unique (report_id, session_id)` enforcing one confirmation per anonymous session per report. No update or delete.
+- `report-photos` storage bucket — public read, anonymous insert, no update or delete.
+
+Text columns that the public insert path writes (`category`, `status`, `type`) carry check constraints, and `description` is capped at the 500 characters the UI enforces.
+
+Anyone can still mark reports resolved en masse — an accepted consequence of the anonymous, no-accounts design in §5, not something RLS can prevent.
 
 ## 11. Content dependencies
 

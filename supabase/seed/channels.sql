@@ -17,6 +17,9 @@
 -- içindir; santral 0322 455 35 00.
 --
 -- channels is seed-only data (CLAUDE.md): safe to wipe and re-insert.
+-- Run this as the project owner (Supabase SQL editor / service role). RLS gives
+-- the anonymous role select-only access to channels, so the delete below is
+-- deliberately impossible through the public API.
 
 delete from channels;
 
