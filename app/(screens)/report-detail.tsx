@@ -7,7 +7,7 @@ import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
 import { getCategory } from '@/lib/categories';
-import { daysAgoLabel } from '@/lib/format';
+import { businessDaysSince, daysAgoLabel, RESPONSE_BENCHMARK_DAYS } from '@/lib/format';
 import {
   confirmationCount,
   confirmReport,
@@ -122,6 +122,21 @@ export default function ReportDetail() {
                 İlk bildirilme: {daysAgoLabel(ready.report.created_at)}
               </Text>
               <Text style={styles.mono}>{confirmationCount(ready.report)} kişi bunu doğruladı</Text>
+              {ready.report.status === 'open'
+                ? (() => {
+                    // Adana Büyükşehir's stated response window as the "past due"
+                    // benchmark (PRD §11). A benchmark, not a guarantee.
+                    const bd = businessDaysSince(ready.report.created_at);
+                    const overdue = bd > RESPONSE_BENCHMARK_DAYS;
+                    return (
+                      <Text style={[styles.mono, overdue && styles.overdue]}>
+                        {overdue
+                          ? `Belediyenin ${RESPONSE_BENCHMARK_DAYS} iş günü yanıt süresi ölçütü aşıldı — ${bd} iş günü geçti`
+                          : `Belediye yanıt süresi ölçütü: ${RESPONSE_BENCHMARK_DAYS} iş günü (${bd} iş günü geçti)`}
+                      </Text>
+                    );
+                  })()
+                : null}
             </View>
 
             {confirmError ? <Text style={styles.error}>{confirmError}</Text> : null}
@@ -208,6 +223,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 14,
     color: colors.ink,
+  },
+  overdue: {
+    fontFamily: fonts.monoMedium,
+    color: colors.terracottaText,
   },
   actions: {
     gap: 10,

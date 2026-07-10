@@ -10,7 +10,19 @@ import { colors, fonts } from '@/lib/theme';
 // The signature element (FRONTEND.md §1): rows as ledger entries — thin rule
 // between rows, tabular alignment, stamp instead of a pill badge. Reused on
 // Home's preview and the full map/list view.
-export default function LedgerRow({ report, onPress }: { report: Report; onPress: () => void }) {
+//
+// clusterCount = how many reports share this report's exact spot + category
+// (PRD §8). >1 shows a "⟳N" repeat badge so a recurring problem is legible in
+// the list without reading — distinct from the "×N" confirmation count.
+export default function LedgerRow({
+  report,
+  onPress,
+  clusterCount = 1,
+}: {
+  report: Report;
+  onPress: () => void;
+  clusterCount?: number;
+}) {
   const category = getCategory(report.category);
   const count = confirmationCount(report);
   return (
@@ -23,6 +35,11 @@ export default function LedgerRow({ report, onPress }: { report: Report; onPress
       <Text style={styles.place} numberOfLines={1}>
         {report.neighborhood ?? 'Adana'}
       </Text>
+      {clusterCount > 1 ? (
+        <Text style={styles.repeat} accessibilityLabel={`bu noktada ${clusterCount} kayıt`}>
+          ⟳{clusterCount}
+        </Text>
+      ) : null}
       <Text style={styles.mono}>{formatLedgerDate(report.created_at)}</Text>
       <Text style={[styles.mono, styles.count]}>{count > 0 ? `×${count}` : '—'}</Text>
       <StatusStamp status={report.status} />
@@ -60,5 +77,10 @@ const styles = StyleSheet.create({
   count: {
     minWidth: 30,
     textAlign: 'right',
+  },
+  repeat: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 13,
+    color: colors.terracottaText,
   },
 });

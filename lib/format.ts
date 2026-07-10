@@ -18,3 +18,24 @@ export function daysAgoLabel(iso: string): string {
   if (days === 1) return 'Dün';
   return `${days} gün önce`;
 }
+
+// Weekdays elapsed since a date — the benchmark for Adana Büyükşehir's stated
+// "15 iş günü" response window (PRD §11). Weekends only; public holidays are
+// out of scope, so this is a slight over-count, acceptable for a benchmark.
+export function businessDaysSince(iso: string): number {
+  const cursor = new Date(iso);
+  cursor.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let days = 0;
+  while (cursor < today) {
+    cursor.setDate(cursor.getDate() + 1);
+    const wd = cursor.getDay();
+    if (wd !== 0 && wd !== 6) days += 1;
+  }
+  return days;
+}
+
+// Adana Büyükşehir's published response standard (PRD §11 / channels seed
+// notes): 15 business days, 30 if the request spans departments.
+export const RESPONSE_BENCHMARK_DAYS = 15;

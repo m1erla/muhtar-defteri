@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+import { clusterReports } from '@/lib/cluster';
 import type { Report } from '@/lib/reports';
 import { colors } from '@/lib/theme';
 
@@ -67,17 +68,29 @@ export function LocationPickerMap({
   );
 }
 
-// Read-only pins for the map/list view. Status is never color-only
-// (FRONTEND.md §7): resolved pins carry a check glyph, open pins are plain.
-function statusPinIcon(status: 'open' | 'resolved') {
+// Read-only cluster pins for the map/list view. Status is never color-only
+// (FRONTEND.md §7): a lone resolved pin carries a check glyph. A cluster of >1
+// report at the same spot shows its count, larger — density visible at a glance
+// (PRD §8), so "this spot is a repeat problem" reads without any text.
+function clusterPinIcon(status: 'open' | 'resolved', count: number) {
   const color = status === 'open' ? colors.terracotta : colors.moss;
+  const label = status === 'open' ? 'Açık' : 'Çözüldü';
+  if (count > 1) {
+    const size = 26;
+    return divIcon({
+      className: '',
+      html: `<div title="${label} · ${count} kayıt" style="width:${size}px;height:${size}px;border-radius:${size / 2}px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 4px rgba(0,0,0,0.45);color:${colors.paper};font-family:monospace;font-weight:700;font-size:13px;line-height:${size - 4}px;text-align:center;">${count}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+    });
+  }
   const check =
     status === 'resolved'
       ? `<span style="color:${colors.paper};font-size:11px;line-height:18px;display:block;text-align:center;font-weight:bold;">✓</span>`
       : '';
   return divIcon({
     className: '',
-    html: `<div title="${status === 'open' ? 'Açık' : 'Çözüldü'}" style="width:18px;height:18px;border-radius:9px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 3px rgba(0,0,0,0.4);">${check}</div>`,
+    html: `<div title="${label}" style="width:18px;height:18px;border-radius:9px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 3px rgba(0,0,0,0.4);">${check}</div>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
   });
@@ -90,18 +103,19 @@ export function ReportsMap({
   reports: Report[];
   onSelect: (id: string) => void;
 }) {
+  const clusters = clusterReports(reports);
   return (
     <MapContainer center={ADANA_CENTER} zoom={12} style={{ width: '100%', height: '100%' }}>
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
-      {reports.map((r) => (
+      {clusters.map((c) => (
         <Marker
-          key={r.id}
-          position={[r.latitude, r.longitude]}
-          icon={statusPinIcon(r.status)}
-          eventHandlers={{ click: () => onSelect(r.id) }}
+          key={c.key}
+          position={[c.latitude, c.longitude]}
+          icon={clusterPinIcon(c.status, c.count)}
+          eventHandlers={{ click: () => onSelect(c.representative.id) }}
         />
       ))}
     </MapContainer>

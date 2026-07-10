@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
 import PrimaryButton from '@/components/primary-button';
+import { clusterCounts, clusterKey } from '@/lib/cluster';
 import { fetchReports } from '@/lib/reports';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
@@ -19,6 +20,7 @@ export default function Home() {
     keepDataWhileReloading: true,
   });
   const recent = state.status === 'ready' ? state.data : state.status === 'error' ? [] : null;
+  const counts = recent ? clusterCounts(recent) : null;
 
   return (
     <>
@@ -46,6 +48,7 @@ export default function Home() {
               <LedgerRow
                 key={r.id}
                 report={r}
+                clusterCount={counts?.get(clusterKey(r)) ?? 1}
                 onPress={() => router.push({ pathname: '/report-detail', params: { id: r.id } })}
               />
             ))

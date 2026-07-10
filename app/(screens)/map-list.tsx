@@ -5,6 +5,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions,
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES, type CategorySlug } from '@/lib/categories';
+import { clusterCounts, clusterKey } from '@/lib/cluster';
 import { fetchReports } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -44,6 +45,8 @@ export default function MapList() {
 
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
+  const counts = state.status === 'ready' ? clusterCounts(state.data) : null;
+
   const list = (
     <>
       {state.status === 'loading' ? <LoadStateView loading /> : null}
@@ -63,7 +66,14 @@ export default function MapList() {
       ) : null}
 
       {state.status === 'ready'
-        ? state.data.map((r) => <LedgerRow key={r.id} report={r} onPress={() => openDetail(r.id)} />)
+        ? state.data.map((r) => (
+            <LedgerRow
+              key={r.id}
+              report={r}
+              clusterCount={counts?.get(clusterKey(r)) ?? 1}
+              onPress={() => openDetail(r.id)}
+            />
+          ))
         : null}
     </>
   );
