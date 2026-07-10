@@ -33,7 +33,7 @@ Spend the visual budget there. The report/category-picker screen, the routing re
 
 Matches `PRD.md` §8. Notes below are structural, not exhaustive specs.
 
-**Home** — CTA button (petrol, full width on mobile) plus a compact preview list (ledger-row style) of the 3–5 most recent nearby reports. Empty state if there's no location permission: a plain prompt to enable it, not a dead screen.
+**Home** — CTA button (petrol, full width on mobile) plus a compact preview list (ledger-row style) of the 3–4 most recent reports. Adana-only, so there's no location gate (requesting geolocation on the landing screen would hurt the scored first load). Two distinct quiet states: a "no reports yet" empty state, and a separate tap-to-retry line if the fetch fails — a failed load must not read as "no reports".
 
 **Report — category** — four large tap targets (min 64px tall on mobile), one per category, icon + label. This is the highest-traffic screen; it should be reachable in one tap from Home.
 

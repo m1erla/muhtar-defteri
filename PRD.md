@@ -10,7 +10,7 @@ Mahalle Defteri is a mobile-friendly web app that tells Adana residents exactly 
 
 ## 2. Problem
 
-Turkey already has extensive complaint infrastructure: Alo 181 (environment), Alo 155 (traffic/police), EGM Mobil (photo-based parking violation reports), CİMER (universal government router), and Adana Büyükşehir Belediyesi's own ALO 153 line and e-belediye web form. The gap isn't intake, it's two things:
+Turkey already has extensive complaint infrastructure: Alo 181 (environment), 112 (police/traffic — the single emergency line that absorbed the former Alo 155), EGM Mobil (photo-based parking violation reports), CİMER (universal government router), and Adana Büyükşehir Belediyesi's own ALO 153 line and e-belediye web form. The gap isn't intake, it's two things:
 
 1. **Routing confusion.** Citizens don't reliably know which channel handles which problem — confusing enough that it's taught as a school civics exercise in Turkey generally.
 2. **No accountability layer.** Once something is reported, there's no visibility into what happens next. Recurring, unresolved complaints about the same spot (potholes, blocked sidewalks, pest problems) are common on public complaint sites and go nowhere visible.
@@ -40,7 +40,7 @@ These aren't preferences — they're pass/fail requirements from the category ru
 Explicitly out of scope — resist adding these even if they seem like natural extensions:
 
 - Coverage outside Adana province.
-- Any claim to replace, integrate with, or officially represent Alo 181 / Alo 155 / CİMER / ALO 153 / e-belediye. The app routes to them; it is not them.
+- Any claim to replace, integrate with, or officially represent Alo 181 / 112 / CİMER / ALO 153 / e-belediye. The app routes to them; it is not them.
 - User accounts or authentication. Anonymous per-device session identity is sufficient.
 - Guaranteeing resolution of any reported issue. The product's promise is visibility and correct routing, not outcomes.
 - Real-time chat, push notifications, or any messaging layer.
@@ -66,7 +66,7 @@ No persona requires technical sophistication. Copy and interaction design should
 
 | Screen | Requirements |
 |---|---|
-| **Home** | Primary CTA to start a report. Preview list/map of the most recent nearby community reports (read-only, no auth needed to view). |
+| **Home** | Primary CTA to start a report. Preview list of the most recent community reports (read-only, no auth needed to view). Adana-only, so no location gate — "nearby" would add landing-screen geolocation friction against the scored first load. |
 | **Report — category** | Four tappable categories: cleanliness, parking, infrastructure, school-zone safety. This is the primary classification mechanism — reliable and instant, not dependent on AI inference. |
 | **Report — details** | Optional free-text description, optional photo upload, location (auto-detected via browser geolocation, manually adjustable pin). |
 | **Routing result** | Shows the matched channel(s) from the `channels` table: name, phone, URL, and a required-info checklist. Includes a one-tap copy of the key details. |
@@ -139,7 +139,7 @@ Two things remain intentionally open, as accepted consequences of the anonymous,
 
 The `channels` table needs to be populated before the report flow means anything. Source list:
 
-- **National:** Alo 181 (environment), Alo 155 (traffic/police), EGM Mobil (parking, photo-based), CİMER (catch-all).
+- **National:** Alo 181 (environment); 112 (the single emergency line that absorbed the former Alo 155) plus 112 Online İhbar (`ihbar.ng112.gov.tr`, photo-based); EGM Mobil (parking, photo-based, lands on the same 112 form); CİMER (catch-all). *(Verified 2026-07-03: Alo 155 no longer exists standalone in Adana; see CLAUDE.md gotchas.)*
 - **Adana:** ALO 153 Çağrı Merkezi (24/7, WhatsApp photo submission) and the e-belediye web form (`ebelediye.adana.bel.tr/SikayetOneri`) — both route internally to the correct district (Seyhan, Yüreğir, Çukurova, Sarıçam), so no separate district-level entries are needed.
 - Adana Büyükşehir Belediyesi's stated response window (15 business days, 30 if cross-department) should be stored alongside the channel record and surfaced in the report-detail screen as the benchmark for "past due."
 
@@ -161,4 +161,4 @@ Two items need a final currency check before this table goes live: the ALO 153 W
 
 ## 14. Timeline
 
-Full day-by-day execution plan lives in `dijital-muhtar-build-spec.md`, not duplicated here — this document defines *what* to build; that one defines the *order* to build it in.
+Competition deadline: July 17, 2026. Day-to-day execution is tracked in the working task list rather than a separate spec file; this document defines *what* to build, not the order.

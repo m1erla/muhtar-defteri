@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Instructions for Claude Code working in this repository. Full product context lives in `PRD.md`, UI/design direction in `FRONTEND.md`, and the execution timeline in `dijital-muhtar-build-spec.md` — read those for depth, treat this file as the operating rules.
+Instructions for Claude Code working in this repository. Full product context lives in `PRD.md` and UI/design direction in `FRONTEND.md` — read those for depth, treat this file as the operating rules. (`SUBMISSION.md` holds the competition description, `DEMO.md` the jury walkthrough.)
 
 ## Project snapshot
 
@@ -25,33 +25,40 @@ Mahalle Defteri: a web app (Expo, deployed to web) that routes Adana residents t
 
 ```
 app/
-  (screens)/
-    home.tsx
-    report-category.tsx
-    report-details.tsx
-    routing-result.tsx
-    add-to-map.tsx
-    map-list.tsx
-    report-detail.tsx
-    how-it-works.tsx
-components/            -- sibling of app/, NOT inside it — expo-router
-lib/                   -- treats files under app/ as routes
-  supabase.ts
-  session.ts           -- anonymous session id, local persistence
+  _layout.tsx            -- root Stack, font loading, global ErrorBoundary
+  +html.tsx              -- static web shell: lang, meta/OG, favicon links
+  index.tsx              -- redirect to /home
+  (screens)/             -- the 8 screens (home, report-category, report-details,
+                            routing-result, add-to-map, map-list, report-detail,
+                            how-it-works)
+components/              -- sibling of app/, NOT inside it — expo-router treats
+lib/                     -- files under app/ as routes
+  supabase.ts            -- lazy client + SupabaseConfigError/friendlyDbError
+  session.ts             -- anonymous session id, local persistence
+  reports.ts, channels.ts, categories.ts, cluster.ts, format.ts,
+  report-draft.ts, theme.ts, use-load.ts, use-lazy-map.ts
+public/                  -- copied verbatim to the web export root
+  favicon.svg, apple-touch-icon.png, og-image.png, _headers
 supabase/
-  schema.sql           -- mirrors PRD.md §10, keep in sync
+  schema.sql             -- authoritative migration (tables + RLS + storage);
+                            PRD.md §10 mirrors it, keep in sync
   seed/
-    channels.sql        -- Adana + national routing data, see PRD.md §11
+    channels.sql         -- Adana + national routing data, see PRD.md §11
+    demo-reports.sql     -- optional owner-run demo data for the walkthrough
 ```
 
 ## Commands
 
 ```
-npx expo start --web       # local dev
-npx expo export --platform web   # production web build
+npx expo start --web    # local dev
+npm run build:web       # production web build (expo export --clear + 404.html copy)
+npm run deploy          # build:web + wrangler pages deploy to Cloudflare
 ```
 
-Deploy the exported `dist/` output to any static host (Vercel, Netlify, Cloudflare Pages) — get this live on day 1 with an empty shell, don't leave first deploy for late in the build.
+`build:web` runs `--clear` on purpose: Metro caches inlined `EXPO_PUBLIC_*` env
+values, so an `.env` change without it ships stale credentials. Deploy from the
+repo root, never a prebuilt `dist/` folder. Live on Cloudflare Pages; a Vercel
+fallback stays up because `*.pages.dev` is ISP-blocked on some Turkish networks.
 
 ## Data model
 
