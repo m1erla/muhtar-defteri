@@ -48,13 +48,18 @@ function ChannelCard({ channel }: { channel: Channel }) {
       {channel.contact_phone ? (
         <Pressable
           accessibilityRole="link"
+          accessibilityLabel={`Telefon: ${channel.contact_phone}, aramak için dokun`}
           onPress={() => Linking.openURL(`tel:${channel.contact_phone!.replace(/\s/g, '')}`)}
         >
           <Text style={styles.mono}>☎ {channel.contact_phone}</Text>
         </Pressable>
       ) : null}
       {channel.contact_url ? (
-        <Pressable accessibilityRole="link" onPress={() => openContactUrl(channel.contact_url!)}>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Web sayfasını aç"
+          onPress={() => openContactUrl(channel.contact_url!)}
+        >
           <Text style={styles.mono}>🔗 {channel.contact_url.replace(/^https?:\/\//, '')}</Text>
         </Pressable>
       ) : null}
@@ -130,6 +135,12 @@ export default function RoutingResult() {
 
         <Link href="/add-to-map" style={styles.mapLink}>
           Haritaya da Ekle →
+        </Link>
+        {/* Terminal exit for the common "just get routed" story (PRD story 1) —
+            without this the only way out is the back chevron, which walks the
+            user backward through the funnel. */}
+        <Link href="/home" replace style={styles.doneLink}>
+          Bitti — Ana sayfaya dön
         </Link>
       </ScrollView>
     </>
@@ -247,14 +258,21 @@ const styles = StyleSheet.create({
   notes: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: colors.ink,
-    opacity: 0.65,
+    color: colors.inkMuted,
     fontStyle: 'italic',
   },
   mapLink: {
     fontFamily: fonts.sansSemiBold,
     fontSize: 16,
     color: colors.petrol,
+    paddingVertical: 12,
+    minHeight: 44,
+    textAlign: 'center',
+  },
+  doneLink: {
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    color: colors.inkMuted,
     paddingVertical: 12,
     minHeight: 44,
     textAlign: 'center',

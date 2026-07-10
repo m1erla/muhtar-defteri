@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -27,6 +27,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 
 export default function MapList() {
   const router = useRouter();
+  const { added } = useLocalSearchParams<{ added?: string }>();
   const { width } = useWindowDimensions();
   // Map is progressive enhancement for wider WEB viewports (FRONTEND.md §2).
   const showMapPane = width >= 768 && Platform.OS === 'web';
@@ -34,9 +35,11 @@ export default function MapList() {
   const [category, setCategory] = useState<CategorySlug | null>(null);
   const [status, setStatus] = useState<'open' | 'resolved' | null>(null);
 
-  // Focus refetch: returning from a detail where the user confirmed/resolved
-  // must show fresh data — but keep the rendered list during the reload.
-  const { state, reload } = useLoad(() => fetchReports({ category, status }), [category, status], {
+  // Fetch the full set unfiltered and filter client-side, so the ⟳/pin same-spot
+  // counts are computed over ALL reports and stay stable when chips toggle
+  // (server-filtering made a spot's count shift with the active filter). Focus
+  // refetch keeps it fresh after a confirm/resolve on the detail screen.
+  const { state, reload } = useLoad(() => fetchReports({}), [], {
     refetchOnFocus: true,
     keepDataWhileReloading: true,
   });
@@ -45,7 +48,11 @@ export default function MapList() {
 
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
-  const counts = state.status === 'ready' ? clusterCounts(state.data) : null;
+  const all = state.status === 'ready' ? state.data : [];
+  const counts = clusterCounts(all);
+  const filtered = all.filter(
+    (r) => (!category || r.category === category) && (!status || r.status === status)
+  );
 
   const list = (
     <>
@@ -61,20 +68,25 @@ export default function MapList() {
         />
       ) : null}
 
-      {state.status === 'ready' && state.data.length === 0 ? (
+      {state.status === 'ready' && filtered.length === 0 ? (
         <LoadStateView message="Bu filtreyle kayıt yok. İlk kaydı sen ekleyebilirsin — ana sayfadan bir sorun bildir." />
       ) : null}
 
-      {state.status === 'ready'
-        ? state.data.map((r) => (
-            <LedgerRow
-              key={r.id}
-              report={r}
-              clusterCount={counts?.get(clusterKey(r)) ?? 1}
-              onPress={() => openDetail(r.id)}
-            />
-          ))
-        : null}
+      {state.status === 'ready' && filtered.length > 0 ? (
+        <>
+          <Text style={styles.legend}>Mahalle · tarih · kaç kişi doğruladı · durum</Text>
+          <View style={styles.ledgerFrame}>
+            {filtered.map((r) => (
+              <LedgerRow
+                key={r.id}
+                report={r}
+                clusterCount={counts.get(clusterKey(r)) ?? 1}
+                onPress={() => openDetail(r.id)}
+              />
+            ))}
+          </View>
+        </>
+      ) : null}
     </>
   );
 
@@ -82,6 +94,12 @@ export default function MapList() {
     <>
       <Stack.Screen options={{ title: 'Mahalle Kaydı' }} />
       <View style={styles.container}>
+        {added ? (
+          <Text style={styles.successBanner} accessibilityRole="alert">
+            Kaydın mahalle defterine eklendi ✓
+          </Text>
+        ) : null}
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -113,10 +131,7 @@ export default function MapList() {
           <View style={styles.wideRow}>
             <View style={styles.mapPane}>
               {MapView ? (
-                <MapView
-                  reports={state.status === 'ready' ? state.data : []}
-                  onSelect={openDetail}
-                />
+                <MapView reports={filtered} counts={counts} onSelect={openDetail} />
               ) : mapFailed ? (
                 <LoadStateView message="Harita yüklenemedi." onRetry={retryMap} />
               ) : (
@@ -141,6 +156,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
+  },
+  successBanner: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.paper,
+    backgroundColor: colors.moss,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    textAlign: 'center',
   },
   chipBar: {
     flexGrow: 0,
@@ -197,5 +221,16 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     width: '100%',
     alignSelf: 'center',
+  },
+  legend: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    color: colors.inkMuted,
+    paddingTop: 12,
+    paddingBottom: 6,
+  },
+  ledgerFrame: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.ink,
   },
 });

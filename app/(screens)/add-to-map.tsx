@@ -62,7 +62,7 @@ export default function AddToMap() {
         longitude,
       });
       resetDraft();
-      router.replace('/map-list');
+      router.replace({ pathname: '/map-list', params: { added: '1' } });
     } catch (err) {
       setState('error');
       setErrorText(friendlyDbError(err, 'Kayıt eklenemedi. Bağlantını kontrol edip tekrar dene.'));

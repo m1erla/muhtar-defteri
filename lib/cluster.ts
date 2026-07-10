@@ -29,11 +29,13 @@ export type ReportCluster = {
   reports: Report[];
   count: number;
   status: 'open' | 'resolved'; // open if ANY report in the cluster is still open
-  representative: Report; // the pin's tap target — the most recent report
+  representative: Report; // the pin's tap target — the OLDEST report in the cluster
 };
 
-// One entry per distinct spot+category, preserving the input order (the query
-// sorts by created_at desc, so representative = most recent).
+// One entry per distinct spot+category. Input is sorted created_at desc, so the
+// representative (pin tap target) is the LAST element = the oldest report — the
+// origin of the recurring problem, whose "İlk bildirilme" answers PRD story 4's
+// "how long has this spot been a problem".
 export function clusterReports(reports: Report[]): ReportCluster[] {
   const groups = new Map<string, Report[]>();
   for (const r of reports) {
@@ -51,7 +53,7 @@ export function clusterReports(reports: Report[]): ReportCluster[] {
       reports: rs,
       count: rs.length,
       status: rs.some((r) => r.status === 'open') ? 'open' : 'resolved',
-      representative: rs[0],
+      representative: rs[rs.length - 1],
     });
   }
   return clusters;

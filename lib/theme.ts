@@ -11,6 +11,9 @@ export const colors = {
   // keep the originals for non-text marks (stamp dots, map pins).
   terracottaText: '#9A4830',
   mossText: '#47593F',
+  // Muted body/placeholder text — a SOLID ink at ~6:1 on paper. Prefer this
+  // over `opacity` dimming for helper text, which can fall under WCAG AA.
+  inkMuted: '#5C574E',
 } as const;
 
 // FRONTEND.md §1: mono for "logged" moments (counts, dates, IDs, contact

@@ -99,9 +99,13 @@ function clusterPinIcon(status: 'open' | 'resolved', count: number) {
 export function ReportsMap({
   reports,
   onSelect,
+  counts,
 }: {
   reports: Report[];
   onSelect: (id: string) => void;
+  // True same-spot totals computed over the UNFILTERED set, so a pin's number
+  // stays honest even when a status/category chip hides part of its cluster.
+  counts?: Map<string, number>;
 }) {
   const clusters = clusterReports(reports);
   return (
@@ -114,7 +118,7 @@ export function ReportsMap({
         <Marker
           key={c.key}
           position={[c.latitude, c.longitude]}
-          icon={clusterPinIcon(c.status, c.count)}
+          icon={clusterPinIcon(c.status, counts?.get(c.key) ?? c.count)}
           eventHandlers={{ click: () => onSelect(c.representative.id) }}
         />
       ))}

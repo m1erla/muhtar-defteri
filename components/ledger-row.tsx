@@ -36,12 +36,23 @@ export default function LedgerRow({
         {report.neighborhood ?? 'Adana'}
       </Text>
       {clusterCount > 1 ? (
-        <Text style={styles.repeat} accessibilityLabel={`bu noktada ${clusterCount} kayıt`}>
+        <Text
+          style={[
+            styles.repeat,
+            { color: report.status === 'open' ? colors.terracottaText : colors.mossText },
+          ]}
+          accessibilityLabel={`bu noktada ${clusterCount} kayıt`}
+        >
           ⟳{clusterCount}
         </Text>
       ) : null}
       <Text style={styles.mono}>{formatLedgerDate(report.created_at)}</Text>
-      <Text style={[styles.mono, styles.count]}>{count > 0 ? `×${count}` : '—'}</Text>
+      <Text
+        style={[styles.mono, styles.count]}
+        accessibilityLabel={count > 0 ? `${count} kişi doğruladı` : 'henüz doğrulama yok'}
+      >
+        {count > 0 ? `×${count}` : '—'}
+      </Text>
       <StatusStamp status={report.status} />
     </Pressable>
   );
@@ -81,6 +92,5 @@ const styles = StyleSheet.create({
   repeat: {
     fontFamily: fonts.monoMedium,
     fontSize: 13,
-    color: colors.terracottaText,
   },
 });

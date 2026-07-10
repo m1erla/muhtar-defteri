@@ -52,6 +52,21 @@ export async function fetchReport(id: string): Promise<Report | null> {
   return data as Report | null;
 }
 
+// How many reports share this report's exact spot + category — the "this spot
+// is a recurring problem" count for the detail screen (PRD story 4). Coords are
+// stored rounded to 3 decimals, so exact equality matches the same coarse spot;
+// no spatial query (CLAUDE.md: coarse rounding, not PostGIS).
+export async function fetchSameSpotCount(report: Report): Promise<number> {
+  const { count, error } = await getSupabase()
+    .from('reports')
+    .select('id', { count: 'exact', head: true })
+    .eq('category', report.category)
+    .eq('latitude', report.latitude)
+    .eq('longitude', report.longitude);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 // Coarse neighborhood name via OSM Nominatim (free, no key; one call per
 // submitted report is well inside their usage policy). Failure is fine —
 // grouping falls back to coordinates and rows display "Adana".
@@ -160,13 +175,14 @@ export async function confirmReport(reportId: string, type: ConfirmationType): P
   // The confirmations_one_per_session constraint makes this insert idempotent.
   // Hitting it (double tap, second tab) means the confirmation already exists,
   // which is the outcome the user wanted — not an error they can act on.
+  const inserted = !error;
   if (error && error.code !== UNIQUE_VIOLATION) throw new Error(error.message);
 
-  // "Bu düzeldi" flips the community-maintained status; the confirmation row
-  // above keeps the audit trail either way. supabase-js doesn't throw on DB
-  // errors — an unchecked failure here would strand the report visibly "open"
-  // while telling this session it marked it resolved.
-  if (type === 'resolved') {
+  // "Bu düzeldi" flips the community-maintained status — but ONLY when this call
+  // actually recorded a resolved confirmation. If the insert was a duplicate
+  // (23505), a stale tab must not be able to force a resolve with no backing
+  // resolved row. supabase-js doesn't throw on DB errors, so check explicitly.
+  if (type === 'resolved' && inserted) {
     const { error: updateError } = await getSupabase()
       .from('reports')
       .update({ status: 'resolved' })

@@ -13,6 +13,7 @@ import {
   confirmReport,
   fetchMyConfirmation,
   fetchReport,
+  fetchSameSpotCount,
   type ConfirmationType,
   type Report,
 } from '@/lib/reports';
@@ -22,7 +23,7 @@ import { useLoad } from '@/lib/use-load';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type DetailData = { report: Report | null; mine: ConfirmationType | null };
+type DetailData = { report: Report | null; mine: ConfirmationType | null; sameSpot: number };
 
 export default function ReportDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -33,9 +34,14 @@ export default function ReportDetail() {
 
   const { state, reload, mutate } = useLoad<DetailData>(
     async () => {
-      if (!id) return { report: null, mine: null };
-      const [report, mine] = await Promise.all([fetchReport(id), fetchMyConfirmation(id)]);
-      return { report, mine };
+      if (!id) return { report: null, mine: null, sameSpot: 0 };
+      const report = await fetchReport(id);
+      if (!report) return { report: null, mine: null, sameSpot: 0 };
+      const [mine, sameSpot] = await Promise.all([
+        fetchMyConfirmation(id),
+        fetchSameSpotCount(report),
+      ]);
+      return { report, mine, sameSpot };
     },
     [id],
     // Keep the report on screen if the post-confirm reload fails (offline is the
@@ -62,6 +68,7 @@ export default function ReportDetail() {
           confirmations: [{ count: confirmationCount(report) + 1 }],
         },
         mine: type,
+        sameSpot: state.data.sameSpot,
       });
     } catch (err) {
       setConfirmError(friendlyDbError(err, 'Kaydedilemedi. Bağlantını kontrol edip tekrar dene.'));
@@ -122,6 +129,9 @@ export default function ReportDetail() {
                 İlk bildirilme: {daysAgoLabel(ready.report.created_at)}
               </Text>
               <Text style={styles.mono}>{confirmationCount(ready.report)} kişi bunu doğruladı</Text>
+              {ready.sameSpot > 1 ? (
+                <Text style={styles.mono}>Bu noktada {ready.sameSpot} kayıt var</Text>
+              ) : null}
               {ready.report.status === 'open'
                 ? (() => {
                     // Adana Büyükşehir's stated response window as the "past due"

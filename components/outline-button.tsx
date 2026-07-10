@@ -8,6 +8,9 @@ type Props = {
   color?: string;
   disabled?: boolean;
   style?: ViewStyle;
+  // Spoken name when the visible label carries an emoji a screen reader would
+  // otherwise read verbatim (e.g. "📷 Fotoğraf Ekle" → "Fotoğraf ekle").
+  accessibilityLabel?: string;
 };
 
 export default function OutlineButton({
@@ -16,12 +19,14 @@ export default function OutlineButton({
   color = colors.petrol,
   disabled = false,
   style,
+  accessibilityLabel,
 }: Props) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
         styles.button,
         { borderColor: color },

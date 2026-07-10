@@ -28,18 +28,24 @@ export default function ReportDetails() {
   );
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('LocationPickerMap');
 
   // Photo picking must fire directly from onPress — browsers silently block
   // the file dialog otherwise (CLAUDE.md gotcha).
   const pickPhoto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setPhotoUri(result.assets[0].uri);
+    setPhotoError(null);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets[0]) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch {
+      setPhotoError('Fotoğraf seçilemedi. Tekrar dene.');
     }
   };
 
@@ -91,10 +97,12 @@ export default function ReportDetails() {
         <Text style={styles.heading}>Detayları ekle</Text>
         <Text style={styles.sub}>Hepsi opsiyonel — istersen doğrudan devam et.</Text>
 
+        <Text style={styles.sectionLabel}>Açıklama</Text>
         <TextInput
           style={styles.input}
           placeholder="Kısaca anlat..."
-          placeholderTextColor="#2B262080"
+          placeholderTextColor={colors.inkMuted}
+          accessibilityLabel="Açıklama (opsiyonel)"
           multiline
           maxLength={500}
           value={description}
@@ -104,19 +112,33 @@ export default function ReportDetails() {
         {photoUri ? (
           <View style={styles.photoRow}>
             <Image source={{ uri: photoUri }} style={styles.photoThumb} contentFit="cover" />
-            <Pressable accessibilityRole="button" onPress={() => setPhotoUri(null)}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Fotoğrafı kaldır"
+              onPress={() => setPhotoUri(null)}
+            >
               <Text style={styles.link}>Fotoğrafı kaldır</Text>
             </Pressable>
           </View>
         ) : (
-          <OutlineButton label="📷 Fotoğraf Ekle" onPress={pickPhoto} />
+          <OutlineButton
+            label="📷 Fotoğraf Ekle"
+            accessibilityLabel="Fotoğraf ekle"
+            onPress={pickPhoto}
+          />
         )}
+        {photoError ? <Text style={styles.locationError}>{photoError}</Text> : null}
 
         {Platform.OS === 'web' ? (
           <>
             <View style={styles.locationHeader}>
               <Text style={styles.sectionLabel}>Konum</Text>
-              <Pressable accessibilityRole="button" onPress={locate} disabled={locating}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Konumumu bul"
+                onPress={locate}
+                disabled={locating}
+              >
                 <Text style={styles.link}>{locating ? 'Konum aranıyor…' : '📍 Konumumu Bul'}</Text>
               </Pressable>
             </View>
@@ -233,8 +255,7 @@ const styles = StyleSheet.create({
   mapHint: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: colors.ink,
-    opacity: 0.6,
+    color: colors.inkMuted,
     marginBottom: 6,
   },
 });
