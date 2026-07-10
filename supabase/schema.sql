@@ -81,33 +81,53 @@ alter table channels enable row level security;
 alter table reports enable row level security;
 alter table confirmations enable row level security;
 
+-- Supabase grants anon/authenticated broad table privileges by default and
+-- relies on RLS as the gate. That's one layer; we also revoke the privileges
+-- the app never needs, so a future RLS mistake can't expose writes, and we
+-- scope INSERT to exactly the columns the client sets (RLS gates rows, not
+-- columns) so server-defaulted fields like status/created_at can't be forged.
+
 -- channels: seed data. Readable by everyone, writable by nobody through the API.
--- (No insert/update/delete policy exists, so RLS denies all three.)
 drop policy if exists "channels are publicly readable" on channels;
 create policy "channels are publicly readable" on channels
   for select to anon, authenticated using (true);
+revoke insert, update, delete, truncate, references, trigger on channels from anon, authenticated;
 
--- reports: public map. Anyone may read and file; nobody may delete.
+-- reports: public map. Anyone may read, file, and flip status; nobody deletes.
 drop policy if exists "reports are publicly readable" on reports;
 create policy "reports are publicly readable" on reports
   for select to anon, authenticated using (true);
 
+-- New reports must start open (with the status column revoke below, status is
+-- server-defaulted to 'open' and this check simply enforces the invariant).
 drop policy if exists "anyone can file a report" on reports;
 create policy "anyone can file a report" on reports
-  for insert to anon, authenticated with check (true);
+  for insert to anon, authenticated with check (status = 'open');
 
 drop policy if exists "anyone can update report status" on reports;
 create policy "anyone can update report status" on reports
   for update to anon, authenticated using (true) with check (true);
 
--- RLS gates rows, not columns — so the "status only" half of the rule above is
--- enforced with a column-level grant. Without this, the update policy would let
--- anyone rewrite another person's description, photo, or coordinates.
-revoke update on reports from anon, authenticated;
+-- INSERT: only the 7 columns lib/reports.ts sends. id/status/created_at are
+-- omitted, so they default server-side and cannot be forged (no pre-resolved
+-- reports, no backdated timestamps).
+-- UPDATE: only status — without this the update policy above would let anyone
+-- rewrite another person's description, photo, or coordinates.
+revoke insert, update, delete, truncate, references, trigger on reports from anon, authenticated;
+grant insert (category, description, photo_url, latitude, longitude, neighborhood, session_id)
+  on reports to anon, authenticated;
 grant update (status) on reports to anon, authenticated;
 
--- confirmations: append-only. The unique constraint above caps it at one per
--- session per report; no update or delete policy exists.
+-- photo_url is client-supplied (the app passes the uploaded URL), so constrain
+-- it to our own storage bucket — the map can't be made to render an arbitrary
+-- external image or tracking pixel injected via the REST API.
+alter table reports drop constraint if exists reports_photo_url_own_storage;
+alter table reports add constraint reports_photo_url_own_storage
+  check (photo_url is null or photo_url like
+    'https://xtwszbwjikpkrqazxufe.supabase.co/storage/v1/object/public/report-photos/%');
+
+-- confirmations: append-only. The unique constraint caps it at one per session
+-- per report; INSERT is scoped to the 3 app columns; no update/delete policy.
 drop policy if exists "confirmations are publicly readable" on confirmations;
 create policy "confirmations are publicly readable" on confirmations
   for select to anon, authenticated using (true);
@@ -116,17 +136,25 @@ drop policy if exists "anyone can confirm a report once" on confirmations;
 create policy "anyone can confirm a report once" on confirmations
   for insert to anon, authenticated with check (true);
 
+revoke insert, update, delete, truncate, references, trigger on confirmations from anon, authenticated;
+grant insert (report_id, type, session_id) on confirmations to anon, authenticated;
+
 -- ── Storage: report photos ───────────────────────────────────────────────────
--- Public read (the map renders them straight from the CDN), anonymous insert,
--- and no update/delete policy so uploaded photos cannot be swapped or removed.
+-- Public bucket (objects served by URL straight from the CDN), anonymous insert
+-- only. Capped at 5 MB and image types — anon can hit the storage API directly,
+-- so without server-side limits it could host arbitrary large/non-image files.
 
-insert into storage.buckets (id, name, public)
-values ('report-photos', 'report-photos', true)
-on conflict (id) do nothing;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('report-photos', 'report-photos', true, 5242880,
+        array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+  set public = true,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
+-- No SELECT policy on storage.objects: a public bucket serves object URLs
+-- without one, and adding it would let anyone LIST every uploaded photo.
 drop policy if exists "report photos are publicly readable" on storage.objects;
-create policy "report photos are publicly readable" on storage.objects
-  for select to anon, authenticated using (bucket_id = 'report-photos');
 
 drop policy if exists "anyone can upload a report photo" on storage.objects;
 create policy "anyone can upload a report photo" on storage.objects

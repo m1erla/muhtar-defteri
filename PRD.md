@@ -126,14 +126,14 @@ create table confirmations (
 
 **Row level security.** The Supabase anon key ships inside the public web bundle by design, so RLS — not key secrecy — is what protects the data. `supabase/schema.sql` enables RLS on all three tables and grants the anonymous role exactly:
 
-- `channels` — select only. No insert/update/delete policy exists, so the seed list cannot be edited through the API.
-- `reports` — select and insert. Update is allowed but narrowed to the `status` column via a column-level `GRANT` (RLS gates rows, not columns), so the "Bu Düzeldi" flow can't be used to rewrite someone else's description, photo, or coordinates. No delete.
-- `confirmations` — select and insert, with `unique (report_id, session_id)` enforcing one confirmation per anonymous session per report. No update or delete.
-- `report-photos` storage bucket — public read, anonymous insert, no update or delete.
+- `channels` — select only. All write privileges are revoked from the anon role (belt-and-suspenders with the absence of any write policy), so the seed list cannot be edited through the API.
+- `reports` — select; insert scoped by column-level `GRANT` to exactly the seven fields the client sends (`category`, `description`, `photo_url`, `latitude`, `longitude`, `neighborhood`, `session_id`). `id`/`status`/`created_at` are server-defaulted and cannot be supplied, so reports can't be created pre-"resolved" or backdated. Update is likewise narrowed to the `status` column, so the "Bu Düzeldi" flow can't rewrite someone else's description, photo, or coordinates. No delete.
+- `confirmations` — select and insert (scoped to `report_id`, `type`, `session_id`), with `unique (report_id, session_id)` enforcing one confirmation per anonymous session per report. No update or delete.
+- `report-photos` storage bucket — public read via object URL (no listing), anonymous insert only, capped at 5 MB and image MIME types. `reports.photo_url` carries a check constraint pinning it to this bucket's public path, so the map can't be pointed at an arbitrary external image.
 
-Text columns that the public insert path writes (`category`, `status`, `type`) carry check constraints, and `description` is capped at the 500 characters the UI enforces.
+Text columns the public insert path writes (`category`, `type`) carry check constraints, `status` is constrained to `open`/`resolved`, and `description` is capped at the 500 characters the UI enforces.
 
-Anyone can still mark reports resolved en masse — an accepted consequence of the anonymous, no-accounts design in §5, not something RLS can prevent.
+Two things remain intentionally open, as accepted consequences of the anonymous, no-accounts design in §5 (not failures RLS can fix): anyone can mark any report resolved, and anyone can file or confirm reports without attribution. These surface as `RLS Policy Always True` advisor warnings on the two "anyone can …" policies and are expected.
 
 ## 11. Content dependencies
 
