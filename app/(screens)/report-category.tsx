@@ -20,7 +20,9 @@ export default function ReportCategory() {
     <>
       <Stack.Screen options={{ title: 'Sorun Bildir' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Ne tür bir sorun?</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          Ne tür bir sorun?
+        </Text>
         <Text style={styles.sub}>Birini seç, sana doğru resmi kanalı gösterelim.</Text>
         {CATEGORIES.map((c) => (
           <CategoryTile key={c.slug} label={c.label} emoji={c.emoji} onPress={() => pick(c.slug)} />
@@ -51,8 +53,7 @@ const styles = StyleSheet.create({
   sub: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.ink,
-    opacity: 0.7,
+    color: colors.inkMuted,
     marginBottom: 8,
   },
 });

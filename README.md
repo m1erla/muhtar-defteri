@@ -9,7 +9,7 @@ Alo 181, CİMER) yanında çalışan bir yönlendirme ve şeffaflık katmanıdı
 from Turkey. (Cloudflare's `*.workers.dev` / legacy `*.pages.dev` hostnames are
 SNI-blocked on some Turkish ISPs, which is why the custom domain is the public URL.)
 
-Full product context: [PRD.md](PRD.md) · Design system: [FRONTEND.md](FRONTEND.md) · Operating rules: [CLAUDE.md](CLAUDE.md)
+Full product context: [PRD.md](PRD.md) · Design system: [FRONTEND.md](FRONTEND.md) · Operating rules: [CLAUDE.md](CLAUDE.md) · Owner's runbook: [OPERATIONS.md](OPERATIONS.md)
 
 ## Stack
 

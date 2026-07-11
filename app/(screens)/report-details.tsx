@@ -94,7 +94,9 @@ export default function ReportDetails() {
     <>
       <Stack.Screen options={{ title: 'Detaylar' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Detayları ekle</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          Detayları ekle
+        </Text>
         <Text style={styles.sub}>Hepsi opsiyonel — istersen doğrudan devam et.</Text>
 
         <Text style={styles.sectionLabel}>Açıklama</Text>
@@ -108,6 +110,9 @@ export default function ReportDetails() {
           value={description}
           onChangeText={setDescription}
         />
+        {description.length > 0 ? (
+          <Text style={styles.counter}>{description.length}/500</Text>
+        ) : null}
 
         {photoUri ? (
           <View style={styles.photoRow}>
@@ -194,8 +199,7 @@ const styles = StyleSheet.create({
   sub: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.ink,
-    opacity: 0.7,
+    color: colors.inkMuted,
   },
   input: {
     borderWidth: 1.5,
@@ -207,6 +211,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
     textAlignVertical: 'top',
+  },
+  counter: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    color: colors.inkMuted,
+    alignSelf: 'flex-end',
+    marginTop: -8,
   },
   photoRow: {
     flexDirection: 'row',

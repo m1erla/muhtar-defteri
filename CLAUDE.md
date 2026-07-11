@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Instructions for Claude Code working in this repository. Full product context lives in `PRD.md` and UI/design direction in `FRONTEND.md` — read those for depth, treat this file as the operating rules. (`SUBMISSION.md` holds the competition description, `DEMO.md` the jury walkthrough.)
+Instructions for Claude Code working in this repository. Full product context lives in `PRD.md` and UI/design direction in `FRONTEND.md` — read those for depth, treat this file as the operating rules. (`SUBMISSION.md` holds the competition description, `DEMO.md` the jury walkthrough, `OPERATIONS.md` the owner's moderation/hosting runbook — there is deliberately no in-app admin.)
 
 ## Project snapshot
 

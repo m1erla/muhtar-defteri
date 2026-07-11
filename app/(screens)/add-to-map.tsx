@@ -141,8 +141,7 @@ const styles = StyleSheet.create({
   bodyDim: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.ink,
-    opacity: 0.7,
+    color: colors.inkMuted,
     lineHeight: 21,
   },
   error: {

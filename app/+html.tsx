@@ -44,6 +44,42 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
         <ScrollViewStyleReset />
+        {/* Three web-only, zero-network touches:
+            1. Riso paper grain — monochrome fractal noise fixed over everything
+               at 4% opacity. Enough to read as printed paper up close, far too
+               faint to affect text contrast (FRONTEND.md: texture serves the
+               ledger metaphor, never fights readability).
+            2. Keyboard focus — a consistent petrol focus ring, only for
+               keyboard/switch navigation (:focus-visible), not mouse taps.
+            3. Reduced motion — kill residual animation (spinners etc.) for
+               users who asked their OS for less motion. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+:focus-visible {
+  outline: 2px solid #1F5C5C;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+`,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

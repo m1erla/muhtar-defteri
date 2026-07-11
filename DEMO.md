@@ -71,7 +71,8 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
 
 ## Olası jüri soruları (hazırlık)
 - **"Resmi bir uygulama mı?"** → Hayır. Uygulamanın içinde de açıkça yazıyor;
-  "Nasıl çalışır?" ekranı bunu tek işi olarak yapıyor.
+  "Nasıl çalışır?" rehber ekranının en başında "nedir, ne değildir" duruyor,
+  SSS'nin ilk sorusu da bu.
 - **"Veriler nasıl doğrulanıyor / kötüye kullanım?"** → Kanal listesi resmi
   kaynaklardan doğrulandı (adana.bel.tr, cimer.gov.tr, alo181.gov.tr,
   ihbar.ng112.gov.tr). Kayıtlar topluluktan; durum/tarih sunucuda sabit,

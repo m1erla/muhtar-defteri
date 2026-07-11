@@ -35,8 +35,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.ink,
-    opacity: 0.75,
+    color: colors.inkMuted,
     textAlign: 'center',
   },
   retry: {

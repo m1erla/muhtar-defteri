@@ -57,6 +57,7 @@ Matches `PRD.md` §8. Notes below are structural, not exhaustive specs.
 - **Status stamp** — small circular mark, `terracotta` for open, `moss` for resolved. Always paired with a text label, never color alone.
 - **Ledger row** — the signature list treatment described in §1. One component, reused on Home's preview and the full map/list view.
 - **Primary button** — `petrol` fill, `paper` text, full-width on mobile, standard width on larger viewports.
+- **Disclosure** — animation-free expand/collapse row (ledger-ruled bottom hairline, mono `+`/`−` mark in `petrol`). Used for the guide screen's FAQ/troubleshooting lists — the mobile-friendly form of "a table of guidance". Carries `aria-expanded` and a 48px header.
 - Keep the component set small. This app has roughly 8 screens and doesn't need a large shared library — resist building generic abstractions for one-off UI.
 
 ## 4. Navigation
@@ -77,6 +78,8 @@ Mobile-first, always. Build every screen at a ~375px viewport first, then check 
 - Status must never be color-only — the stamp always carries a text label alongside color.
 - Text scales with system font size settings; nothing is set in fixed pixel units that ignores user preferences.
 - Contrast: `ink` on `paper` and `paper` on `petrol` both need verification against WCAG AA before shipping — check, don't assume.
+- Helper/dim text uses the solid `inkMuted` token, never `opacity` dimming (opacity can silently drop below AA).
+- Web shell (`app/+html.tsx`) carries three global touches: a 4%-opacity monochrome paper-grain overlay (the Riso print feel — far too faint to affect contrast), a `petrol` `:focus-visible` ring for keyboard users, and a `prefers-reduced-motion` kill switch for residual animation.
 
 ## 8. Performance notes
 

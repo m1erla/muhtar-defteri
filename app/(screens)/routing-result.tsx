@@ -169,8 +169,7 @@ const styles = StyleSheet.create({
   sub: {
     fontFamily: fonts.sans,
     fontSize: 15,
-    color: colors.ink,
-    opacity: 0.75,
+    color: colors.inkMuted,
   },
   card: {
     borderWidth: 1.5,

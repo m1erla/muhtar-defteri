@@ -1,18 +1,57 @@
 import { Stack } from 'expo-router';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import type { ReactNode } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import Disclosure from '@/components/disclosure';
+import StatusStamp from '@/components/status-stamp';
 import { colors, fonts } from '@/lib/theme';
 
-// This screen has one job (PRD §8): say plainly what this is and isn't.
-// TRT rule + CLAUDE.md: never read as an official government channel.
+// The guide screen (PRD §8). Its first job is unchanged: say plainly what this
+// is and isn't (TRT rule + CLAUDE.md: never read as an official government
+// channel). Around that core it now carries the full user guide — quick start,
+// the ledger-mark legend, FAQ, troubleshooting and per-need tips — written in
+// plain Turkish for every age, no jargon.
+
+function Step({ n, children }: { n: string; children: ReactNode }) {
+  return (
+    <View style={styles.stepRow}>
+      <Text style={styles.stepNumber}>{n}</Text>
+      <Text style={styles.stepText}>{children}</Text>
+    </View>
+  );
+}
+
+function LegendRow({ mark, children }: { mark: ReactNode; children: ReactNode }) {
+  return (
+    <View style={styles.legendRow}>
+      <View style={styles.legendMark}>{mark}</View>
+      <Text style={styles.legendText}>{children}</Text>
+    </View>
+  );
+}
+
 export default function HowItWorks() {
   return (
     <>
       <Stack.Screen options={{ title: 'Nasıl Çalışır?' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Mahalle Defteri nedir, ne değildir?</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          Mahalle Defteri nedir, ne değildir?
+        </Text>
 
-        <Text style={styles.subheading}>Nedir</Text>
+        <Text style={styles.subheading} accessibilityRole="header">
+          Üç adımda kullan
+        </Text>
+        <Step n="1">Sorunun türünü seç — çöp, hatalı park, kaldırım, okul çevresi.</Step>
+        <Step n="2">İstersen fotoğraf ve konum ekle. Hiçbiri zorunlu değil.</Step>
+        <Step n="3">
+          Doğru resmi kanalı gör: numarayı tek dokunuşla ara ya da formu aç. İstersen sorunu
+          herkese açık mahalle kaydına da ekle.
+        </Step>
+
+        <Text style={styles.subheading} accessibilityRole="header">
+          Nedir
+        </Text>
         <Text style={styles.body}>
           Mahalle Defteri, Adana'daki yerel bir sorunu hangi resmi kanala bildirmen gerektiğini
           gösteren, topluluk temelli bir yönlendirme aracıdır. Sorunun türünü seçersin; sana doğru
@@ -23,7 +62,9 @@ export default function HowItWorks() {
           kez bildirildiği ve çözülüp çözülmediği herkes için görünür olur.
         </Text>
 
-        <Text style={styles.subheading}>Ne değildir</Text>
+        <Text style={styles.subheading} accessibilityRole="header">
+          Ne değildir
+        </Text>
         <Text style={styles.body}>
           Mahalle Defteri resmi bir devlet ya da belediye kanalı değildir. Buraya eklediğin kayıt,
           resmi bir başvuru yerine geçmez — sorunun çözülmesi için yönlendirdiğimiz resmi kanalı
@@ -34,14 +75,131 @@ export default function HowItWorks() {
           neyin, nerede, ne zamandır beklediğini kayıt altına alır.
         </Text>
 
-        <Text style={styles.subheading}>Gizlilik</Text>
+        <Text style={styles.subheading} accessibilityRole="header">
+          Defterdeki işaretler ne anlama geliyor?
+        </Text>
+        <LegendRow mark={<StatusStamp status="open" />}>Sorun bildirilmiş, hâlâ bekliyor.</LegendRow>
+        <LegendRow mark={<StatusStamp status="resolved" />}>
+          Topluluk bu sorunu "düzeldi" olarak işaretlemiş.
+        </LegendRow>
+        <LegendRow mark={<Text style={styles.legendGlyph}>⟳3</Text>}>
+          Aynı noktadan üç kez bildirilmiş — tekrarlayan bir sorun.
+        </LegendRow>
+        <LegendRow mark={<Text style={styles.legendGlyph}>×2</Text>}>
+          İki kişi "Ben de Gördüm" diyerek kaydı doğrulamış.
+        </LegendRow>
+        <LegendRow mark={<Text style={styles.legendGlyphOverdue}>gecikmiş</Text>}>
+          Belediyenin 15 iş günü yanıt süresi ölçütü aşılmış.
+        </LegendRow>
+
+        <Text style={styles.subheading} accessibilityRole="header">
+          Sık sorulanlar
+        </Text>
+        <View>
+          <Disclosure title="Bu resmi bir uygulama mı?">
+            <Text style={styles.body}>
+              Hayır. Mahalle Defteri resmi bir devlet ya da belediye kanalı değildir ve öyle
+              görünmeye çalışmaz. İşi, seni doğru resmi kanala yönlendirmek ve mahallenin kaydını
+              herkese açık tutmaktır.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Kayıtlar güvenilir mi? Kötüye kullanılamaz mı?">
+            <Text style={styles.body}>
+              Kanal listesi resmi kaynaklardan doğrulandı (adana.bel.tr, cimer.gov.tr,
+              alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan gelir; tarih ve durum
+              bilgisini sunucu tutar, kimse elle değiştiremez. Aynı kişi bir kaydı yalnızca bir kez
+              doğrulayabilir.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Kimliğim görünür mü?">
+            <Text style={styles.body}>
+              Hayır. Hesap ve üyelik yoktur; adın, numaran ya da kimliğin istenmez. Haritaya
+              eklediğin kayıtta yalnızca seçtiğin kategori, yazdığın açıklama, eklediğin fotoğraf
+              ve yaklaşık konum (yaklaşık 110 metre) herkese açık görünür.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Fotoğraf ya da konum eklemek zorunda mıyım?">
+            <Text style={styles.body}>
+              Hayır. Her alan opsiyoneldir — sadece sorunun türünü seçip devam edebilirsin. Fotoğraf
+              ve konum, sorunun anlaşılmasını kolaylaştırır ama hiçbiri şart değil.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Bildirdiğim sorun çözülmezse ne olur?">
+            <Text style={styles.body}>
+              Çözüm her zaman resmi kanaldan gelir; Mahalle Defteri süreci görünür kılar. Kayıt açık
+              kaldıkça kaç gündür beklediği herkes tarafından görülür. Sorun giderildiğinde "Bu
+              Düzeldi" ile kapatılabilir.
+            </Text>
+          </Disclosure>
+        </View>
+
+        <Text style={styles.subheading} accessibilityRole="header">
+          Sorun mu yaşıyorsun?
+        </Text>
+        <View>
+          <Disclosure title="Fotoğraf seçilmiyor">
+            <Text style={styles.body}>
+              Tarayıcılar dosya seçiciyi yalnızca butona doğrudan dokunulduğunda açar. "📷 Fotoğraf
+              Ekle" butonuna tekrar dokun; hâlâ açılmıyorsa tarayıcının dosya erişim iznini kontrol
+              et.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Konumum bulunamıyor">
+            <Text style={styles.body}>
+              Tarayıcı izin istediğinde "İzin ver" de. İzin vermek istemiyorsan sorun değil —
+              haritadaki pini elle sürükleyerek de konumu ayarlayabilirsin.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Liste ya da harita boş görünüyor">
+            <Text style={styles.body}>
+              Bağlantı yavaş olabilir — "Tekrar dene" bağlantısına dokun. Henüz kayıt yoksa bu bir
+              hata değildir; ilk kaydı sen ekleyebilirsin.
+            </Text>
+          </Disclosure>
+        </View>
+
+        <Text style={styles.subheading} accessibilityRole="header">
+          Sana göre ipuçları
+        </Text>
+        <View>
+          <Disclosure title="İlk kez mi geldin?">
+            <Text style={styles.body}>
+              Ana ekrandan "Bir Sorun Bildir" ile başla. Üç adım sürer, hiçbir alan zorunlu değil,
+              hesap istemez. Yanlış bir şey seçersen geri dönüp değiştirebilirsin.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Telefonla aramayı mı tercih ediyorsun?">
+            <Text style={styles.body}>
+              Yönlendirme sonucundaki numaraya dokunman yeterli — telefonun arama ekranı açılır.
+              "Yanına al" listesi, aramada soracakları bilgileri önceden hazırlamana yardım eder.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Küçük yazıları okumak zor geliyorsa">
+            <Text style={styles.body}>
+              Telefonunun ya da tarayıcının yazı büyütme ve yakınlaştırma ayarları burada da
+              çalışır. Tüm butonlar büyük ve etiketlidir; uygulama ekran okuyucularla da kullanılır.
+            </Text>
+          </Disclosure>
+          <Disclosure title="Acelen mi var?">
+            <Text style={styles.body}>
+              Fotoğrafı ve açıklamayı atla: sadece sorunun türünü seç, "Devam Et" de. Doğru kanal
+              yarım dakikada ekranında.
+            </Text>
+          </Disclosure>
+        </View>
+
+        <Text style={styles.subheading} accessibilityRole="header">
+          Gizlilik
+        </Text>
         <Text style={styles.body}>
           Hesap ve üyelik yoktur. Haritaya eklediğin kayıtta yalnızca seçtiğin kategori, yazdığın
           açıklama, eklediğin fotoğraf ve yaklaşık konum herkese açık görünür. Adın, numaran ya da
           kimliğin istenmez ve saklanmaz.
         </Text>
 
-        <Text style={styles.subheading}>Yönlendirdiği kanallar</Text>
+        <Text style={styles.subheading} accessibilityRole="header">
+          Yönlendirdiği kanallar
+        </Text>
         <Text style={styles.body}>
           ALO 153 (Adana Büyükşehir Çağrı Merkezi), Adana e-Belediye şikayet formu, 112 Acil Çağrı
           Merkezi ve 112 Online İhbar, Alo 181 (Çevre Bakanlığı) ve CİMER. Bu kanalların hiçbiriyle
@@ -76,12 +234,59 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sansSemiBold,
     fontSize: 17,
     color: colors.ink,
-    marginTop: 10,
+    marginTop: 14,
   },
   body: {
     fontFamily: fonts.sans,
     fontSize: 15,
     color: colors.ink,
     lineHeight: 23,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  stepNumber: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 15,
+    color: colors.petrol,
+    lineHeight: 23,
+    width: 18,
+    textAlign: 'center',
+  },
+  stepText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    color: colors.ink,
+    lineHeight: 23,
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 32,
+  },
+  legendMark: {
+    width: 92,
+    alignItems: 'flex-start',
+  },
+  legendGlyph: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 14,
+    color: colors.petrol,
+  },
+  legendGlyphOverdue: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 13,
+    color: colors.terracottaText,
+  },
+  legendText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 21,
   },
 });
