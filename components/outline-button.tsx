@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 
 import { colors, fonts } from '@/lib/theme';
@@ -8,8 +9,10 @@ type Props = {
   color?: string;
   disabled?: boolean;
   style?: ViewStyle;
-  // Spoken name when the visible label carries an emoji a screen reader would
-  // otherwise read verbatim (e.g. "📷 Fotoğraf Ekle" → "Fotoğraf ekle").
+  // Optional leading mark (e.g. the hand-drawn camera icon). Decorative — the
+  // label carries the meaning.
+  icon?: ReactNode;
+  // Spoken name when the visible label alone wouldn't read well.
   accessibilityLabel?: string;
 };
 
@@ -19,6 +22,7 @@ export default function OutlineButton({
   color = colors.petrol,
   disabled = false,
   style,
+  icon,
   accessibilityLabel,
 }: Props) {
   return (
@@ -35,6 +39,7 @@ export default function OutlineButton({
         style,
       ]}
     >
+      {icon ?? null}
       <Text style={[styles.label, { color }]}>{label}</Text>
     </Pressable>
   );
@@ -45,8 +50,10 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderWidth: 1.5,
     borderRadius: 6,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignSelf: 'stretch',

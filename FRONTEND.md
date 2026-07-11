@@ -54,6 +54,7 @@ Matches `PRD.md` §8. Notes below are structural, not exhaustive specs.
 ## 3. Component conventions
 
 - **Category chip** — used in the picker and as filters. Icon + label, `petrol` fill when selected, `ink` outline when not.
+- **Icon set** (`components/icon.tsx`) — hand-drawn Riso-style marks (4 categories + camera + pin), NOT emoji and not an icon library. Two "print layers" each: a petrol accent silhouette offset ~2px under wobbly ink linework (the misregistration of a real Riso print), authored as inline SVG data-URIs. The `paper` tone is a single-color print for petrol surfaces (pressed tiles). Icons are always decorative — a text label rides alongside, same rule as the stamp.
 - **Status stamp** — small circular mark, `terracotta` for open, `moss` for resolved. Always paired with a text label, never color alone.
 - **Ledger row** — the signature list treatment described in §1. One component, reused on Home's preview and the full map/list view.
 - **Primary button** — `petrol` fill, `paper` text, full-width on mobile, standard width on larger viewports.

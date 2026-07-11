@@ -121,7 +121,7 @@ export default function MapList() {
           {CATEGORIES.map((c) => (
             <Chip
               key={c.slug}
-              label={`${c.emoji} ${c.label}`}
+              label={c.label}
               active={category === c.slug}
               onPress={() => setCategory(category === c.slug ? null : c.slug)}
             />

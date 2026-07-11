@@ -5,6 +5,7 @@ import { Redirect, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import Icon from '@/components/icon';
 import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import PrimaryButton from '@/components/primary-button';
@@ -127,7 +128,8 @@ export default function ReportDetails() {
           </View>
         ) : (
           <OutlineButton
-            label="📷 Fotoğraf Ekle"
+            label="Fotoğraf Ekle"
+            icon={<Icon name="camera" size={22} />}
             accessibilityLabel="Fotoğraf ekle"
             onPress={pickPhoto}
           />
@@ -143,8 +145,10 @@ export default function ReportDetails() {
                 accessibilityLabel="Konumumu bul"
                 onPress={locate}
                 disabled={locating}
+                style={styles.locateLink}
               >
-                <Text style={styles.link}>{locating ? 'Konum aranıyor…' : '📍 Konumumu Bul'}</Text>
+                <Icon name="pin" size={18} />
+                <Text style={styles.link}>{locating ? 'Konum aranıyor…' : 'Konumumu Bul'}</Text>
               </Pressable>
             </View>
             {locationError ? <Text style={styles.locationError}>{locationError}</Text> : null}
@@ -166,7 +170,7 @@ export default function ReportDetails() {
             <Text style={styles.mapHint}>
               {coords
                 ? 'Pini sürükleyerek düzeltebilirsin'
-                : 'Konum henüz ayarlanmadı — pini sürükle ya da 📍 Konumumu Bul'}
+                : 'Konum henüz ayarlanmadı — pini sürükle ya da "Konumumu Bul" de'}
             </Text>
           </>
         ) : null}
@@ -237,6 +241,11 @@ const styles = StyleSheet.create({
     color: colors.petrol,
     paddingVertical: 12,
     minHeight: 44,
+  },
+  locateLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   locationHeader: {
     flexDirection: 'row',

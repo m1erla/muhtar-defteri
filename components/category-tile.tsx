@@ -1,16 +1,19 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import Icon from '@/components/icon';
+import type { CategorySlug } from '@/lib/categories';
 import { colors, fonts } from '@/lib/theme';
 
 type Props = {
   label: string;
-  emoji: string;
+  slug: CategorySlug;
   onPress: () => void;
 };
 
 // FRONTEND.md §2: large tap targets, min 64px tall, icon + label. The picker
-// is the highest-traffic screen — quiet, plain, fast.
-export default function CategoryTile({ label, emoji, onPress }: Props) {
+// is the highest-traffic screen — quiet, plain, fast. The icon flips to its
+// paper-tone print when the tile is pressed (petrol surface).
+export default function CategoryTile({ label, slug, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -20,7 +23,7 @@ export default function CategoryTile({ label, emoji, onPress }: Props) {
     >
       {({ pressed }) => (
         <>
-          <Text style={styles.emoji}>{emoji}</Text>
+          <Icon name={slug} size={38} tone={pressed ? 'paper' : 'ink'} />
           <Text style={[styles.label, pressed && styles.labelPressed]}>{label}</Text>
         </>
       )}
@@ -44,9 +47,6 @@ const styles = StyleSheet.create({
   pressed: {
     backgroundColor: colors.petrol,
     borderColor: colors.petrol,
-  },
-  emoji: {
-    fontSize: 26,
   },
   label: {
     flex: 1,

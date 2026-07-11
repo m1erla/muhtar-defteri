@@ -139,7 +139,7 @@ export default function HowItWorks() {
         <View>
           <Disclosure title="Fotoğraf seçilmiyor">
             <Text style={styles.body}>
-              Tarayıcılar dosya seçiciyi yalnızca butona doğrudan dokunulduğunda açar. "📷 Fotoğraf
+              Tarayıcılar dosya seçiciyi yalnızca butona doğrudan dokunulduğunda açar. "Fotoğraf
               Ekle" butonuna tekrar dokun; hâlâ açılmıyorsa tarayıcının dosya erişim iznini kontrol
               et.
             </Text>

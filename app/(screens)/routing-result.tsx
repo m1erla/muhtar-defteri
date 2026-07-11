@@ -110,8 +110,8 @@ export default function RoutingResult() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.heading}>İşte doğru yer:</Text>
         <Text style={styles.sub}>
-          {category.emoji} {category.label} için başvurabileceğin resmi kanallar. Bu uygulama resmi
-          bir kanal değildir — seni doğru yere yönlendirir.
+          {category.label} için başvurabileceğin resmi kanallar. Bu uygulama resmi bir kanal
+          değildir — seni doğru yere yönlendirir.
         </Text>
 
         {state.status === 'loading' ? <LoadStateView loading /> : null}

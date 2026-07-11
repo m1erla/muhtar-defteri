@@ -25,7 +25,7 @@ export default function ReportCategory() {
         </Text>
         <Text style={styles.sub}>Birini seç, sana doğru resmi kanalı gösterelim.</Text>
         {CATEGORIES.map((c) => (
-          <CategoryTile key={c.slug} label={c.label} emoji={c.emoji} onPress={() => pick(c.slug)} />
+          <CategoryTile key={c.slug} label={c.label} slug={c.slug} onPress={() => pick(c.slug)} />
         ))}
       </ScrollView>
     </>

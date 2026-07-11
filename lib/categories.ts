@@ -1,11 +1,12 @@
 // The four report categories — PRD §8. The tap-to-select picker is the primary
 // classification mechanism; these slugs match the channels.category values in
-// supabase/schema.sql.
+// supabase/schema.sql. Each category's visual mark is the hand-drawn Riso icon
+// of the same slug in components/icon.tsx.
 export const CATEGORIES = [
-  { slug: 'cleanliness', label: 'Temizlik / Çöp', emoji: '🗑️' },
-  { slug: 'parking', label: 'Hatalı Park', emoji: '🚗' },
-  { slug: 'infrastructure', label: 'Kaldırım / Altyapı', emoji: '🚧' },
-  { slug: 'school_safety', label: 'Okul Çevresi Güvenliği', emoji: '🏫' },
+  { slug: 'cleanliness', label: 'Temizlik / Çöp' },
+  { slug: 'parking', label: 'Hatalı Park' },
+  { slug: 'infrastructure', label: 'Kaldırım / Altyapı' },
+  { slug: 'school_safety', label: 'Okul Çevresi Güvenliği' },
 ] as const;
 
 export type CategorySlug = (typeof CATEGORIES)[number]['slug'];
