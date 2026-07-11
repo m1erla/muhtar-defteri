@@ -61,12 +61,15 @@ repo was converted by Cloudflare's `workers-autoconfig` PR; config in `wrangler.
 `github.com/m1erla/muhtar-defteri` on every push to `main`, so **`git push` is the
 canonical deploy**; `npm run deploy` is a manual fallback. The CI build reads the
 Supabase creds from the Worker's build env vars (they must stay set, or CI ships a
-keyless build). `build:web` runs `--clear` on purpose: Metro caches inlined
-`EXPO_PUBLIC_*` values, so an `.env` change without it ships stale credentials.
-Unknown paths serve the branded `404.html` (`not_found_handling: "404-page"`), not an
-SPA 200. Live at **muhtar-defteri.com**; the `*.workers.dev`/legacy `*.pages.dev`
-hostnames are ISP-blocked on some Turkish networks (hence the custom domain). Vercel
-is retired.
+keyless build). **Set the Workers Builds _Build command_ to `npm run build:web`** (it
+defaults to `npx expo export -p web`): `build:web` runs `--clear` (Metro inlines
+`EXPO_PUBLIC_*`, so without it an `.env` change ships stale creds) and copies
+`+not-found.html` → `404.html`. Unknown paths return a real 404, not an SPA 200;
+`wrangler.jsonc` sets `not_found_handling: "404-page"` to show the branded `404.html`
+— but that file only exists if the build ran `build:web` (a plain `expo export`
+emits `+not-found.html`, not `404.html`, so the 404 stays unbranded until then). Live
+at **muhtar-defteri.com**; the `*.workers.dev`/legacy `*.pages.dev` hostnames are
+ISP-blocked on some Turkish networks (hence the custom domain). Vercel is retired.
 
 ## Data model
 

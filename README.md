@@ -48,6 +48,11 @@ git-connected to `github.com/m1erla/muhtar-defteri`. Deploy config lives in
   from the Worker's build environment variables (`EXPO_PUBLIC_SUPABASE_URL`,
   `EXPO_PUBLIC_SUPABASE_ANON_KEY`) — they must stay set there or a CI build ships
   keyless (blank map + a "database not set up" notice).
+- **Set the Workers Builds _Build command_ to `npm run build:web`** (dashboard →
+  the `muhtar-defteri` Worker → Settings → Builds). It defaults to
+  `npx expo export -p web`, which skips two things `build:web` does: `--clear`
+  (Metro inlines `EXPO_PUBLIC_*`, so without it an env change ships stale creds)
+  and the `+not-found.html` → `404.html` copy (needed for the branded 404 below).
 - **Manual override (emergency):** `npm run deploy` — runs `npm run build:web`
   (which uses `--clear`, so it picks up your current `.env`) and uploads `dist/`
   via `wrangler deploy`.
@@ -56,10 +61,12 @@ git-connected to `github.com/m1erla/muhtar-defteri`. Deploy config lives in
 npm run build:web   # local check: expo export --clear + copies +not-found.html to 404.html
 ```
 
-Clean URLs (`/home` → `/home.html`) are automatic in Workers Static Assets. Unknown
-paths serve the branded `dist/404.html` with a real 404 status (not an SPA 200) —
-this is why `wrangler.jsonc` sets `assets.not_found_handling` to `"404-page"` and
-`build:web` copies `+not-found.html` → `404.html`.
+Clean URLs (`/home` → `/home.html`) are automatic in Workers Static Assets, and
+unknown paths return a real 404 (not an SPA 200). `wrangler.jsonc` sets
+`assets.not_found_handling` to `"404-page"` so the branded `404.html` is shown for
+those — **but only if the build emitted it** (see the Build-command note above; a
+plain `npx expo export` produces `+not-found.html` but not `404.html`, so the 404
+is unbranded until the build command is `npm run build:web`).
 
 > **Note on the legacy `*.pages.dev` / `*.workers.dev` slugs.** The old
 > `dijital-muhtar.pages.dev` name and the Worker's `*.workers.dev` route are both
