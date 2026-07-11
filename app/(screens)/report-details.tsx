@@ -111,7 +111,7 @@ export default function ReportDetails() {
 
         {photoUri ? (
           <View style={styles.photoRow}>
-            <Image source={{ uri: photoUri }} style={styles.photoThumb} contentFit="cover" />
+            <Image source={{ uri: photoUri }} style={styles.photoThumb} contentFit="cover" accessibilityLabel="Eklediğin fotoğraf" />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Fotoğrafı kaldır"

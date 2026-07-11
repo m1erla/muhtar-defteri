@@ -6,7 +6,11 @@
     "enabled": true
   },
   "assets": {
-    "directory": "dist"
+    "directory": "dist",
+    // Serve the branded dist/404.html (build:web copies it from +not-found.html)
+    // for unknown paths, with a real 404 status — not an SPA 200. Clean URLs
+    // (/home -> /home.html) are handled automatically by html_handling.
+    "not_found_handling": "404-page"
   },
   "compatibility_flags": [
     "nodejs_compat"

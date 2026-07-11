@@ -10,9 +10,9 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
 
 ## Demo öncesi kontrol (jüriden önce)
 - **Telefonla, canlı, soğuk aç** (PRD §12 bunu puanlıyor — laptoptan anlatma).
-- **Hangi URL:** Türkiye'de `*.pages.dev` bazı operatörlerde bloklu. Demoyu
-  **https://dijital-muhtar-puce.vercel.app** üzerinden yap (TR'den erişilebilir),
-  ya da özel alan adı bağlandıysa onu kullan.
+- **Hangi URL: https://muhtar-defteri.com** — özel alan adı, Türkiye'den
+  erişilebilir. (Cloudflare'in `*.pages.dev` adresi bazı TR operatörlerinde bloklu;
+  özel alan adı bu yüzden var. Demoda pages.dev'i AÇMA.)
 - Şebeke: mobil veri + wifi ikisini de dene, hangisi hızlıysa onu kullan.
 - Demo verisi hazır (Çukurova'da ⟳3 tekrar, Sinanpaşa'da 45 günlük gecikmiş
   kayıt). Sayfayı bir kez önceden açıp önbelleği ısıt, sonra kapat.

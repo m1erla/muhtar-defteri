@@ -1,0 +1,17 @@
+{
+  "name": "Mahalle Defteri",
+  "short_name": "Mahalle Defteri",
+  "description": "Adana'daki yerel bir sorunu doğru resmi kanala yönlendiren ve isteğe bağlı olarak açık mahalle kaydına ekleyen topluluk aracı. Resmi bir devlet kanalı değildir.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "/home",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EDE6D8",
+  "theme_color": "#EDE6D8",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

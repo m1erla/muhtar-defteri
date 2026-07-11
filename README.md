@@ -5,9 +5,9 @@ herkese açık bir şeffaflık haritasına kaydeden, topluluk temelli bir web uy
 Resmî bir devlet kanalı değildir — mevcut kanalların (ALO 153, e-belediye, 112,
 Alo 181, CİMER) yanında çalışan bir yönlendirme ve şeffaflık katmanıdır.
 
-**Live:** https://dijital-muhtar.pages.dev — ⚠️ `*.pages.dev` is SNI-blocked on some
-Turkish ISPs; a custom domain (pending purchase) will be the real public URL.
-Interim fallback reachable from Turkey: https://dijital-muhtar-puce.vercel.app
+**Live:** https://muhtar-defteri.com — a Cloudflare custom domain, reachable
+from Turkey. (Cloudflare's `*.workers.dev` / legacy `*.pages.dev` hostnames are
+SNI-blocked on some Turkish ISPs, which is why the custom domain is the public URL.)
 
 Full product context: [PRD.md](PRD.md) · Design system: [FRONTEND.md](FRONTEND.md) · Operating rules: [CLAUDE.md](CLAUDE.md)
 
@@ -39,22 +39,31 @@ Supabase setup (SQL editor, run as project owner):
 
 ## Build & deploy
 
+Hosted on **Cloudflare Workers** (Static Assets), app `muhtar-defteri`,
+git-connected to `github.com/m1erla/muhtar-defteri`. Deploy config lives in
+[wrangler.jsonc](wrangler.jsonc) (`assets.directory` = `dist`).
+
+- **Canonical deploy: push to `main`.** Cloudflare's Workers Builds integration
+  builds the web export and deploys automatically. The Supabase credentials come
+  from the Worker's build environment variables (`EXPO_PUBLIC_SUPABASE_URL`,
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY`) — they must stay set there or a CI build ships
+  keyless (blank map + a "database not set up" notice).
+- **Manual override (emergency):** `npm run deploy` — runs `npm run build:web`
+  (which uses `--clear`, so it picks up your current `.env`) and uploads `dist/`
+  via `wrangler deploy`.
+
 ```sh
-npm run build:web   # expo export + copies +not-found.html to 404.html for Cloudflare
-npm run deploy      # build + upload dist/ to Cloudflare Pages (needs `npx wrangler login` once)
+npm run build:web   # local check: expo export --clear + copies +not-found.html to 404.html
 ```
 
-Hosted on Cloudflare Pages (project `dijital-muhtar`). Clean URLs (`/home` →
-`home.html`) are native Pages behavior. The 404.html copy step matters: without
-it, Pages treats the site as an SPA and serves unknown paths as 200s.
+Clean URLs (`/home` → `/home.html`) are automatic in Workers Static Assets. Unknown
+paths serve the branded `dist/404.html` with a real 404 status (not an SPA 200) —
+this is why `wrangler.jsonc` sets `assets.not_found_handling` to `"404-page"` and
+`build:web` copies `+not-found.html` → `404.html`.
 
-> The Cloudflare/Vercel project slugs and `*.pages.dev` URL still read
-> `dijital-muhtar`. That's a **legacy identifier kept on purpose** after the
-> product was renamed to Mahalle Defteri — renaming the project would change the
-> live URL. The user-facing brand comes from the app itself and the custom
-> domain (pending); the slug is invisible to users.
+> **Note on the legacy `*.pages.dev` / `*.workers.dev` slugs.** The old
+> `dijital-muhtar.pages.dev` name and the Worker's `*.workers.dev` route are both
+> SNI-blocked on Turkish ISPs and are not the public URL — **muhtar-defteri.com**
+> is. Users never see either slug.
 
-`vercel.json` exists only for the interim Vercel fallback (reachable from
-Turkish networks while `*.pages.dev` is ISP-blocked): refresh it with
-`npx -y vercel@48.0.0 deploy --prod --yes`. Delete the file and the Vercel
-project once the custom domain is live.
+Vercel is retired — Cloudflare is the sole host.

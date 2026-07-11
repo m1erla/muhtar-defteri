@@ -7,9 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mahalledefteri",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#EDE6D8",

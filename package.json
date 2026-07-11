@@ -42,7 +42,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web --clear && node -e \"require('fs').copyFileSync('dist/+not-found.html','dist/404.html')\"",
-    "deploy": "npx expo export -p web && wrangler deploy",
+    "deploy": "npm run build:web && wrangler deploy",
     "lint": "expo lint",
     "preview": "npx expo export -p web && wrangler dev"
   },

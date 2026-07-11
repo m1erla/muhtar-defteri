@@ -20,19 +20,28 @@ export default function Root({ children }: PropsWithChildren) {
         />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
+        <meta property="og:url" content="https://muhtar-defteri.com/" />
         <meta property="og:title" content="Mahalle Defteri" />
         <meta
           property="og:description"
           content="Adana'daki yerel bir sorunu doğru resmi kanala yönlendirir; istersen mahallenin açık kaydına eklersin. Resmi bir kanal değil."
         />
-        <meta property="og:image" content="/og-image.png" />
+        {/* Absolute URL: WhatsApp/Facebook crawlers frequently fail to resolve a
+            root-relative og:image. */}
+        <meta property="og:image" content="https://muhtar-defteri.com/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Mahalle Defteri" />
-        <meta name="twitter:image" content="/og-image.png" />
+        <meta name="twitter:image" content="https://muhtar-defteri.com/og-image.png" />
 
         {/* Branded stamp mark — SVG for crisp tabs, PNG for iOS home-screen. */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        {/* Branded standalone launch when a resident adds the site to their home
+            screen (the app is pitched as install-free but home-screen-friendly). */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Mahalle Defteri" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
         <ScrollViewStyleReset />
       </head>

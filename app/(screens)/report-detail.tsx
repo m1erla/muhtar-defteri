@@ -128,6 +128,7 @@ export default function ReportDetail() {
                 source={{ uri: ready.report.photo_url }}
                 style={styles.photo}
                 contentFit="cover"
+                accessibilityLabel="Bildirilen sorunun fotoğrafı"
               />
             ) : null}
 

@@ -52,13 +52,21 @@ supabase/
 ```
 npx expo start --web    # local dev
 npm run build:web       # production web build (expo export --clear + 404.html copy)
-npm run deploy          # build:web + wrangler pages deploy to Cloudflare
+npm run deploy          # manual override: build:web + wrangler deploy (Workers)
 ```
 
-`build:web` runs `--clear` on purpose: Metro caches inlined `EXPO_PUBLIC_*` env
-values, so an `.env` change without it ships stale credentials. Deploy from the
-repo root, never a prebuilt `dist/` folder. Live on Cloudflare Pages; a Vercel
-fallback stays up because `*.pages.dev` is ISP-blocked on some Turkish networks.
+**Deploy is git-connected CI on Cloudflare Workers** (Static Assets, not Pages — the
+repo was converted by Cloudflare's `workers-autoconfig` PR; config in `wrangler.jsonc`,
+`assets.directory` = `dist`). The `muhtar-defteri` Worker builds from
+`github.com/m1erla/muhtar-defteri` on every push to `main`, so **`git push` is the
+canonical deploy**; `npm run deploy` is a manual fallback. The CI build reads the
+Supabase creds from the Worker's build env vars (they must stay set, or CI ships a
+keyless build). `build:web` runs `--clear` on purpose: Metro caches inlined
+`EXPO_PUBLIC_*` values, so an `.env` change without it ships stale credentials.
+Unknown paths serve the branded `404.html` (`not_found_handling: "404-page"`), not an
+SPA 200. Live at **muhtar-defteri.com**; the `*.workers.dev`/legacy `*.pages.dev`
+hostnames are ISP-blocked on some Turkish networks (hence the custom domain). Vercel
+is retired.
 
 ## Data model
 
