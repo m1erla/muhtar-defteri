@@ -15,7 +15,7 @@
 
 create table if not exists channels (
   id uuid primary key default gen_random_uuid(),
-  category text not null,        -- 'cleanliness' | 'parking' | 'infrastructure' | 'school_safety'
+  category text not null,        -- see reports_category_check below for the slug list
   name text not null,
   scope text not null,           -- 'national' | 'adana'
   description text,
@@ -53,7 +53,11 @@ create table if not exists confirmations (
 
 alter table reports drop constraint if exists reports_category_check;
 alter table reports add constraint reports_category_check
-  check (category in ('cleanliness', 'parking', 'infrastructure', 'school_safety'));
+  check (category in (
+    'cleanliness', 'parking', 'infrastructure', 'school_safety',
+    -- extended 2026-07-11 (lib/categories.ts is the UI-side mirror):
+    'street_lighting', 'water_sewage', 'stray_animals', 'noise'
+  ));
 
 alter table reports drop constraint if exists reports_status_check;
 alter table reports add constraint reports_status_check

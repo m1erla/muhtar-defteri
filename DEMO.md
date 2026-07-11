@@ -74,8 +74,8 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
   "Nasıl çalışır?" rehber ekranının en başında "nedir, ne değildir" duruyor,
   SSS'nin ilk sorusu da bu.
 - **"Veriler nasıl doğrulanıyor / kötüye kullanım?"** → Kanal listesi resmi
-  kaynaklardan doğrulandı (adana.bel.tr, cimer.gov.tr, alo181.gov.tr,
-  ihbar.ng112.gov.tr). Kayıtlar topluluktan; durum/tarih sunucuda sabit,
+  kaynaklardan doğrulandı (adana.bel.tr, adana-aski.gov.tr, toroslaredas.com.tr,
+  cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan; durum/tarih sunucuda sabit,
   kullanıcı değiştiremiyor (veri tabanı kuralları), aynı kişi bir kaydı bir kez
   doğrulayabiliyor.
 - **"Gizlilik?"** → Hesap yok; anonim cihaz kimliği; yalnızca yaklaşık konum

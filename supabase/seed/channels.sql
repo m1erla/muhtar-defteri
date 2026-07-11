@@ -12,6 +12,15 @@
 --   CİMER:     https://www.cimer.gov.tr (e-Devlet girişi zorunlu, günde 1 başvuru,
 --              telefonla ALO 150)
 --
+-- Verified 2026-07-11 (category extension):
+--   ASKİ 185:  https://www.adana-aski.gov.tr/web/sssorular.aspx — "185 (ASKOM)"
+--              7/24, alternatif 444 27 54; su ve kanal arızaları online sistemle
+--              ilgili müdürlüğe iletiliyor.
+--   Toroslar EDAŞ 186: https://www.toroslaredas.com.tr/sss/elektrik-kesintisi —
+--              "Aydınlatma arıza ihbarınızı ... 186 numaralı Çağrı Merkezimizden";
+--              Adana hizmet bölgesinde. Çevrimiçi arıza formu:
+--              https://online.toroslaredas.com.tr/ariza-bildir
+--
 -- Re-verify before launch: ALO 153 WhatsApp numarası resmi sayfada duruyor ama sayfa
 -- içeriği eski — canlı bir test mesajıyla doğrula. "153" kısa kodu şehir içi kullanım
 -- içindir; santral 0322 455 35 00.
@@ -99,4 +108,62 @@ insert into channels (category, name, scope, description, contact_phone, contact
  'Okul çevresi güvenliğiyle ilgili kalıcı talepler için resmi başvuru yolu — ilgili kuruma (belediye, emniyet, MEB) yönlendirilir.',
  '150', 'https://www.cimer.gov.tr',
  array['e-Devlet şifresi (web başvurusu için)', 'Okulun adı, sorunun açıklaması ve konumu'],
- 'Web başvurusu e-Devlet girişi ister; telefonla ALO 150 da kullanılabilir. Günde en fazla 1 başvuru.');
+ 'Web başvurusu e-Devlet girişi ister; telefonla ALO 150 da kullanılabilir. Günde en fazla 1 başvuru.'),
+
+-- ── Sokak Aydınlatması ─────────────────────────────────────────────────────────
+('street_lighting', 'Toroslar EDAŞ 186 Arıza Hattı', 'adana',
+ 'Yanmayan ya da arızalı sokak lambaları için elektrik dağıtım şirketinin arıza hattı. Adana''da genel aydınlatma Toroslar EDAŞ''ın sorumluluğunda.',
+ '186', 'https://online.toroslaredas.com.tr/ariza-bildir',
+ array['Adres veya direğin konumu', 'Arızanın kısa tarifi (yanmıyor / gündüz yanıyor / yanıp sönüyor)'],
+ 'Çevrimiçi arıza formu ve Mobil 186 uygulaması da var (toroslaredas.com.tr, Tem 2026). Park içi aydınlatma belediyenin — emin değilsen ALO 153''ü de dene.'),
+
+('street_lighting', 'ALO 153 Çağrı Merkezi (Adana Büyükşehir)', 'adana',
+ 'Park, meydan ve belediyeye ait alanlardaki aydınlatma sorunları için belediye hattı; talebi doğru birime yönlendirir.',
+ '153', 'https://www.adana.bel.tr/tr/birim-detay/48',
+ array['Adres veya konum tarifi', 'Sorunun kısa tarifi', 'Fotoğraf (WhatsApp ihbarı için)'],
+ 'WhatsApp ihbar hattı: 0535 454 01 01 (adana.bel.tr''de listeli, Tem 2026). Cevap standardı 15 iş günü (çapraz birimde 30 iş günü).'),
+
+('street_lighting', 'CİMER (Cumhurbaşkanlığı İletişim Merkezi)', 'national',
+ 'Aydınlatma talebin sonuçsuz kalırsa üst başvuru yolu — ilgili kuruma resmi kayıtla iletilir.',
+ '150', 'https://www.cimer.gov.tr',
+ array['e-Devlet şifresi (web başvurusu için)', 'Sorunun açıklaması ve konumu'],
+ 'Web başvurusu e-Devlet girişi ister; telefonla ALO 150 da kullanılabilir. Günde en fazla 1 başvuru.'),
+
+-- ── Su / Kanalizasyon ──────────────────────────────────────────────────────────
+('water_sewage', 'ASKİ Alo 185 (Su ve Kanal Arıza)', 'adana',
+ 'Patlak boru, su kesintisi, kanalizasyon taşması için ASKİ''nin 7/24 arıza hattı (ASKOM).',
+ '185', 'https://www.adana-aski.gov.tr',
+ array['Adres veya konum tarifi', 'Arızanın kısa tarifi'],
+ 'Alternatif numara: 444 27 54. Bildirilen arızalar online sistemle ilgili müdürlüğe anında iletiliyor (adana-aski.gov.tr, Tem 2026).'),
+
+('water_sewage', 'CİMER (Cumhurbaşkanlığı İletişim Merkezi)', 'national',
+ 'Su ve kanalizasyon başvurun sonuçsuz kalırsa üst başvuru yolu — ilgili kuruma resmi kayıtla iletilir.',
+ '150', 'https://www.cimer.gov.tr',
+ array['e-Devlet şifresi (web başvurusu için)', 'Sorunun açıklaması ve konumu'],
+ 'Web başvurusu e-Devlet girişi ister; telefonla ALO 150 da kullanılabilir. Günde en fazla 1 başvuru.'),
+
+-- ── Sokak Hayvanları ───────────────────────────────────────────────────────────
+('stray_animals', 'ALO 153 Çağrı Merkezi (Adana Büyükşehir)', 'adana',
+ 'Yaralı ya da tehlikedeki sokak hayvanları için belediyenin çağrı merkezi — veteriner işlerine yönlendirir.',
+ '153', 'https://www.adana.bel.tr/tr/birim-detay/48',
+ array['Konum tarifi', 'Hayvanın durumu (yaralı / agresif / yavru)', 'Fotoğraf (WhatsApp ihbarı için)'],
+ 'WhatsApp ihbar hattı: 0535 454 01 01 (adana.bel.tr''de listeli, Tem 2026). Hayvana kötü muamele suçtur — o an süren bir duruma tanıksan 112''yi ara.'),
+
+('stray_animals', 'CİMER (Cumhurbaşkanlığı İletişim Merkezi)', 'national',
+ 'Kısırlaştırma, barınak ve kalıcı sokak hayvanı sorunları için resmi başvuru yolu — ilgili kuruma yönlendirilir.',
+ '150', 'https://www.cimer.gov.tr',
+ array['e-Devlet şifresi (web başvurusu için)', 'Sorunun açıklaması ve konumu'],
+ 'Web başvurusu e-Devlet girişi ister; telefonla ALO 150 da kullanılabilir. Günde en fazla 1 başvuru.'),
+
+-- ── Gürültü ────────────────────────────────────────────────────────────────────
+('noise', 'ALO 153 / Zabıta (Adana Büyükşehir)', 'adana',
+ 'İşyeri, eğlence mekanı ve inşaat gürültüsü gibi zabıta konuları için belediyenin çağrı merkezi.',
+ '153', 'https://www.adana.bel.tr/tr/birim-detay/48',
+ array['Adres veya konum tarifi', 'Gürültünün kaynağı ve saatleri'],
+ 'WhatsApp ihbar hattı: 0535 454 01 01 (adana.bel.tr''de listeli, Tem 2026). Gece devam eden, asayiş boyutuna varan durumlar için 112.'),
+
+('noise', 'Alo 181 (Çevre, Şehircilik ve İklim Değişikliği Bakanlığı)', 'national',
+ 'Sanayi ve şantiye gibi çevresel gürültü kaynakları için bakanlık hattı. 7/24.',
+ '181', 'https://alo181.gov.tr',
+ array['Konum tarifi', 'Gürültünün kaynağı', 'Web formu için TC kimlik no'],
+ 'Arama ücretlidir (acil numara değildir). WhatsApp: 0532 010 11 81 (resmi sitede listeli).');

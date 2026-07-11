@@ -42,7 +42,10 @@ export default function HowItWorks() {
         <Text style={styles.subheading} accessibilityRole="header">
           Üç adımda kullan
         </Text>
-        <Step n="1">Sorunun türünü seç — çöp, hatalı park, kaldırım, okul çevresi.</Step>
+        <Step n="1">
+          Sorunun türünü seç — çöp, hatalı park, kaldırım, aydınlatma, su arızası, gürültü ve daha
+          fazlası.
+        </Step>
         <Step n="2">İstersen fotoğraf ve konum ekle. Hiçbiri zorunlu değil.</Step>
         <Step n="3">
           Doğru resmi kanalı gör: numarayı tek dokunuşla ara ya da formu aç. İstersen sorunu
@@ -105,8 +108,9 @@ export default function HowItWorks() {
           </Disclosure>
           <Disclosure title="Kayıtlar güvenilir mi? Kötüye kullanılamaz mı?">
             <Text style={styles.body}>
-              Kanal listesi resmi kaynaklardan doğrulandı (adana.bel.tr, cimer.gov.tr,
-              alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan gelir; tarih ve durum
+              Kanal listesi resmi kaynaklardan doğrulandı (adana.bel.tr, adana-aski.gov.tr,
+              toroslaredas.com.tr, cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar
+              topluluktan gelir; tarih ve durum
               bilgisini sunucu tutar, kimse elle değiştiremez. Aynı kişi bir kaydı yalnızca bir kez
               doğrulayabilir.
             </Text>
@@ -201,9 +205,9 @@ export default function HowItWorks() {
           Yönlendirdiği kanallar
         </Text>
         <Text style={styles.body}>
-          ALO 153 (Adana Büyükşehir Çağrı Merkezi), Adana e-Belediye şikayet formu, 112 Acil Çağrı
-          Merkezi ve 112 Online İhbar, Alo 181 (Çevre Bakanlığı) ve CİMER. Bu kanalların hiçbiriyle
-          resmi bir bağı yoktur; yalnızca doğru kapıyı gösterir.
+          ALO 153 (Adana Büyükşehir Çağrı Merkezi), Adana e-Belediye şikayet formu, ASKİ Alo 185,
+          Toroslar EDAŞ 186, 112 Acil Çağrı Merkezi ve 112 Online İhbar, Alo 181 (Çevre Bakanlığı)
+          ve CİMER. Bu kanalların hiçbiriyle resmi bir bağı yoktur; yalnızca doğru kapıyı gösterir.
         </Text>
       </ScrollView>
     </>

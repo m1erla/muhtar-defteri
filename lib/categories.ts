@@ -7,6 +7,10 @@ export const CATEGORIES = [
   { slug: 'parking', label: 'Hatalı Park' },
   { slug: 'infrastructure', label: 'Kaldırım / Altyapı' },
   { slug: 'school_safety', label: 'Okul Çevresi Güvenliği' },
+  { slug: 'street_lighting', label: 'Sokak Aydınlatması' },
+  { slug: 'water_sewage', label: 'Su / Kanalizasyon' },
+  { slug: 'stray_animals', label: 'Sokak Hayvanları' },
+  { slug: 'noise', label: 'Gürültü' },
 ] as const;
 
 export type CategorySlug = (typeof CATEGORIES)[number]['slug'];

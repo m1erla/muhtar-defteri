@@ -67,7 +67,7 @@ No persona requires technical sophistication. Copy and interaction design should
 | Screen | Requirements |
 |---|---|
 | **Home** | Primary CTA to start a report. Preview list of the most recent community reports (read-only, no auth needed to view). Adana-only, so no location gate — "nearby" would add landing-screen geolocation friction against the scored first load. |
-| **Report — category** | Four tappable categories: cleanliness, parking, infrastructure, school-zone safety. This is the primary classification mechanism — reliable and instant, not dependent on AI inference. |
+| **Report — category** | Eight tappable categories: cleanliness, parking, infrastructure, school-zone safety, street lighting, water/sewage, stray animals, noise (extended from the original four on 2026-07-11; lighting routes to Toroslar EDAŞ 186 and water/sewage to ASKİ 185, both verified against official sources — see supabase/seed/channels.sql header). This is the primary classification mechanism — reliable and instant, not dependent on AI inference. |
 | **Report — details** | Optional free-text description, optional photo upload, location (auto-detected via browser geolocation, manually adjustable pin). |
 | **Routing result** | Shows the matched channel(s) from the `channels` table: name, phone, URL, and a required-info checklist. Includes a one-tap copy of the key details. |
 | **Add to map (opt-in)** | A clearly separate, optional step. Confirms the same report also gets written to the public `reports` table. Not bundled silently into the routing flow. |
@@ -90,7 +90,7 @@ Three tables, no auth required. Core DDL below; `supabase/schema.sql` is the aut
 ```sql
 create table channels (
   id uuid primary key default gen_random_uuid(),
-  category text not null,        -- 'cleanliness' | 'parking' | 'infrastructure' | 'school_safety'
+  category text not null,        -- see reports_category_check in schema.sql for the slug list (8 as of 2026-07-11)
   name text not null,
   scope text not null,           -- 'national' | 'adana'
   description text,

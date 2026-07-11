@@ -29,7 +29,7 @@ Spend the visual personality there, on the ledger rows, and keep every other scr
 
 1. **Home** — Petrol CTA button reading "Bir Sorun Bildir" front and center. Below it, a compact preview list of 3–4 recent nearby reports styled as ledger rows, under a header reading "Yakınında son bildirilenler."
 
-2. **Report — category** — Header "Ne tür bir sorun?" Four large tap targets (roughly square, icon plus label, minimum 64px tall): "Temizlik / Çöp," "Hatalı Park," "Kaldırım / Altyapı," "Okul Çevresi Güvenliği."
+2. **Report — category** — Header "Ne tür bir sorun?" Eight large tap targets (icon plus label, minimum 64px tall): "Temizlik / Çöp," "Hatalı Park," "Kaldırım / Altyapı," "Okul Çevresi Güvenliği," "Sokak Aydınlatması," "Su / Kanalizasyon," "Sokak Hayvanları," "Gürültü."
 
 3. **Report — details** — Header "Detayları ekle (opsiyonel)." An optional text area placeholder "Kısaca anlat...", a photo-add button labeled "Fotoğraf Ekle," a small map preview with a draggable pin and the caption "Pini sürükleyerek düzeltebilirsin," and a primary button "Devam Et."
 
