@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import Icon from '@/components/icon';
+import CategoryMark from '@/components/category-mark';
 import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
@@ -140,7 +140,11 @@ export default function ReportDetail() {
           <>
             <View style={styles.headerRow}>
               <StatusStamp status={ready.report.status} size="large" />
-              <Icon name={getCategory(ready.report.category)?.slug ?? 'pin'} size={24} />
+              <CategoryMark
+                slug={getCategory(ready.report.category)?.slug ?? 'pin'}
+                size={40}
+                iconSize={24}
+              />
               <Text style={styles.category}>{getCategory(ready.report.category)?.label}</Text>
             </View>
 

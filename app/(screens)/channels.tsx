@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import Icon from '@/components/icon';
+import CategoryMark from '@/components/category-mark';
 import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES } from '@/lib/categories';
 import { fetchChannels, openContactUrl, type Channel } from '@/lib/channels';
@@ -76,7 +76,7 @@ export default function ChannelDirectory() {
               return (
                 <View key={c.slug} style={styles.group}>
                   <View style={styles.groupHeader}>
-                    <Icon name={c.slug} size={24} />
+                    <CategoryMark slug={c.slug} size={40} iconSize={24} />
                     <Text style={styles.groupTitle} accessibilityRole="header">
                       {c.label}
                     </Text>

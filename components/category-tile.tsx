@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import Icon from '@/components/icon';
+import CategoryMark from '@/components/category-mark';
 import type { CategorySlug } from '@/lib/categories';
 import { colors, fonts } from '@/lib/theme';
 
@@ -23,7 +23,7 @@ export default function CategoryTile({ label, slug, onPress }: Props) {
     >
       {({ pressed }) => (
         <>
-          <Icon name={slug} size={38} tone={pressed ? 'paper' : 'ink'} />
+          <CategoryMark slug={slug} size={52} pressed={pressed} />
           <Text style={[styles.label, pressed && styles.labelPressed]}>{label}</Text>
         </>
       )}

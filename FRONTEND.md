@@ -18,6 +18,19 @@ The obvious reference for a civic app is generic trust-blue and a rounded sans-s
 | `terracotta` | `#BC5A3C` | status: open / needs attention — Adana brick and roof tile |
 | `moss` | `#5B7052` | status: resolved / handled |
 
+**Category accent tints** (added 2026-07-12) — a disciplined extension, NOT a
+free-for-all: one soft, paper-friendly tint per category, living as data on
+each entry in `lib/categories.ts` (never hardcoded in components). They fill the
+rounded icon container (`CategoryMark`) so the eight categories read as
+colour-*coded* and scannable — real Risograph work is vivid, so "colourful" and
+"on-brand" aren't in tension here. Rules that keep it calm: the icon stays `ink`
+on the tint (≈8.7:1, far past WCAG's 3:1 non-text bar), colour is never the sole
+cue (a label always sits beside the mark and the silhouettes differ), and the
+status colours (`terracotta`/`moss`) are reserved for status — a category never
+borrows them. Tints: cleanliness `#BFDCB0`, parking `#B4CFE6`, infrastructure
+`#F0C48C`, school_safety `#D3C3E6`, street_lighting `#E7DA7E`, water_sewage
+`#ADD8D2`, stray_animals `#DCC29E`, noise `#F0BAC2` (neutral fallback `#C9D6D3`).
+
 **Type:**
 - Numeric and "logged" moments — report counts, dates, IDs, the routing result's contact details — use a monospace face (`IBM Plex Mono` or system mono). This is the one place the ledger metaphor shows up in type, and it should feel deliberate, not decorative.
 - Everything else — body copy, buttons, headings — uses a warm humanist sans (`Work Sans` or similar). Legible first; this app needs to work for people who aren't comfortable with technology.
@@ -54,6 +67,7 @@ Matches `PRD.md` §8. Notes below are structural, not exhaustive specs.
 ## 3. Component conventions
 
 - **Category chip** — used in the picker and as filters. Icon + label, `petrol` fill when selected, `ink` outline when not.
+- **Category mark** (`components/category-mark.tsx`) — the one component for every category-icon appearance (picker tiles, ledger rows, Kanal Rehberi headers, report-detail header): the Riso icon inside a soft accent-tinted rounded container (per-category `tint`, hairline ink edge). Handles the pressed state (chip drops out, icon prints in `paper` tone on the petrol tile) and an unknown-slug fallback. Keeps the colour identity in one place.
 - **Icon set** (`components/icon.tsx`) — hand-drawn Riso-style marks (one per category + camera + pin), NOT emoji and not an icon library. Two "print layers" each: a petrol accent silhouette offset ~2px under wobbly ink linework (the misregistration of a real Riso print), authored as inline SVG data-URIs. The `paper` tone is a single-color print for petrol surfaces (pressed tiles). Icons are always decorative — a text label rides alongside, same rule as the stamp.
 - **Status stamp** — small circular mark, `terracotta` for open, `moss` for resolved. Always paired with a text label, never color alone.
 - **Ledger row** — the signature list treatment described in §1. One component, reused on Home's preview and the full map/list view.

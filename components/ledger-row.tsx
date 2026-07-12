@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import Icon from '@/components/icon';
+import CategoryMark from '@/components/category-mark';
 import StatusStamp from '@/components/status-stamp';
 import { getCategory } from '@/lib/categories';
 import { formatLedgerDate } from '@/lib/format';
@@ -32,7 +32,7 @@ export default function LedgerRow({
       accessibilityRole="button"
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
-      <Icon name={category?.slug ?? 'pin'} size={22} />
+      <CategoryMark slug={category?.slug ?? 'pin'} size={30} iconSize={20} />
       <Text style={styles.place} numberOfLines={1}>
         {report.neighborhood ?? 'Adana'}
       </Text>
