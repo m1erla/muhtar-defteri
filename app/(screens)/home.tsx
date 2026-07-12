@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
 import PrimaryButton from '@/components/primary-button';
-import { fetchReports } from '@/lib/reports';
+import { fetchReports, fetchReportStats } from '@/lib/reports';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
 
@@ -15,6 +15,13 @@ export default function Home() {
   // so a same-spot count computed over it would under-count and mislead — the
   // density signal lives on map-list, which loads the full set.
   const { state, reload } = useLoad(() => fetchReports({}, 4), [], {
+    refetchOnFocus: true,
+    keepDataWhileReloading: true,
+  });
+
+  // The ledger's running tally. Quietly absent while loading or on error —
+  // a stats line must never block or misrepresent the landing screen.
+  const { state: stats } = useLoad(fetchReportStats, [], {
     refetchOnFocus: true,
     keepDataWhileReloading: true,
   });
@@ -36,6 +43,12 @@ export default function Home() {
               Mahalle Kaydı →
             </Link>
           </View>
+
+          {stats.status === 'ready' && stats.data.total > 0 ? (
+            <Text style={styles.statsLine}>
+              Defterde {stats.data.total} kayıt · {stats.data.resolved} çözüldü ✓
+            </Text>
+          ) : null}
 
           {state.status === 'error' ? (
             // A failed load must not read as "no reports" — that would misrepresent
@@ -60,6 +73,9 @@ export default function Home() {
           ) : null}
         </View>
 
+        <Link href="/channels" style={styles.footerLink}>
+          Kanal Rehberi — tüm resmi hatlar
+        </Link>
         <Link href="/how-it-works" style={styles.footerLink}>
           Mahalle Defteri nedir, ne değildir?
         </Link>
@@ -109,6 +125,12 @@ const styles = StyleSheet.create({
     color: colors.petrol,
     paddingVertical: 14,
     minHeight: 44,
+  },
+  statsLine: {
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    color: colors.inkMuted,
+    marginBottom: 6,
   },
   ledgerFrame: {
     // Close the top of the ledger so the preview reads as a bounded page of

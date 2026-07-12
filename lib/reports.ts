@@ -42,6 +42,15 @@ export async function fetchReports(filters: ReportFilters = {}, limit = 100): Pr
   return (data ?? []) as Report[];
 }
 
+// Two head-only counts for Home's ledger stats line — no rows transferred.
+export async function fetchReportStats(): Promise<{ total: number; resolved: number }> {
+  const base = () => getSupabase().from('reports').select('*', { count: 'exact', head: true });
+  const [totalRes, resolvedRes] = await Promise.all([base(), base().eq('status', 'resolved')]);
+  if (totalRes.error) throw new Error(totalRes.error.message);
+  if (resolvedRes.error) throw new Error(resolvedRes.error.message);
+  return { total: totalRes.count ?? 0, resolved: resolvedRes.count ?? 0 };
+}
+
 export async function fetchReport(id: string): Promise<Report | null> {
   const { data, error } = await getSupabase()
     .from('reports')

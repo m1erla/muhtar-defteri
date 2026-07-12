@@ -71,6 +71,7 @@ No persona requires technical sophistication. Copy and interaction design should
 | **Report — details** | Optional free-text description, optional photo upload, location (auto-detected via browser geolocation, manually adjustable pin). |
 | **Routing result** | Shows the matched channel(s) from the `channels` table: name, phone, URL, and a required-info checklist. Includes a one-tap copy of the key details. |
 | **Add to map (opt-in)** | A clearly separate, optional step. Confirms the same report also gets written to the public `reports` table. Not bundled silently into the routing flow. |
+| **Channel directory (Kanal Rehberi)** | Browsable list of every verified channel grouped by category — "the phone list in the back of the ledger." Compact rows (name, scope, tap-to-call, URL); the rich card with the required-info checklist stays on the routing result. Added 2026-07-12. |
 | **Map / list view** | Public reports shown as a map (desktop/larger screens) or list (fallback and default on narrow viewports), filterable by category and status. Density of reports at the same rough location should be visually obvious. |
 | **Report detail** | Description, photo if present, first-reported date, confirmation count, and two actions: "I see this too" / "this got fixed" — both write to `confirmations`. |
 | **How it works** | States plainly: this is a community information and routing layer, not an official government channel, and doesn't guarantee any outcome. |

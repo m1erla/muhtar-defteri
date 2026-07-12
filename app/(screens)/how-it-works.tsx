@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -209,6 +209,9 @@ export default function HowItWorks() {
           Toroslar EDAŞ 186, 112 Acil Çağrı Merkezi ve 112 Online İhbar, Alo 181 (Çevre Bakanlığı)
           ve CİMER. Bu kanalların hiçbiriyle resmi bir bağı yoktur; yalnızca doğru kapıyı gösterir.
         </Text>
+        <Link href="/channels" style={styles.directoryLink}>
+          Kanal Rehberi'ni aç — tüm hatlar tek sayfada →
+        </Link>
       </ScrollView>
     </>
   );
@@ -292,5 +295,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink,
     lineHeight: 21,
+  },
+  directoryLink: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
+    paddingVertical: 12,
+    minHeight: 44,
   },
 });

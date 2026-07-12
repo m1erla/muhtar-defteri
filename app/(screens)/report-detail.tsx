@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import Icon from '@/components/icon';
 import LoadStateView from '@/components/load-state-view';
@@ -53,6 +53,31 @@ export default function ReportDetail() {
 
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [shared, setShared] = useState(false);
+
+  // Native share sheet where the browser has one (mobile — WhatsApp is the
+  // point); clipboard fallback elsewhere. Never throws: a dismissed sheet is
+  // not an error.
+  const shareReport = async (report: Report) => {
+    const label = getCategory(report.category)?.label ?? 'Kayıt';
+    const url = window.location.href;
+    const text = `${label} — ${report.neighborhood ?? 'Adana'} | Mahalle Defteri kaydı: ${url}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Mahalle Defteri', text, url });
+        return;
+      } catch {
+        return; // user dismissed the sheet — not an error, no fallback needed
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShared(true);
+      setTimeout(() => setShared(false), 2500);
+    } catch {
+      // Clipboard unavailable — the URL is already in the address bar.
+    }
+  };
 
   const confirm = async (type: ConfirmationType) => {
     if (state.status !== 'ready' || !state.data.report || confirming) return;
@@ -180,6 +205,19 @@ export default function ReportDetail() {
                 />
               </View>
             )}
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Bu kaydı paylaş"
+              onPress={() => {
+                if (ready?.report) shareReport(ready.report);
+              }}
+              style={styles.shareRow}
+            >
+              <Text style={styles.shareLink}>
+                {shared ? 'Bağlantı kopyalandı ✓' : 'Bu kaydı paylaş — komşuların da görsün'}
+              </Text>
+            </Pressable>
           </>
         ) : null}
       </ScrollView>
@@ -205,6 +243,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 8,
+  },
+  shareRow: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareLink: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
+    textAlign: 'center',
+    paddingVertical: 12,
   },
   category: {
     fontFamily: fonts.sansSemiBold,
