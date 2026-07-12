@@ -12,7 +12,7 @@ import { RAW } from '@/lib/theme';
 // Icons are always decorative here — a text label rides alongside every use
 // (same rule as StatusStamp: never meaning through the mark alone).
 
-export type IconName = CategorySlug | 'camera' | 'pin';
+export type IconName = CategorySlug | 'camera' | 'pin' | 'sun' | 'moon';
 type Tone = 'ink' | 'paper';
 
 type Palette = { s: string; a: string; f: string }; // stroke / accent / fill
@@ -122,6 +122,20 @@ const DRAW: Record<IconName, (p: Palette) => string> = {
       <circle cx="24" cy="19" r="4.6" fill="${a}" stroke="none"/>
       <path d="M24 28.5 C 23.8 32, 23.8 35, 24 38.5" stroke="${s}" stroke-width="2.6"/>
       <path d="M18 40.5 C 22 39.9, 26 39.9, 30 40.5" stroke="${s}" stroke-width="2"/>
+    </g>`,
+  // Theme toggle (utility icons — single tone, no accent). Sun = "switch to
+  // light"; moon = "switch to dark".
+  sun: ({ s }) => `
+    <g stroke="${s}" fill="none" stroke-linecap="round" stroke-width="2.6">
+      <circle cx="24" cy="24" r="7"/>
+      <path d="M24 8.5 v4.5 M24 35 v4.5 M8.5 24 h4.5 M35 24 h4.5
+               M13.1 13.1 l3.1 3.1 M31.8 31.8 l3.1 3.1
+               M34.9 13.1 l-3.1 3.1 M16.2 31.8 l-3.1 3.1"/>
+    </g>`,
+  moon: ({ s }) => `
+    <g fill="none">
+      <path d="M31.5 30.5 A 12 12 0 1 1 24 11.2 A 9 9 0 1 0 31.5 30.5 Z"
+            fill="${s}" stroke="${s}" stroke-width="1" stroke-linejoin="round"/>
     </g>`,
 };
 

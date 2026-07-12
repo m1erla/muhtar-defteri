@@ -10,6 +10,7 @@ import Head from 'expo-router/head';
 import { StyleSheet, Text, View } from 'react-native';
 
 import OutlineButton from '@/components/outline-button';
+import ThemeToggle from '@/components/theme-toggle';
 import { DisplaySettingsProvider } from '@/lib/display-settings';
 import { colors, fonts } from '@/lib/theme';
 
@@ -65,6 +66,7 @@ export default function RootLayout() {
           headerTintColor: colors.ink,
           headerTitleStyle: { color: colors.ink, fontFamily: fonts.sansSemiBold },
           contentStyle: { backgroundColor: colors.paper },
+          headerRight: () => <ThemeToggle />,
         }}
       />
     </DisplaySettingsProvider>
