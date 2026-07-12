@@ -37,7 +37,7 @@ Spend the visual personality there, on the ledger rows, and keep every other scr
 
 5. **Add to map** — Header "Haritaya eklemek ister misin?" Explainer text: "Fotoğrafın ve yaklaşık konumun herkese açık haritada görünür. Kişisel bilgin paylaşılmaz." Two buttons: primary "Evet, Ekle," secondary/text "Hayır, Geç."
 
-6. **Map / list view** — Header "Mahalle Kaydı." Filter chips along the top for the four categories plus "Açık" and "Çözüldü." Below, the ledger-row list is the default view on mobile; show a secondary wider-viewport version of this screen with an actual map (OpenStreetMap style, pins colored by category) alongside the list.
+6. **Map / list view** — Header "Mahalle Kaydı." Filter chips along the top for the eight categories plus "Açık" and "Çözüldü." Below, the ledger-row list is the default view on mobile; show a secondary wider-viewport version of this screen with an actual map (OpenStreetMap style, pins colored by category) alongside the list.
 
 7. **Report detail** — A stamp mark (terracotta for open, moss for resolved) with its text label, the description and photo if present, a line reading "İlk bildirilme: X gün önce" and "X kişi bunu doğruladı," and two outlined buttons: "Ben de Gördüm" and "Bu Düzeldi."
 

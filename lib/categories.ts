@@ -1,4 +1,4 @@
-// The four report categories — PRD §8. The tap-to-select picker is the primary
+// The eight report categories — PRD §8. The tap-to-select picker is the primary
 // classification mechanism; these slugs match the channels.category values in
 // supabase/schema.sql. Each category's visual mark is the hand-drawn Riso icon
 // of the same slug in components/icon.tsx.

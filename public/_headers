@@ -1,5 +1,7 @@
-# Cloudflare Pages headers. Content-hashed assets never change under a given
-# name, so cache them forever; keep HTML revalidating so deploys go live at once.
+# Cloudflare headers (honored by Workers Static Assets — verified live: hashed
+# assets return immutable, HTML must-revalidate). Content-hashed assets never
+# change under a given name, so cache them forever; keep HTML revalidating so
+# deploys go live at once.
 /_expo/static/*
   Cache-Control: public, max-age=31536000, immutable
 
