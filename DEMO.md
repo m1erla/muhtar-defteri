@@ -76,12 +76,14 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
 - **"Veriler nasıl doğrulanıyor / kötüye kullanım?"** → Kanal listesi resmi
   kaynaklardan doğrulandı (adana.bel.tr, adana-aski.gov.tr, toroslaredas.com.tr,
   cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan; kurallar
-  veri tabanında zorlanıyor: durum/tarih sunucuda sabit, aynı kişi bir kaydı bir
-  kez doğrulayabiliyor, aynı cihazdan sel gibi kayıt/doğrulama gönderilemiyor
-  (hız limitleri), birebir aynı kayıt tekrar eklenemiyor, "çözüldü" işareti
-  ancak bir çözüldü doğrulaması varsa düşüyor, konum Adana dışıysa ve açıklamada
-  link varsa kayıt reddediliyor. Farklı kişilerin aynı sorunu bildirmesi ise
-  engellenmiyor — o zaten ⟳ tekrar sinyalinin kendisi.
+  veri tabanında zorlanıyor: tarih sunucuda sabit, aynı cihaz bir kaydı bir kez
+  doğrulayabiliyor, cihaz başına hız limitleri var, art arda birebir aynı kayıt
+  eklenemiyor, "çözüldü" işareti ancak bir çözüldü doğrulaması varsa düşüyor,
+  konum Adana dışıysa ve açıklamada link varsa kayıt reddediliyor. (Dürüst
+  sınır: hesap olmadığı için bunlar cihaz-bazlı önlemler — kararlı bir
+  saldırgana karşı mutlak değil; kötüye kullanımda kayıtları temizleme araçları
+  bende.) Farklı kişilerin aynı sorunu bildirmesi ise engellenmiyor — o zaten
+  ⟳ tekrar sinyalinin kendisi.
 - **"Gizlilik?"** → Hesap yok; anonim cihaz kimliği; yalnızca yaklaşık konum
   (~110 m) ve senin paylaştığın bilgi herkese açık.
 - **"Ölçeklenir mi?"** → Ağır harita kümeleme yok; mahalle/kaba konumla

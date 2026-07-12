@@ -20,11 +20,10 @@ export default function Home() {
   });
 
   // The ledger's running tally. Quietly absent while loading or on error —
-  // a stats line must never block or misrepresent the landing screen.
-  const { state: stats } = useLoad(fetchReportStats, [], {
-    refetchOnFocus: true,
-    keepDataWhileReloading: true,
-  });
+  // a stats line must never block or misrepresent the landing screen. Fetched
+  // once per mount, not per focus: it's decorative, and the landing screen's
+  // focus refetch budget (a scored criterion) belongs to the ledger rows.
+  const { state: stats } = useLoad(fetchReportStats, []);
 
   return (
     <>

@@ -1,6 +1,8 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
+import { colors } from '@/lib/theme';
+
 // Static HTML shell for the web export — this is what crawlers and the
 // pre-hydration browser tab see. Per-screen titles take over after hydration.
 export default function Root({ children }: PropsWithChildren) {
@@ -10,7 +12,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="theme-color" content="#EDE6D8" />
+        <meta name="theme-color" content={colors.paper} />
 
         {/* Static so crawlers and link-preview bots (WhatsApp is central to the
             flow) see a titled, described, branded card — not a bare URL. */}
@@ -20,7 +22,10 @@ export default function Root({ children }: PropsWithChildren) {
         />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="tr_TR" />
-        <meta property="og:url" content="https://muhtar-defteri.com/" />
+        {/* Deliberately NO og:url: this static head wraps every exported page,
+            so a root og:url would make crawlers (Facebook especially)
+            canonicalize shared /report-detail links back to the homepage. With
+            no og:url, crawlers fall back to the fetched URL. */}
         <meta property="og:title" content="Mahalle Defteri" />
         <meta
           property="og:description"
@@ -67,7 +72,7 @@ body::after {
   background-size: 160px 160px;
 }
 :focus-visible {
-  outline: 2px solid #1F5C5C;
+  outline: 2px solid ${colors.petrol};
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import Icon from '@/components/icon';
 import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES } from '@/lib/categories';
-import { fetchAllChannels, type Channel } from '@/lib/channels';
+import { fetchChannels, openContactUrl, type Channel } from '@/lib/channels';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
@@ -34,10 +34,7 @@ function ChannelRow({ channel }: { channel: Channel }) {
         <Pressable
           accessibilityRole="link"
           accessibilityLabel="Web sayfasını aç"
-          onPress={() => {
-            // Channel rows come from the DB — only ever open web URLs from them.
-            if (/^https?:\/\//.test(channel.contact_url!)) Linking.openURL(channel.contact_url!);
-          }}
+          onPress={() => openContactUrl(channel.contact_url!)}
         >
           <Text style={styles.contact}>🔗 {channel.contact_url.replace(/^https?:\/\//, '')}</Text>
         </Pressable>
@@ -47,7 +44,7 @@ function ChannelRow({ channel }: { channel: Channel }) {
 }
 
 export default function ChannelDirectory() {
-  const { state, reload } = useLoad(fetchAllChannels, []);
+  const { state, reload } = useLoad(() => fetchChannels(), []);
 
   return (
     <>

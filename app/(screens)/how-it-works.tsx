@@ -89,7 +89,7 @@ export default function HowItWorks() {
           Aynı noktadan üç kez bildirilmiş — tekrarlayan bir sorun.
         </LegendRow>
         <LegendRow mark={<Text style={styles.legendGlyph}>×2</Text>}>
-          İki kişi "Ben de Gördüm" diyerek kaydı doğrulamış.
+          İki kişi kaydı doğrulamış ("Ben de Gördüm" ya da "Bu Düzeldi").
         </LegendRow>
         <LegendRow mark={<Text style={styles.legendGlyphOverdue}>gecikmiş</Text>}>
           Belediyenin 15 iş günü yanıt süresi ölçütü aşılmış.
@@ -110,9 +110,10 @@ export default function HowItWorks() {
             <Text style={styles.body}>
               Kanal listesi resmi kaynaklardan doğrulandı (adana.bel.tr, adana-aski.gov.tr,
               toroslaredas.com.tr, cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar
-              topluluktan gelir; tarih ve durum
-              bilgisini sunucu tutar, kimse elle değiştiremez. Aynı kişi bir kaydı yalnızca bir kez
-              doğrulayabilir.
+              topluluktan gelir; tarih bilgisini sunucu belirler. Aynı cihaz bir kaydı bir kez
+              doğrulayabilir ve cihaz başına hız limitleri var. Hesap olmadığı için bu sınırlar
+              kesin bir kimlik garantisi değildir — kötüye kullanım fark edilirse kayıtlar site
+              yönetimi tarafından temizlenir.
             </Text>
           </Disclosure>
           <Disclosure title="Kimliğim görünür mü?">

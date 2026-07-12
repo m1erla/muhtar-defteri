@@ -29,17 +29,25 @@ function readConfig(): { url: string; anonKey: string } | null {
 export function friendlyDbError(err: unknown, fallback: string): string {
   if (err instanceof SupabaseConfigError) return 'Veritabanı bağlantısı henüz kurulmadı.';
   const msg = err instanceof Error ? err.message : '';
+  // Order matters: MDR_RATE_LIMIT_CONFIRM contains MDR_RATE_LIMIT as a prefix.
+  if (msg.includes('MDR_RATE_LIMIT_CONFIRM')) {
+    return 'Kısa sürede çok fazla doğrulama yapıldı. Biraz bekleyip tekrar dene.';
+  }
   if (msg.includes('MDR_RATE_LIMIT')) {
     return 'Bu cihazdan kısa sürede çok fazla kayıt gönderildi. Biraz bekleyip tekrar dene.';
   }
   if (msg.includes('MDR_DUPLICATE')) {
     return 'Bu kaydı kısa süre önce zaten eklemişsin. Sorun sürüyorsa kaydın sayfasından "Ben de Gördüm" diyebilirsin.';
   }
+  if (msg.includes('MDR_STATUS')) {
+    return 'Bu işlem yapılamadı — kaydın durumu bu şekilde değiştirilemiyor.';
+  }
   if (msg.includes('reports_description_no_links')) {
     return 'Açıklamaya internet bağlantısı (link) eklenemiyor — sorunu kendi cümlelerinle anlatman yeterli.';
   }
   if (msg.includes('reports_within_adana')) {
-    return 'Konum Adana sınırları dışında görünüyor — pini Adana içine taşıyıp tekrar dene.';
+    // Shown on add-to-map, which has no pin — point back to the details screen.
+    return 'Konum Adana sınırları dışında görünüyor. Detaylar ekranına dönüp pini Adana içine yerleştir.';
   }
   return fallback;
 }

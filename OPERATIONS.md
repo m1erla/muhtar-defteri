@@ -17,15 +17,39 @@ and everything judgment-based is yours via the SQL below. What the DB blocks
 automatically, per anonymous session:
 
 - **Report floods**: max 5 reports / 10 min, 15 / day (`MDR_RATE_LIMIT`).
-- **Double submits**: identical category+spot+description within 24h
-  (`MDR_DUPLICATE` — the app tells the user to confirm instead).
-- **Confirmation floods**: max 20 / hour, 60 / day — protects the ×N count.
+- **Double submits**: identical category+spot+description within 10 minutes
+  (`MDR_DUPLICATE` — the app tells the user to confirm instead). Deliberately
+  narrow: coords are ~110m-rounded and descriptions optional, so a wider
+  window would reject real, distinct reports.
+- **Confirmation floods**: max 20 / hour, 60 / day (`MDR_RATE_LIMIT_CONFIRM`)
+  — protects the ×N count.
 - **Fake resolving**: `status` can only flip open→resolved when a `resolved`
   confirmation row exists; no reopening via the API (`MDR_STATUS`).
-- **Out-of-Adana pins** (lat 35.5–38.7, lng 34.0–37.0) and **URLs in
-  descriptions** (spam vector) are rejected by check constraints.
+- **Out-of-Adana pins** (lat 35.5–38.7, lng 34.0–37.0) are rejected, and
+  descriptions containing **explicit URL prefixes** (`http(s)://`, `www.`) are
+  rejected — bare domains/shorteners ("bit.ly/x") pass and are yours to clean.
 - **Uploads**: storage bucket caps at 5 MB, jpeg/png/webp only; the map only
   renders `photo_url`s pointing at our own bucket.
+
+**Honest limit:** every per-session rule keys on the *client-generated*
+session id. That stops accidental misuse and lazy spam — the realistic threats
+at this scale — but a determined attacker rotating session ids per raw REST
+request bypasses the limits, can inflate ×N counts, and can even mass-resolve
+open reports (insert a `resolved` confirmation per report, then flip status;
+reopening via the API is blocked, so victims can't undo it). With no accounts
+there is nothing stronger to bind to; the backstop is you:
+
+```sql
+-- Undo a suspicious mass-resolve: reopen everything "resolved" after time T
+-- (owner bypasses the status trigger). Review before running broadly.
+update reports set status = 'open'
+where status = 'resolved' and id in (
+  select r.id from reports r
+  join confirmations c on c.report_id = r.id and c.type = 'resolved'
+  group by r.id
+  having min(c.created_at) > '2026-07-12T00:00:00Z'  -- attack window
+);
+```
 
 The app shows neutral Turkish messages for all of these (never "spam"/"fake" —
 see `friendlyDbError` in lib/supabase.ts). **Owner writes from the SQL editor

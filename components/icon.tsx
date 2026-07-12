@@ -153,11 +153,19 @@ export default function Icon({
   size?: number;
   tone?: Tone;
 }) {
+  // Fallback for names outside the compiled-in set: category strings ultimately
+  // originate in the DB, which can gain a slug before an app deploy ships.
+  const uris = URIS[name] ?? URIS.pin;
   return (
     <Image
-      source={{ uri: URIS[name][tone] }}
+      source={{ uri: uris[tone] }}
       style={{ width: size, height: size }}
       contentFit="contain"
+      // expo-image's web renderer maps accessibilityLabel -> alt and ignores
+      // `accessible`; the empty label renders alt="" — the decorative-image
+      // idiom — so screen readers skip the mark and read only the text label
+      // that always rides alongside.
+      accessibilityLabel=""
       accessible={false}
     />
   );

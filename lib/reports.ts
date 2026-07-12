@@ -194,16 +194,21 @@ export async function confirmReport(
   const inserted = !error;
   if (error && error.code !== UNIQUE_VIOLATION) throw new Error(error.message);
 
-  // "Bu düzeldi" flips the community-maintained status — but ONLY when this call
-  // actually recorded a resolved confirmation. If the insert was a duplicate
-  // (23505), a stale tab must not be able to force a resolve with no backing
-  // resolved row. supabase-js doesn't throw on DB errors, so check explicitly.
-  if (type === 'resolved' && inserted) {
+  // "Bu düzeldi" flips the community-maintained status. The DB's status guard
+  // (schema.sql reports_status_guard) enforces the real invariant — a resolve
+  // needs a backing 'resolved' confirmation row — so:
+  // - inserted: our own confirmation backs the flip; surface real failures.
+  // - 23505 duplicate: STILL attempt the update, quietly. This heals the
+  //   retry-after-partial-failure case (first attempt's insert committed but
+  //   the update never ran, leaving the report stuck open). If the earlier
+  //   confirmation wasn't 'resolved' (stale second tab), the DB rejects the
+  //   flip with MDR_STATUS and we swallow it — the caller reloads true state.
+  if (type === 'resolved') {
     const { error: updateError } = await getSupabase()
       .from('reports')
       .update({ status: 'resolved' })
       .eq('id', reportId);
-    if (updateError) throw new Error(updateError.message);
+    if (updateError && inserted) throw new Error(updateError.message);
   }
   return inserted;
 }

@@ -85,6 +85,14 @@ alter table confirmations add constraint confirmations_one_per_session
 -- writes (postgres role) skip the triggers, which is what keeps seeding and
 -- OPERATIONS.md moderation working. Guard failures raise 'MDR_*' messages that
 -- lib/supabase.ts friendlyDbError() maps to neutral Turkish copy.
+--
+-- HONEST LIMIT: everything below keys on the client-generated session_id.
+-- That stops accidental misuse and lazy spam (the realistic threats at this
+-- scale), NOT a determined attacker who rotates session ids per raw REST
+-- request — with no accounts there is no stronger identity to bind to. The
+-- backstop for that case is the owner's cleanup runbook (OPERATIONS.md), and
+-- user-facing copy must describe these limits as per-device/best-effort, never
+-- as per-person guarantees.
 
 create index if not exists reports_session_created_idx on reports (session_id, created_at);
 create index if not exists confirmations_session_created_idx on confirmations (session_id, created_at);
@@ -116,13 +124,17 @@ begin
         and created_at > now() - interval '24 hours') >= 15 then
     raise exception 'MDR_RATE_LIMIT: daily report limit reached for this session';
   end if;
+  -- Double-submit guard only: 10 minutes, not longer. Coordinates arrive
+  -- rounded to a ~110m cell and description is optional, so a wider window
+  -- would reject a resident reporting two DISTINCT same-category issues on
+  -- the same street the same day.
   if exists (select 1 from reports
       where session_id = new.session_id
         and category = new.category
         and latitude = new.latitude and longitude = new.longitude
         and coalesce(description, '') = coalesce(new.description, '')
-        and created_at > now() - interval '24 hours') then
-    raise exception 'MDR_DUPLICATE: identical report from this session within 24 hours';
+        and created_at > now() - interval '10 minutes') then
+    raise exception 'MDR_DUPLICATE: identical report from this session within 10 minutes';
   end if;
   return new;
 end $$;
@@ -139,15 +151,17 @@ begin
   if current_user not in ('anon', 'authenticated') then
     return new;
   end if;
+  -- Own code (not MDR_RATE_LIMIT): the client shows confirmation-specific
+  -- copy — the user was confirming, not submitting reports.
   if (select count(*) from confirmations
       where session_id = new.session_id
         and created_at > now() - interval '1 hour') >= 20 then
-    raise exception 'MDR_RATE_LIMIT: too many confirmations from this session in 1 hour';
+    raise exception 'MDR_RATE_LIMIT_CONFIRM: too many confirmations from this session in 1 hour';
   end if;
   if (select count(*) from confirmations
       where session_id = new.session_id
         and created_at > now() - interval '24 hours') >= 60 then
-    raise exception 'MDR_RATE_LIMIT: daily confirmation limit reached for this session';
+    raise exception 'MDR_RATE_LIMIT_CONFIRM: daily confirmation limit reached for this session';
   end if;
   return new;
 end $$;
@@ -159,8 +173,11 @@ create trigger confirmations_moderation
 
 -- Status transitions: the only community transition is open -> resolved, and it
 -- must be backed by at least one 'resolved' confirmation row (the app inserts
--- the confirmation first — lib/reports.ts confirmReport). Blocks raw-REST mass
--- "resolving" and reopening; the owner reopens via SQL (role-exempt).
+-- the confirmation first — lib/reports.ts confirmReport). Blocks reopening via
+-- the API and raises the cost of raw-REST "resolving" (a confirmation row must
+-- exist first — which the attacker CAN insert themselves, so this is friction,
+-- not a guarantee; see the HONEST LIMIT note above). Owner restores via SQL
+-- (role-exempt): update reports set status = 'open' where id = '<id>';
 create or replace function moderate_report_status_update() returns trigger
 language plpgsql as $$
 begin

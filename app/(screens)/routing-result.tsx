@@ -4,18 +4,11 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 
 import LoadStateView from '@/components/load-state-view';
 import { getCategory } from '@/lib/categories';
-import { fetchChannels, type Channel } from '@/lib/channels';
+import { fetchChannels, openContactUrl, type Channel } from '@/lib/channels';
 import { getDraft } from '@/lib/report-draft';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
-
-function openContactUrl(url: string) {
-  // Channel rows come from the DB — only ever open web URLs from them.
-  if (url.startsWith('https://') || url.startsWith('http://')) {
-    Linking.openURL(url);
-  }
-}
 
 function ChannelCard({ channel }: { channel: Channel }) {
   const [copied, setCopied] = useState(false);

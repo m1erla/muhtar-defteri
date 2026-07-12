@@ -66,8 +66,11 @@ export default function ReportDetail() {
       try {
         await navigator.share({ title: 'Mahalle Defteri', text, url });
         return;
-      } catch {
-        return; // user dismissed the sheet — not an error, no fallback needed
+      } catch (err) {
+        // AbortError = user dismissed the sheet — the outcome they chose.
+        // Anything else (share already in flight, permissions policy) falls
+        // through to the clipboard so the tap never does silently nothing.
+        if (err instanceof Error && err.name === 'AbortError') return;
       }
     }
     try {
