@@ -264,6 +264,87 @@ create policy "anyone can confirm a report once" on confirmations
 revoke insert, update, delete, truncate, references, trigger on confirmations from anon, authenticated;
 grant insert (report_id, type, session_id) on confirmations to anon, authenticated;
 
+-- ── Flags: user-reported problems with a report (2026-07-12) ─────────────────
+-- Anyone can flag a bad report (spam/offensive/wrong/personal-info/...) with a
+-- reason + optional note. Append-only like confirmations, but PRIVATE: flags
+-- are moderation signals, so there is NO public SELECT — only the owner reads
+-- and acts on them (OPERATIONS.md is the review queue). No AI, and flags NEVER
+-- auto-delete anything (many flags != proof of a violation); the owner decides.
+
+create table if not exists flags (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid not null references reports(id),
+  reason text not null,            -- see flags_reason_check
+  detail text,
+  status text not null default 'open',  -- 'open' | 'reviewed' | 'dismissed' (owner-managed)
+  session_id text not null,
+  created_at timestamptz default now()
+);
+
+alter table flags drop constraint if exists flags_reason_check;
+alter table flags add constraint flags_reason_check
+  check (reason in (
+    'spam', 'duplicate', 'wrong_info', 'wrong_location', 'wrong_category',
+    'offensive', 'personal_info', 'resolved', 'other'
+  ));
+
+alter table flags drop constraint if exists flags_status_check;
+alter table flags add constraint flags_status_check
+  check (status in ('open', 'reviewed', 'dismissed'));
+
+alter table flags drop constraint if exists flags_detail_len;
+alter table flags add constraint flags_detail_len
+  check (detail is null or char_length(detail) <= 500);
+
+alter table flags drop constraint if exists flags_detail_no_links;
+alter table flags add constraint flags_detail_no_links
+  check (detail is null or detail !~* '(https?://|www\.)');
+
+-- One flag per session per report (dedup; the app treats 23505 as "already
+-- flagged"). Independent sessions flagging the same report is a real signal.
+alter table flags drop constraint if exists flags_one_per_session;
+alter table flags add constraint flags_one_per_session unique (report_id, session_id);
+
+create index if not exists flags_session_created_idx on flags (session_id, created_at);
+create index if not exists flags_report_idx on flags (report_id, status);
+
+-- Per-session flood guard (deterministic; owner/SQL-editor writes skip it).
+create or replace function moderate_flag_insert() returns trigger
+language plpgsql as $$
+begin
+  if current_user not in ('anon', 'authenticated') then
+    return new;
+  end if;
+  if (select count(*) from flags
+      where session_id = new.session_id
+        and created_at > now() - interval '1 hour') >= 10 then
+    raise exception 'MDR_FLAG_RATE: too many flags from this session in 1 hour';
+  end if;
+  if (select count(*) from flags
+      where session_id = new.session_id
+        and created_at > now() - interval '24 hours') >= 30 then
+    raise exception 'MDR_FLAG_RATE: daily flag limit reached for this session';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists flags_moderation on flags;
+create trigger flags_moderation
+  before insert on flags
+  for each row execute function moderate_flag_insert();
+
+-- RLS: flags are private. Anon may INSERT only (scoped columns; status/id/
+-- created_at default server-side and can't be forged). No SELECT/UPDATE/DELETE
+-- for anon — only the owner (service role) reads and manages flags.
+alter table flags enable row level security;
+
+drop policy if exists "anyone can flag a report once" on flags;
+create policy "anyone can flag a report once" on flags
+  for insert to anon, authenticated with check (status = 'open');
+
+revoke insert, update, delete, truncate, references, trigger on flags from anon, authenticated;
+grant insert (report_id, reason, detail, session_id) on flags to anon, authenticated;
+
 -- ── Storage: report photos ───────────────────────────────────────────────────
 -- Public bucket (objects served by URL straight from the CDN), anonymous insert
 -- only. Capped at 5 MB and image types — anon can hit the storage API directly,

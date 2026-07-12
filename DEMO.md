@@ -83,7 +83,9 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
   sınır: hesap olmadığı için bunlar cihaz-bazlı önlemler — kararlı bir
   saldırgana karşı mutlak değil; kötüye kullanımda kayıtları temizleme araçları
   bende.) Farklı kişilerin aynı sorunu bildirmesi ise engellenmiyor — o zaten
-  ⟳ tekrar sinyalinin kendisi.
+  ⟳ tekrar sinyalinin kendisi. Ayrıca herkes bir kaydı "Bir sorun bildir" ile
+  (spam, uygunsuz, kişisel bilgi…) işaretleyebiliyor; bu bildirimler gizli
+  tutuluyor ve tek başına kaydı silmiyor — inceleyip karar veren yönetim.
 - **"Gizlilik?"** → Hesap yok; anonim cihaz kimliği; yalnızca yaklaşık konum
   (~110 m) ve senin paylaştığın bilgi herkese açık.
 - **"Ölçeklenir mi?"** → Ağır harita kümeleme yok; mahalle/kaba konumla

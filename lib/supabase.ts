@@ -42,7 +42,10 @@ export function friendlyDbError(err: unknown, fallback: string): string {
   if (msg.includes('MDR_STATUS')) {
     return 'Bu işlem yapılamadı — kaydın durumu bu şekilde değiştirilemiyor.';
   }
-  if (msg.includes('reports_description_no_links')) {
+  if (msg.includes('MDR_FLAG_RATE')) {
+    return 'Kısa sürede çok fazla bildirim gönderildi. Biraz bekleyip tekrar dene.';
+  }
+  if (msg.includes('flags_detail_no_links') || msg.includes('reports_description_no_links')) {
     return 'Açıklamaya internet bağlantısı (link) eklenemiyor — sorunu kendi cümlelerinle anlatman yeterli.';
   }
   if (msg.includes('reports_within_adana')) {

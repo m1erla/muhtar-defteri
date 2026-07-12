@@ -57,9 +57,46 @@ skip the triggers**, so seeding and the commands below always work. Independent
 reports of the same issue from *different* sessions are deliberately NOT
 blocked — that's the ⟳ repeat signal, the product's whole point.
 
+## Flags — the review queue
+
+Users can flag a bad report ("Bir sorun bildir" on the detail screen) with a
+reason + optional note. Flags are **private** (no public read) and land in the
+`flags` table; nothing is automatic — **you** are the review queue. A report is
+never auto-hidden because it got N flags (that can be coordinated abuse, or a
+real problem — you judge).
+
+**Open flags, most-flagged first, with the report they target:**
+```sql
+select r.id as report_id, r.category, r.neighborhood, left(r.description,60) as description,
+       count(*) filter (where f.status = 'open') as open_flags,
+       count(distinct f.session_id) as distinct_sources,
+       array_agg(distinct f.reason) as reasons
+from flags f join reports r on r.id = f.report_id
+where f.status = 'open'
+group by r.id order by open_flags desc;
+```
+`distinct_sources` matters: many flags from ONE session is weak (possible abuse);
+a few from DIFFERENT sessions is a stronger signal. Read the notes:
+```sql
+select reason, detail, session_id, created_at
+from flags where report_id = '<report-id>' order by created_at desc;
+```
+
+**Act on a flag** (all reversible — you decide, the DB never did):
+```sql
+-- Dismiss (no violation found): keep the report, close the flags.
+update flags set status = 'dismissed' where report_id = '<report-id>' and status = 'open';
+-- Confirmed problem: mark the flags reviewed, then act on the REPORT with the
+-- moderation commands below (strip photo / take down / resolve).
+update flags set status = 'reviewed' where report_id = '<report-id>' and status = 'open';
+```
+(Taking down / redacting the report itself uses the report commands below —
+flags are only the signal.)
+
 ## Moderation
 
-The community writes only two tables: `reports` and `confirmations`.
+The community writes only two tables directly editable by them: `reports` and
+`confirmations` (and append-only `flags`, above).
 Statuses are `'open' | 'resolved'`; confirmation types `'still_open' | 'resolved'`.
 
 **Inspect the newest reports:**

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CategoryMark from '@/components/category-mark';
+import FlagForm from '@/components/flag-form';
 import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
@@ -54,6 +55,7 @@ export default function ReportDetail() {
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [shared, setShared] = useState(false);
+  const [flagOpen, setFlagOpen] = useState(false);
 
   // Native share sheet where the browser has one (mobile — WhatsApp is the
   // point); clipboard fallback elsewhere. Never throws: a dismissed sheet is
@@ -225,6 +227,19 @@ export default function ReportDetail() {
                 {shared ? 'Bağlantı kopyalandı ✓' : 'Bu kaydı paylaş — komşuların da görsün'}
               </Text>
             </Pressable>
+
+            {flagOpen ? (
+              <FlagForm reportId={ready.report.id} onClose={() => setFlagOpen(false)} />
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Bu kayıtla ilgili bir sorun bildir"
+                onPress={() => setFlagOpen(true)}
+                style={styles.flagRow}
+              >
+                <Text style={styles.flagLink}>Bir sorun bildir</Text>
+              </Pressable>
+            )}
           </>
         ) : null}
       </ScrollView>
@@ -262,6 +277,18 @@ const styles = StyleSheet.create({
     color: colors.petrol,
     textAlign: 'center',
     paddingVertical: 12,
+  },
+  flagRow: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flagLink: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.inkMuted,
+    textAlign: 'center',
+    paddingVertical: 10,
   },
   category: {
     fontFamily: fonts.sansSemiBold,
