@@ -72,6 +72,7 @@ Matches `PRD.md` §8. Notes below are structural, not exhaustive specs.
 - **Status stamp** — small circular mark, `terracotta` for open, `moss` for resolved. Always paired with a text label, never color alone.
 - **Ledger row** — the signature list treatment described in §1. One component, reused on Home's preview and the full map/list view.
 - **Primary button** — `petrol` fill, `paper` text, full-width on mobile, standard width on larger viewports.
+- **Combobox** (`components/combobox.tsx`) — accessible searchable select: a labelled trigger expands to a Turkish-aware search field + filtered option-button list (type to filter, Enter selects first, Escape closes; every option a focusable button with selected state). Theme-token colours. Used for the Adana **district** selector on report-details — the non-map, keyboard/screen-reader way to set a report's location (picking a district jumps+zooms the map pin there via `lib/adana-districts.ts`). The hierarchy is Adana-scoped: province is always Adana, so it's district-level only; neighbourhood stays reverse-geocoded from the pin.
 - **Disclosure** — animation-free expand/collapse row (ledger-ruled bottom hairline, mono `+`/`−` mark in `petrol`). Used for the guide screen's FAQ/troubleshooting lists — the mobile-friendly form of "a table of guidance". Carries `aria-expanded` and a 48px header.
 - Keep the component set small. This app has roughly 8 screens and doesn't need a large shared library — resist building generic abstractions for one-off UI.
 

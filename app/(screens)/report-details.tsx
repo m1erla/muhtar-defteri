@@ -5,10 +5,12 @@ import { Redirect, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import Combobox from '@/components/combobox';
 import Icon from '@/components/icon';
 import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import PrimaryButton from '@/components/primary-button';
+import { ADANA_DISTRICTS, getDistrict } from '@/lib/adana-districts';
 import { useResolvedTheme } from '@/lib/display-settings';
 import { getDraft, updateDraft } from '@/lib/report-draft';
 import { colors, fonts } from '@/lib/theme';
@@ -33,6 +35,23 @@ export default function ReportDetails() {
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [district, setDistrict] = useState<string | null>(null);
+  // Bumping `focusKey` jumps+zooms the map to the current coords (district pick /
+  // geolocation) without a jump on every pin drag. `focusZoom` is the level.
+  const [focusKey, setFocusKey] = useState(0);
+  const [focusZoom, setFocusZoom] = useState(16);
+
+  // The non-map way to set location: pick a district and the map jumps to it.
+  // Accessible (keyboard/screen-reader) — the map is never the only path.
+  const pickDistrict = (slug: string) => {
+    const d = getDistrict(slug);
+    if (!d) return;
+    setDistrict(slug);
+    setCoords({ latitude: d.latitude, longitude: d.longitude });
+    setFocusZoom(d.zoom);
+    setFocusKey((k) => k + 1);
+    setLocationError(null);
+  };
 
   const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('LocationPickerMap');
 
@@ -69,6 +88,8 @@ export default function ReportDetails() {
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10_000)),
       ]);
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      setFocusZoom(16);
+      setFocusKey((k) => k + 1);
     } catch {
       setLocationError('Konum alınamadı. Pini elle sürükleyebilirsin.');
     } finally {
@@ -169,12 +190,25 @@ export default function ReportDetails() {
                 <Text style={styles.link}>{locating ? 'Konum aranıyor…' : 'Konumumu Bul'}</Text>
               </Pressable>
             </View>
+
+            {/* Non-map way to set location (accessibility): pick an Adana
+                district and the map jumps there; fine-tune with the pin. */}
+            <Combobox
+              label="İlçe seç"
+              placeholder="İlçe seç (Adana)"
+              value={district}
+              options={ADANA_DISTRICTS.map((d) => ({ value: d.slug, label: d.name }))}
+              onChange={pickDistrict}
+            />
+
             {locationError ? <Text style={styles.locationError}>{locationError}</Text> : null}
             <View style={styles.mapBox}>
               {MapView ? (
                 <MapView
                   latitude={pin.latitude}
                   longitude={pin.longitude}
+                  focusZoom={focusZoom}
+                  focusKey={focusKey}
                   onMove={(latitude: number, longitude: number) =>
                     setCoords({ latitude, longitude })
                   }
@@ -188,7 +222,7 @@ export default function ReportDetails() {
             <Text style={styles.mapHint}>
               {coords
                 ? 'Pini sürükleyerek düzeltebilirsin'
-                : 'Konum henüz ayarlanmadı — pini sürükle ya da "Konumumu Bul" de'}
+                : 'Konum henüz ayarlanmadı — ilçe seç, pini sürükle ya da "Konumumu Bul" de'}
             </Text>
           </>
         ) : null}

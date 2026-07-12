@@ -1,5 +1,5 @@
 import { divIcon, type Marker as LeafletMarker } from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -29,11 +29,31 @@ function dotIcon(color: string, sizePx: number) {
 
 const pickerIcon = dotIcon(colors.terracotta, 22);
 
-function RecenterOnChange({ latitude, longitude }: { latitude: number; longitude: number }) {
+// One controller for the picker map's view. A programmatic "jump" (district
+// select or geolocation) bumps `focusKey` and sets `focusZoom`; on that change
+// we recenter AND zoom to the area. A pin drag changes lat/lng WITHOUT bumping
+// focusKey, so we leave the view alone and never fight the user's drag. One
+// effect, no cross-effect race. setView (not flyTo) is instant — reduced-motion
+// safe by construction.
+function MapController({
+  latitude,
+  longitude,
+  focusZoom,
+  focusKey,
+}: {
+  latitude: number;
+  longitude: number;
+  focusZoom: number;
+  focusKey: number;
+}) {
   const map = useMap();
+  const lastFocus = useRef(0);
   useEffect(() => {
-    map.setView([latitude, longitude], map.getZoom());
-  }, [map, latitude, longitude]);
+    if (focusKey !== lastFocus.current) {
+      lastFocus.current = focusKey;
+      if (focusKey !== 0) map.setView([latitude, longitude], focusZoom);
+    }
+  }, [map, latitude, longitude, focusZoom, focusKey]);
   return null;
 }
 
@@ -41,10 +61,16 @@ export function LocationPickerMap({
   latitude,
   longitude,
   onMove,
+  focusZoom = 16,
+  focusKey = 0,
 }: {
   latitude: number;
   longitude: number;
   onMove: (latitude: number, longitude: number) => void;
+  // Bump `focusKey` (and optionally set `focusZoom`) to jump+zoom the view to
+  // the current lat/lng — used when a district is picked or geolocation lands.
+  focusZoom?: number;
+  focusKey?: number;
 }) {
   return (
     <MapContainer center={[latitude, longitude]} zoom={16} style={{ width: '100%', height: '100%' }}>
@@ -52,7 +78,12 @@ export function LocationPickerMap({
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
-      <RecenterOnChange latitude={latitude} longitude={longitude} />
+      <MapController
+        latitude={latitude}
+        longitude={longitude}
+        focusZoom={focusZoom}
+        focusKey={focusKey}
+      />
       <Marker
         position={[latitude, longitude]}
         icon={pickerIcon}
