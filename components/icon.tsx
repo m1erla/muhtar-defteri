@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 
 import type { CategorySlug } from '@/lib/categories';
-import { colors } from '@/lib/theme';
+import { RAW } from '@/lib/theme';
 
 // Hand-drawn Riso-style icon set (FRONTEND.md §1: the visual budget goes on
 // distinctive marks, not libraries). Each icon is two "print layers": a petrol
@@ -125,10 +125,13 @@ const DRAW: Record<IconName, (p: Palette) => string> = {
     </g>`,
 };
 
+// Concrete hex (RAW), not the CSS-var tokens: these strings are baked into
+// data: URIs that can't resolve `var()`. The `ink` tone sits on light surfaces
+// (the always-light category chip / light page); the `paper` tone is the light
+// line-art used on dark surfaces — a pressed petrol tile OR the dark-mode page.
 const PALETTES: Record<Tone, Palette> = {
-  ink: { s: colors.ink, a: colors.petrol, f: colors.paper },
-  // On petrol surfaces (pressed tiles): a single-color paper print, no fill.
-  paper: { s: colors.paper, a: colors.paper, f: 'none' },
+  ink: { s: RAW.ink, a: RAW.petrol, f: RAW.paper },
+  paper: { s: RAW.paper, a: RAW.paper, f: 'none' },
 };
 
 function toUri(name: IconName, tone: Tone): string {

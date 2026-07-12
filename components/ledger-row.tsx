@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.ink,
   },
   pressed: {
-    backgroundColor: '#2B262010',
+    backgroundColor: colors.pressOverlay,
   },
   place: {
     flex: 1,

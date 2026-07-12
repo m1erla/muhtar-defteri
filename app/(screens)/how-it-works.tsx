@@ -181,8 +181,10 @@ export default function HowItWorks() {
           </Disclosure>
           <Disclosure title="Küçük yazıları okumak zor geliyorsa">
             <Text style={styles.body}>
-              Telefonunun ya da tarayıcının yazı büyütme ve yakınlaştırma ayarları burada da
-              çalışır. Tüm butonlar büyük ve etiketlidir; uygulama ekran okuyucularla da kullanılır.
+              Ana sayfadaki "Görünüm ve erişilebilirlik" bölümünden yazı boyutunu büyütebilir, koyu
+              temayı ya da yüksek kontrastı açabilirsin — ayarların bu cihazda hatırlanır.
+              Telefonunun kendi yakınlaştırma ayarları da burada çalışır; tüm butonlar büyük ve
+              etiketlidir, uygulama ekran okuyucularla da kullanılır.
             </Text>
           </Disclosure>
           <Disclosure title="Acelen mi var?">

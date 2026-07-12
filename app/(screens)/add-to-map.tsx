@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import PrimaryButton from '@/components/primary-button';
+import { useResolvedTheme } from '@/lib/display-settings';
 import { signalReportAdded } from '@/lib/flash';
 import { getDraft, resetDraft } from '@/lib/report-draft';
 import { submitReport } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
-import { colors, fonts } from '@/lib/theme';
+import { colors, fonts, PALETTES } from '@/lib/theme';
 
 type SubmitState = 'idle' | 'locating' | 'submitting' | 'error';
 
@@ -90,7 +91,7 @@ export default function AddToMap() {
 
         {busy ? (
           <View style={styles.busyRow}>
-            <ActivityIndicator color={colors.petrol} />
+            <ActivityIndicator color={PALETTES[useResolvedTheme()].petrol} />
             <Text style={styles.bodyDim}>
               {state === 'locating' ? 'Konum alınıyor…' : 'Kayıt ekleniyor…'}
             </Text>

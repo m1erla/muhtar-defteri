@@ -78,6 +78,9 @@ export default function Home() {
         <Link href="/how-it-works" style={styles.footerLink}>
           Mahalle Defteri nedir, ne değildir?
         </Link>
+        <Link href="/settings" style={styles.footerLink}>
+          Görünüm ve erişilebilirlik
+        </Link>
       </ScrollView>
     </>
   );

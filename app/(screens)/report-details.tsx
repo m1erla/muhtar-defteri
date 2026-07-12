@@ -9,6 +9,7 @@ import Icon from '@/components/icon';
 import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import PrimaryButton from '@/components/primary-button';
+import { useResolvedTheme } from '@/lib/display-settings';
 import { getDraft, updateDraft } from '@/lib/report-draft';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -18,6 +19,8 @@ const ADANA_CENTER = { latitude: 36.9914, longitude: 35.3308 };
 
 export default function ReportDetails() {
   const router = useRouter();
+  // Standalone icons (no light chip behind them) need light line-art in dark mode.
+  const iconTone = useResolvedTheme() === 'dark' ? 'paper' : 'ink';
   const draft = getDraft();
 
   const [description, setDescription] = useState(draft.description);
@@ -91,6 +94,20 @@ export default function ReportDetails() {
 
   const pin = coords ?? ADANA_CENTER;
 
+  // Gentle, deterministic (not AI) quality nudge — never blocks submission, the
+  // description is optional. Only when the user HAS typed something that reads
+  // as low-signal: a handful of characters, or one character repeated.
+  const trimmed = description.trim();
+  const looksRepeated = trimmed.length >= 4 && /^(.)\1+$/.test(trimmed.replace(/\s/g, ''));
+  const qualityHint =
+    trimmed.length === 0
+      ? null
+      : looksRepeated
+        ? 'İpucu: birkaç kelimeyle ne olduğunu yazarsan daha kolay anlaşılır.'
+        : trimmed.length < 10
+          ? 'İpucu: birkaç kelime daha eklersen sorun daha net anlaşılır (zorunlu değil).'
+          : null;
+
   return (
     <>
       <Stack.Screen options={{ title: 'Detaylar' }} />
@@ -114,6 +131,7 @@ export default function ReportDetails() {
         {description.length > 0 ? (
           <Text style={styles.counter}>{description.length}/500</Text>
         ) : null}
+        {qualityHint ? <Text style={styles.qualityHint}>{qualityHint}</Text> : null}
 
         {photoUri ? (
           <View style={styles.photoRow}>
@@ -129,7 +147,7 @@ export default function ReportDetails() {
         ) : (
           <OutlineButton
             label="Fotoğraf Ekle"
-            icon={<Icon name="camera" size={22} />}
+            icon={<Icon name="camera" size={22} tone={iconTone} />}
             accessibilityLabel="Fotoğraf ekle"
             onPress={pickPhoto}
           />
@@ -147,7 +165,7 @@ export default function ReportDetails() {
                 disabled={locating}
                 style={styles.locateLink}
               >
-                <Icon name="pin" size={18} />
+                <Icon name="pin" size={18} tone={iconTone} />
                 <Text style={styles.link}>{locating ? 'Konum aranıyor…' : 'Konumumu Bul'}</Text>
               </Pressable>
             </View>
@@ -222,6 +240,13 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     alignSelf: 'flex-end',
     marginTop: -8,
+  },
+  qualityHint: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.inkMuted,
+    lineHeight: 19,
+    marginTop: -4,
   },
   photoRow: {
     flexDirection: 'row',

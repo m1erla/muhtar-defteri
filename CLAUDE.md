@@ -17,6 +17,7 @@ Mahalle Defteri: a web app (Expo, deployed to web) that routes Adana residents t
 
 - **Adana only.** Never add multi-city logic, city selectors, or "expand to other provinces" scaffolding unless explicitly asked. This is the single most common way this project accidentally grows out of scope.
 - **Category picker is the primary classification UI**, not free-text AI parsing. If adding AI-assisted suggestions, they must be optional and sit alongside the tap-to-select flow, never replace it.
+- **Theming runs on CSS variables, web-only.** `lib/theme.ts` `colors` are `var(--x)` refs; the concrete light/dark/high-contrast palettes live in `PALETTES` and are emitted as `:root` / `[data-theme]` / `[data-contrast]` blocks by `app/+html.tsx` (with a no-flash init script). Light must stay pixel-identical to the original hex (regression gate). Preferences (theme/contrast/text-size/motion) persist in localStorage via `lib/display-settings.tsx` — no account. The only colours that can't be `var()` are the icon data-URI SVGs (use `RAW`) — those switch theme by TONE (ink↔paper), since the category chip is always light. Any new colour must be a token in all three palettes, contrast-checked; never a raw hex in a screen.
 - **Category visuals are data-driven and colour is never the only cue.** Each category's icon slug + accent `tint` live on its entry in `lib/categories.ts` (the single source — never hardcode category colours/lists across components); every surface renders them through the one `CategoryMark` component. A category is always identifiable by shape + label, not tint alone (colour-blind/low-vision safety), the icon stays `ink` on the tint for contrast, and `terracotta`/`moss` stay reserved for status. Keep the accent palette a small, calm extension (FRONTEND.md §1) — no neon, no per-component one-off colours.
 - **Never write copy implying this is an official government channel.** The product is "Mahalle Defteri" (neighborhood ledger) — a community record, deliberately not an official portal. The name was changed from "Dijital Muhtar" precisely to avoid colliding with the official Muhtar Bilgi Sistemi / e-Muhtar services and reading as authoritative; don't reintroduce "Muhtar" in the product name or copy. The muhtar's-desk *ledger* remains the visual design metaphor (FRONTEND.md), which is fine. Every screen touching the routing result should read as helpful, not official.
 - **Don't build user accounts.** If a feature seems to need identity beyond the anonymous session id, that's a signal to simplify the feature, not add auth.
@@ -30,9 +31,10 @@ app/
   _layout.tsx            -- root Stack, font loading, global ErrorBoundary
   +html.tsx              -- static web shell: lang, meta/OG, favicon links
   index.tsx              -- redirect to /home
-  (screens)/             -- the 9 screens (home, report-category, report-details,
+  (screens)/             -- the 10 screens (home, report-category, report-details,
                             routing-result, add-to-map, map-list, report-detail,
-                            how-it-works, channels = Kanal Rehberi directory)
+                            how-it-works, channels = Kanal Rehberi directory,
+                            settings = Görünüm/erişilebilirlik)
 components/              -- sibling of app/, NOT inside it — expo-router treats
 lib/                     -- files under app/ as routes
   supabase.ts            -- lazy client + SupabaseConfigError/friendlyDbError

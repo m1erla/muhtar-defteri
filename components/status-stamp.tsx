@@ -7,6 +7,8 @@ import { colors, fonts } from '@/lib/theme';
 export default function StatusStamp({ status, size = 'small' }: { status: 'open' | 'resolved'; size?: 'small' | 'large' }) {
   const dotColor = status === 'open' ? colors.terracotta : colors.moss;
   const textColor = status === 'open' ? colors.terracottaText : colors.mossText;
+  // A themed faint fill token, not an alpha-hex concat — `${var()}22` is invalid.
+  const fillColor = status === 'open' ? colors.stampOpen : colors.stampResolved;
   const label = status === 'open' ? 'Açık' : 'Çözüldü';
   const large = size === 'large';
   return (
@@ -15,7 +17,7 @@ export default function StatusStamp({ status, size = 'small' }: { status: 'open'
         style={[
           styles.dot,
           large && styles.dotLarge,
-          { borderColor: dotColor, backgroundColor: `${dotColor}22` },
+          { borderColor: dotColor, backgroundColor: fillColor },
         ]}
       />
       <Text style={[styles.label, large && styles.labelLarge, { color: textColor }]}>{label}</Text>

@@ -10,6 +10,7 @@ import Head from 'expo-router/head';
 import { StyleSheet, Text, View } from 'react-native';
 
 import OutlineButton from '@/components/outline-button';
+import { DisplaySettingsProvider } from '@/lib/display-settings';
 import { colors, fonts } from '@/lib/theme';
 
 // expo-router renders this instead of a blank white screen if any route throws.
@@ -54,7 +55,7 @@ export default function RootLayout() {
   });
 
   return (
-    <>
+    <DisplaySettingsProvider>
       <Head>
         <title>Mahalle Defteri</title>
       </Head>
@@ -66,6 +67,6 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.paper },
         }}
       />
-    </>
+    </DisplaySettingsProvider>
   );
 }

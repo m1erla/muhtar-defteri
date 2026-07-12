@@ -1,10 +1,58 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-import { colors } from '@/lib/theme';
+import { PALETTES, RAW, type Palette } from '@/lib/theme';
 
 // Static HTML shell for the web export — this is what crawlers and the
 // pre-hydration browser tab see. Per-screen titles take over after hydration.
+
+// Palette key -> CSS custom-property name (kebab). Kept in sync with lib/theme's
+// `colors` var() references.
+const VAR: Record<keyof Palette, string> = {
+  ink: '--ink', paper: '--paper', petrol: '--petrol',
+  terracotta: '--terracotta', moss: '--moss',
+  terracottaText: '--terracotta-text', mossText: '--moss-text', inkMuted: '--ink-muted',
+  pressOverlay: '--press-overlay', stampOpen: '--stamp-open', stampResolved: '--stamp-resolved',
+};
+const vars = (p: Palette) =>
+  (Object.keys(VAR) as (keyof Palette)[]).map((k) => `${VAR[k]}:${p[k]};`).join('');
+
+// Theme swaps by attribute on <html>: data-theme=dark, data-contrast=hc (wins
+// over theme), data-textscale=lg|xl, data-motion=reduce. Defaults = light.
+const THEME_CSS = `
+:root{${vars(PALETTES.light)}}
+:root[data-theme="dark"]{${vars(PALETTES.dark)}}
+:root[data-contrast="hc"]{${vars(PALETTES.hc)}}
+html,body{background:var(--paper);}
+body::after{
+  content:'';position:fixed;inset:0;z-index:2147483647;pointer-events:none;opacity:0.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+}
+:root[data-theme="dark"] body::after{opacity:0.06;}
+:root[data-contrast="hc"] body::after{opacity:0;}
+:focus-visible{outline:2px solid var(--petrol);outline-offset:2px;}
+:root[data-textscale="lg"] body{zoom:1.15;}
+:root[data-textscale="xl"] body{zoom:1.3;}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+}
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{
+  animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;
+}
+`;
+
+// Runs before first paint (no light->dark flash): apply the saved display
+// preferences to <html> so the CSS variables above resolve correctly on load.
+// Keys match lib/display-settings.ts. Wrapped in try/catch — a blocked
+// localStorage must never break the page.
+const NO_FLASH = `(function(){try{var d=document.documentElement,ls=localStorage;
+var t=ls.getItem('mdr:theme')||'system';
+d.dataset.theme=(t==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t);
+if(ls.getItem('mdr:contrast')==='1')d.dataset.contrast='hc';
+var s=ls.getItem('mdr:textscale');if(s==='lg'||s==='xl')d.dataset.textscale=s;
+if(ls.getItem('mdr:motion')==='1')d.dataset.motion='reduce';}catch(e){}})();`;
+
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="tr">
@@ -12,7 +60,17 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="theme-color" content={colors.paper} />
+        {/* Browser-chrome colour follows the system scheme (concrete hex — a
+            theme-color meta can't take a CSS var). */}
+        <meta name="theme-color" content={RAW.paper} media="(prefers-color-scheme: light)" />
+        <meta
+          name="theme-color"
+          content={PALETTES.dark.paper}
+          media="(prefers-color-scheme: dark)"
+        />
+
+        {/* Apply saved theme/contrast/text-size/motion before paint. */}
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
 
         {/* Static so crawlers and link-preview bots (WhatsApp is central to the
             flow) see a titled, described, branded card — not a bare URL. */}
@@ -49,42 +107,10 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
         <ScrollViewStyleReset />
-        {/* Three web-only, zero-network touches:
-            1. Riso paper grain — monochrome fractal noise fixed over everything
-               at 4% opacity. Enough to read as printed paper up close, far too
-               faint to affect text contrast (FRONTEND.md: texture serves the
-               ledger metaphor, never fights readability).
-            2. Keyboard focus — a consistent petrol focus ring, only for
-               keyboard/switch navigation (:focus-visible), not mouse taps.
-            3. Reduced motion — kill residual animation (spinners etc.) for
-               users who asked their OS for less motion. */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 2147483647;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-}
-:focus-visible {
-  outline: 2px solid ${colors.petrol};
-  outline-offset: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-`,
-          }}
-        />
+        {/* Theme variables (light/dark/high-contrast), the Riso paper grain, the
+            keyboard focus ring, text-size zoom, and reduced-motion — all
+            web-only, zero-network. */}
+        <style dangerouslySetInnerHTML={{ __html: THEME_CSS }} />
       </head>
       <body>{children}</body>
     </html>

@@ -95,6 +95,7 @@ Mobile-first, always. Build every screen at a ~375px viewport first, then check 
 - Contrast: `ink` on `paper` and `paper` on `petrol` both need verification against WCAG AA before shipping — check, don't assume.
 - Helper/dim text uses the solid `inkMuted` token, never `opacity` dimming (opacity can silently drop below AA).
 - Web shell (`app/+html.tsx`) carries three global touches: a 4%-opacity monochrome paper-grain overlay (the Riso print feel — far too faint to affect contrast), a `petrol` `:focus-visible` ring for keyboard users, and a `prefers-reduced-motion` kill switch for residual animation.
+- **Theming** (added 2026-07-12): `colors` in `lib/theme.ts` are CSS `var()` tokens; the concrete light / dark ("night ledger") / high-contrast palettes live in `PALETTES` and are emitted as `:root` / `[data-theme="dark"]` / `[data-contrast="hc"]` variable blocks in the web shell, swapped by a `data-*` attribute on `<html>`. A no-flash inline script applies the saved choice before first paint. All three palettes are WCAG-AA-checked (light unchanged from the original hex). The **Settings** screen (`lib/display-settings.tsx`) persists theme / high-contrast / text-size (a `zoom` step) / reduced-motion in localStorage — no account. Icons are the one non-var surface (baked into data-URIs): they switch by TONE (ink↔paper) because the category chip stays light in both themes.
 
 ## 8. Performance notes
 
