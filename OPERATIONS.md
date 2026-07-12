@@ -9,6 +9,30 @@ All SQL below runs in the Supabase **SQL Editor** as the project owner
 (service role bypasses RLS, which is what makes moderation possible — the
 public anon key can't touch `status`, `created_at`, or other rows' data).
 
+## The moderation model (what's automatic vs. what's yours)
+
+There is no server and no AI layer — **the database enforces the deterministic
+rules** (schema.sql "Deterministic moderation layer", live since 2026-07-12),
+and everything judgment-based is yours via the SQL below. What the DB blocks
+automatically, per anonymous session:
+
+- **Report floods**: max 5 reports / 10 min, 15 / day (`MDR_RATE_LIMIT`).
+- **Double submits**: identical category+spot+description within 24h
+  (`MDR_DUPLICATE` — the app tells the user to confirm instead).
+- **Confirmation floods**: max 20 / hour, 60 / day — protects the ×N count.
+- **Fake resolving**: `status` can only flip open→resolved when a `resolved`
+  confirmation row exists; no reopening via the API (`MDR_STATUS`).
+- **Out-of-Adana pins** (lat 35.5–38.7, lng 34.0–37.0) and **URLs in
+  descriptions** (spam vector) are rejected by check constraints.
+- **Uploads**: storage bucket caps at 5 MB, jpeg/png/webp only; the map only
+  renders `photo_url`s pointing at our own bucket.
+
+The app shows neutral Turkish messages for all of these (never "spam"/"fake" —
+see `friendlyDbError` in lib/supabase.ts). **Owner writes from the SQL editor
+skip the triggers**, so seeding and the commands below always work. Independent
+reports of the same issue from *different* sessions are deliberately NOT
+blocked — that's the ⟳ repeat signal, the product's whole point.
+
 ## Moderation
 
 The community writes only two tables: `reports` and `confirmations`.

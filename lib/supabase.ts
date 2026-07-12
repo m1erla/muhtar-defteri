@@ -21,9 +21,27 @@ function readConfig(): { url: string; anonKey: string } | null {
 }
 
 // User-facing (Turkish) message for a failed data operation. Owns the
-// config-vs-network distinction in one place.
+// config-vs-network distinction in one place, plus the moderation guards:
+// schema.sql's triggers/constraints raise deliberate 'MDR_*' codes and named
+// check constraints — those strings are OUR contract with the DB (unlike
+// generic error text, which we still never match on). Copy stays neutral,
+// never accusatory (the visitor may be entirely legitimate).
 export function friendlyDbError(err: unknown, fallback: string): string {
-  return err instanceof SupabaseConfigError ? 'Veritabanı bağlantısı henüz kurulmadı.' : fallback;
+  if (err instanceof SupabaseConfigError) return 'Veritabanı bağlantısı henüz kurulmadı.';
+  const msg = err instanceof Error ? err.message : '';
+  if (msg.includes('MDR_RATE_LIMIT')) {
+    return 'Bu cihazdan kısa sürede çok fazla kayıt gönderildi. Biraz bekleyip tekrar dene.';
+  }
+  if (msg.includes('MDR_DUPLICATE')) {
+    return 'Bu kaydı kısa süre önce zaten eklemişsin. Sorun sürüyorsa kaydın sayfasından "Ben de Gördüm" diyebilirsin.';
+  }
+  if (msg.includes('reports_description_no_links')) {
+    return 'Açıklamaya internet bağlantısı (link) eklenemiyor — sorunu kendi cümlelerinle anlatman yeterli.';
+  }
+  if (msg.includes('reports_within_adana')) {
+    return 'Konum Adana sınırları dışında görünüyor — pini Adana içine taşıyıp tekrar dene.';
+  }
+  return fallback;
 }
 
 // Lazy singleton so the app shell can render before real credentials exist.

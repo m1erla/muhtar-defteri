@@ -75,9 +75,13 @@ yayın hedefi web.) Native bir uygulama değildir; bu bilinçli bir tercih.
   SSS'nin ilk sorusu da bu.
 - **"Veriler nasıl doğrulanıyor / kötüye kullanım?"** → Kanal listesi resmi
   kaynaklardan doğrulandı (adana.bel.tr, adana-aski.gov.tr, toroslaredas.com.tr,
-  cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan; durum/tarih sunucuda sabit,
-  kullanıcı değiştiremiyor (veri tabanı kuralları), aynı kişi bir kaydı bir kez
-  doğrulayabiliyor.
+  cimer.gov.tr, alo181.gov.tr, ihbar.ng112.gov.tr). Kayıtlar topluluktan; kurallar
+  veri tabanında zorlanıyor: durum/tarih sunucuda sabit, aynı kişi bir kaydı bir
+  kez doğrulayabiliyor, aynı cihazdan sel gibi kayıt/doğrulama gönderilemiyor
+  (hız limitleri), birebir aynı kayıt tekrar eklenemiyor, "çözüldü" işareti
+  ancak bir çözüldü doğrulaması varsa düşüyor, konum Adana dışıysa ve açıklamada
+  link varsa kayıt reddediliyor. Farklı kişilerin aynı sorunu bildirmesi ise
+  engellenmiyor — o zaten ⟳ tekrar sinyalinin kendisi.
 - **"Gizlilik?"** → Hesap yok; anonim cihaz kimliği; yalnızca yaklaşık konum
   (~110 m) ve senin paylaştığın bilgi herkese açık.
 - **"Ölçeklenir mi?"** → Ağır harita kümeleme yok; mahalle/kaba konumla

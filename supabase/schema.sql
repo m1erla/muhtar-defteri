@@ -79,6 +79,110 @@ alter table confirmations drop constraint if exists confirmations_one_per_sessio
 alter table confirmations add constraint confirmations_one_per_session
   unique (report_id, session_id);
 
+-- ── Deterministic moderation layer (2026-07-12) ─────────────────────────────
+-- No AI, no server: the database is the only trusted tier in this no-auth
+-- architecture, so rate limits and validity checks live here. Owner/SQL-editor
+-- writes (postgres role) skip the triggers, which is what keeps seeding and
+-- OPERATIONS.md moderation working. Guard failures raise 'MDR_*' messages that
+-- lib/supabase.ts friendlyDbError() maps to neutral Turkish copy.
+
+create index if not exists reports_session_created_idx on reports (session_id, created_at);
+create index if not exists confirmations_session_created_idx on confirmations (session_id, created_at);
+
+-- Reports must be inside (a generous margin around) Adana province.
+alter table reports drop constraint if exists reports_within_adana;
+alter table reports add constraint reports_within_adana
+  check (latitude between 35.5 and 38.7 and longitude between 34.0 and 37.0);
+
+-- Civic reports don't need URLs; spam does.
+alter table reports drop constraint if exists reports_description_no_links;
+alter table reports add constraint reports_description_no_links
+  check (description is null or description !~* '(https?://|www\.)');
+
+-- Per-session flood + double-submit guard on report inserts.
+create or replace function moderate_report_insert() returns trigger
+language plpgsql as $$
+begin
+  if current_user not in ('anon', 'authenticated') then
+    return new; -- owner/seed/moderation writes are exempt
+  end if;
+  if (select count(*) from reports
+      where session_id = new.session_id
+        and created_at > now() - interval '10 minutes') >= 5 then
+    raise exception 'MDR_RATE_LIMIT: too many reports from this session in 10 minutes';
+  end if;
+  if (select count(*) from reports
+      where session_id = new.session_id
+        and created_at > now() - interval '24 hours') >= 15 then
+    raise exception 'MDR_RATE_LIMIT: daily report limit reached for this session';
+  end if;
+  if exists (select 1 from reports
+      where session_id = new.session_id
+        and category = new.category
+        and latitude = new.latitude and longitude = new.longitude
+        and coalesce(description, '') = coalesce(new.description, '')
+        and created_at > now() - interval '24 hours') then
+    raise exception 'MDR_DUPLICATE: identical report from this session within 24 hours';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists reports_moderation on reports;
+create trigger reports_moderation
+  before insert on reports
+  for each row execute function moderate_report_insert();
+
+-- Per-session flood guard on confirmations (protects the ×N credibility count).
+create or replace function moderate_confirmation_insert() returns trigger
+language plpgsql as $$
+begin
+  if current_user not in ('anon', 'authenticated') then
+    return new;
+  end if;
+  if (select count(*) from confirmations
+      where session_id = new.session_id
+        and created_at > now() - interval '1 hour') >= 20 then
+    raise exception 'MDR_RATE_LIMIT: too many confirmations from this session in 1 hour';
+  end if;
+  if (select count(*) from confirmations
+      where session_id = new.session_id
+        and created_at > now() - interval '24 hours') >= 60 then
+    raise exception 'MDR_RATE_LIMIT: daily confirmation limit reached for this session';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists confirmations_moderation on confirmations;
+create trigger confirmations_moderation
+  before insert on confirmations
+  for each row execute function moderate_confirmation_insert();
+
+-- Status transitions: the only community transition is open -> resolved, and it
+-- must be backed by at least one 'resolved' confirmation row (the app inserts
+-- the confirmation first — lib/reports.ts confirmReport). Blocks raw-REST mass
+-- "resolving" and reopening; the owner reopens via SQL (role-exempt).
+create or replace function moderate_report_status_update() returns trigger
+language plpgsql as $$
+begin
+  if current_user not in ('anon', 'authenticated') then
+    return new;
+  end if;
+  if new.status = 'resolved' and old.status = 'open' then
+    if not exists (select 1 from confirmations
+        where report_id = new.id and type = 'resolved') then
+      raise exception 'MDR_STATUS: resolving requires a resolved confirmation';
+    end if;
+  elsif new.status is distinct from old.status then
+    raise exception 'MDR_STATUS: unsupported status transition';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists reports_status_guard on reports;
+create trigger reports_status_guard
+  before update on reports
+  for each row execute function moderate_report_status_update();
+
 -- ── Row level security ───────────────────────────────────────────────────────
 
 alter table channels enable row level security;
