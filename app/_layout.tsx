@@ -112,8 +112,8 @@ export default function RootLayout() {
           headerRight: () => <ThemeToggle />,
         }}
       />
-      {/* Decorative margins on wide screens (web-only, ≥980px) — never touches
-          the centred content. */}
+      {/* Decorative Adana margin art on wide screens (web-only, ≥980px, light
+          theme) — never touches the centred content. */}
       <SideDecor />
     </DisplaySettingsProvider>
   );

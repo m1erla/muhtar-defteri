@@ -55,26 +55,24 @@ body::after{
 .sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
 .sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
 .sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
-/* Decorative side margins on wide screens (components/side-decor.tsx). The
-   centred column is unchanged; these two fixed panels fill the gutters with the
-   ledger's ruled edge + a faint Adana skyline. Positioned only in the side
-   gutters via calc, so they never overlap content; pointer-events:none. Ink
-   themes via currentColor; the rule/edge colours derive from the tokens. Hidden
-   ≤980px, so phones/tablets are untouched. color-mix is progressively enhanced —
-   where unsupported the lines/edge simply don't paint. */
+/* Decorative Adana margin art (components/side-decor.tsx). Two fixed panels fill
+   the empty desktop gutters with the AI-generated ledger-edge + skyline art. They
+   occupy ONLY the side gutters (calc), never the centred column; pointer-events
+   :none. The art is bottom-weighted + fades to transparent, so cover anchored
+   to the outer-bottom corner fills any viewport height while keeping the edge
+   stripe and skyline. Hidden ≤980px and in dark mode (the art is light cream). */
 .mdr-side{
   position:fixed; top:0; bottom:0; z-index:0;
-  width:calc((100% - 660px) / 2);
-  pointer-events:none; overflow:hidden;
-  color:var(--ink);
-  background:repeating-linear-gradient(to bottom,
-    transparent 0 31px,
-    color-mix(in srgb, var(--ink) 8%, transparent) 31px 32px);
+  width:calc((100% - 640px) / 2);
+  max-width:440px;
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-size:cover;
 }
-.mdr-side-l{ left:0; border-right:1px solid color-mix(in srgb, var(--petrol) 22%, transparent); }
-.mdr-side-r{ right:0; border-left:1px solid color-mix(in srgb, var(--petrol) 22%, transparent); }
-.mdr-side svg{ position:absolute; left:0; right:0; bottom:0; width:100%; }
+.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left; }
+.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right; }
 @media (max-width:980px){ .mdr-side{ display:none; } }
+:root[data-theme="dark"] .mdr-side{ display:none; }
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display
