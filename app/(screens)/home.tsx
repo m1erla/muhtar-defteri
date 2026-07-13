@@ -1,9 +1,11 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AdanaSkyline from '@/components/adana-skyline';
 import Icon from '@/components/icon';
 import LedgerRow from '@/components/ledger-row';
 import PrimaryButton from '@/components/primary-button';
+import Sivri from '@/components/sivri';
 import { fetchReports, fetchReportStats } from '@/lib/reports';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
@@ -33,11 +35,14 @@ export default function Home() {
         {/* Instant "this is an Adana app" signal — the first thing on the
             landing screen (reuses the deep-teal ADANA badge language + brand
             pin; readable in both themes). */}
-        <View style={styles.localeBadge}>
-          <Icon name="pin" size={15} tone="paper" />
-          <Text style={styles.localeText} accessibilityLabel="Kapsam: Adana">
-            Adana
-          </Text>
+        <View style={styles.hero}>
+          <View style={styles.localeBadge}>
+            <Icon name="pin" size={15} tone="paper" />
+            <Text style={styles.localeText} accessibilityLabel="Kapsam: Adana">
+              Adana
+            </Text>
+          </View>
+          <Sivri size={92} mood="idle" />
         </View>
         <Text style={styles.tagline}>
           Adana'daki bir sorun için <Text style={styles.taglineStrong}>doğru kapıyı</Text> gösterir:
@@ -68,9 +73,12 @@ export default function Home() {
               <Text style={styles.noticeText}>Kayıtlar yüklenemedi. Dokunup tekrar dene.</Text>
             </Pressable>
           ) : state.status === 'ready' && state.data.length === 0 ? (
-            <Text style={styles.empty}>
-              Henüz kayıt yok. İlk kaydı sen ekleyebilirsin — yukarıdan bir sorun bildir.
-            </Text>
+            <View style={styles.emptyWrap}>
+              <Sivri size={104} mood="sleep" />
+              <Text style={styles.empty}>
+                Henüz kayıt yok. İlk kaydı sen ekleyebilirsin — yukarıdan bir sorun bildir.
+              </Text>
+            </View>
           ) : state.status === 'ready' ? (
             <View style={styles.ledgerFrame}>
               {state.data.map((r) => (
@@ -96,6 +104,8 @@ export default function Home() {
         <Link href="/settings" style={styles.footerLink}>
           Görünüm ve erişilebilirlik
         </Link>
+
+        <AdanaSkyline opacity={0.5} />
       </ScrollView>
     </>
   );
@@ -114,6 +124,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingBottom: 40,
   },
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
   localeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -123,7 +139,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginTop: 8,
+  },
+  emptyWrap: {
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
   },
   localeText: {
     fontFamily: fonts.sansSemiBold,

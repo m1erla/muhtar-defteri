@@ -42,6 +42,19 @@ body::after{
 :root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{
   animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;
 }
+/* "Sivri" the mascot — gentle CSS-only life. The reduced-motion + data-motion
+   kill switches above (both use !important) freeze all of this automatically, so
+   the mascot renders as a still illustration for anyone who opts out. */
+@keyframes sivri-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sivri-wing{from{transform:rotate(-7deg)}to{transform:rotate(5deg)}}
+@keyframes sivri-wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-20deg)}50%{transform:rotate(8deg)}75%{transform:rotate(-14deg)}}
+@keyframes sivri-zzz{0%{opacity:0;transform:translate(0,0) scale(.7)}25%{opacity:.85}100%{opacity:0;transform:translate(9px,-20px) scale(1.05)}}
+.sivri-float{animation:sivri-float 4.5s ease-in-out infinite}
+.sivri-wings{transform-box:fill-box;transform-origin:22% 88%;animation:sivri-wing .3s ease-in-out infinite alternate}
+.sivri[data-mood="sleep"]{animation-duration:6s}
+.sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
+.sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
+.sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display

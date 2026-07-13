@@ -5,6 +5,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions,
 import CategoryMark from '@/components/category-mark';
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
+import Sivri from '@/components/sivri';
 import { CATEGORIES, getCategory, type CategorySlug } from '@/lib/categories';
 import { clusterCounts, clusterKey, clusterReports } from '@/lib/cluster';
 import { consumeReportAdded } from '@/lib/flash';
@@ -168,7 +169,10 @@ export default function MapList() {
       ) : null}
 
       {state.status === 'ready' && filtered.length === 0 ? (
-        <LoadStateView message="Bu filtreyle kayıt yok. İlk kaydı sen ekleyebilirsin — ana sayfadan bir sorun bildir." />
+        <View style={styles.emptyWrap}>
+          <Sivri size={96} mood="sleep" />
+          <LoadStateView message="Bu filtreyle kayıt yok. İlk kaydı sen ekleyebilirsin — ana sayfadan bir sorun bildir." />
+        </View>
       ) : null}
 
       {state.status === 'ready' && filtered.length > 0 ? (
@@ -214,9 +218,14 @@ export default function MapList() {
       <Stack.Screen options={{ title: 'Mahalle Kaydı' }} />
       <View style={styles.container}>
         {showAdded ? (
-          <Text style={styles.successBanner} accessibilityRole="alert">
-            Kaydın mahalle defterine eklendi ✓
-          </Text>
+          <>
+            <Text style={styles.successBanner} accessibilityRole="alert">
+              Kaydın mahalle defterine eklendi ✓
+            </Text>
+            <View style={styles.celebrate}>
+              <Sivri size={84} mood="happy" />
+            </View>
+          </>
         ) : null}
 
         <ScrollView
@@ -289,6 +298,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     textAlign: 'center',
+  },
+  celebrate: {
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  emptyWrap: {
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 16,
   },
   chipBar: {
     flexGrow: 0,

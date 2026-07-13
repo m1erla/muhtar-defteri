@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
+import Sivri from '@/components/sivri';
 import { fetchReportsByIds, type Report } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -51,7 +52,10 @@ export default function Watchlist() {
         ) : null}
 
         {state.status === 'ready' && state.data.length === 0 ? (
-          <LoadStateView message="Henüz takip ettiğin kayıt yok. Mahalle kaydından bir sorunu açıp takip edebilirsin." />
+          <View style={styles.emptyWrap}>
+            <Sivri size={100} mood="sleep" />
+            <LoadStateView message="Henüz takip ettiğin kayıt yok. Mahalle kaydından bir sorunu açıp takip edebilirsin." />
+          </View>
         ) : null}
 
         {state.status === 'ready' && state.data.length > 0 ? (
@@ -82,6 +86,7 @@ const styles = StyleSheet.create({
   },
   heading: { fontFamily: fonts.sansSemiBold, fontSize: 24, color: colors.ink, marginTop: 8 },
   sub: { fontFamily: fonts.sans, fontSize: 15, color: colors.inkMuted, lineHeight: 22 },
+  emptyWrap: { alignItems: 'center', gap: 6, paddingTop: 16 },
   ledgerFrame: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.ink,

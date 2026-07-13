@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import PrimaryButton from '@/components/primary-button';
+import Sivri from '@/components/sivri';
 import { useResolvedTheme } from '@/lib/display-settings';
 import { signalReportAdded } from '@/lib/flash';
 import { getDraft, resetDraft } from '@/lib/report-draft';
@@ -82,6 +83,9 @@ export default function AddToMap() {
     <>
       <Stack.Screen options={{ title: 'Haritaya Ekle' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={{ alignItems: 'center' }}>
+          <Sivri size={88} mood="idle" />
+        </View>
         <Text style={styles.heading}>Haritaya eklemek ister misin?</Text>
         <Text style={styles.body}>
           Fotoğrafın ve yaklaşık konumun herkese açık haritada görünür. Kişisel bilgin paylaşılmaz.

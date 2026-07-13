@@ -36,6 +36,27 @@ borrows them. Tints: cleanliness `#BFDCB0`, parking `#B4CFE6`, infrastructure
 - Everything else — body copy, buttons, headings — uses a warm humanist sans (`Work Sans` or similar). Legible first; this app needs to work for people who aren't comfortable with technology.
 - No display serif. It's the expected choice for this kind of "heritage-adjacent" direction and would read as generic here rather than specific.
 
+**Adana visual layer** (added 2026-07-13) — a subtle sense of place, drawn in the
+same Riso ink language as the icons, never decoration for its own sake:
+- **"Sivri"** (`components/sivri.tsx`) — the neighbourhood mosquito, Adana's
+  self-deprecating local emblem reimagined *friendly*: he **writes reports (a
+  pencil for a nose) instead of biting**. Pure inline SVG (web-only escape hatch,
+  like `app/+html.tsx`), a few KB, no libraries. Ink linework is `currentColor`
+  (`var(--ink)`), petrol/paper via `var()` styles, so he flips light/dark with
+  everything. Three moods — `idle` (Home hero, how-it-works, add-to-map),
+  `sleep` (empty states, closed eyes + drifting Zzz), `happy` (add-to-map
+  success, waves his pencil). Decorative by rule → `aria-hidden`, a text label
+  always beside him.
+- **Adana skyline** (`components/adana-skyline.tsx`) — a thin footer line-art of
+  the Sabancı Merkez Camii (its six minarets are the city's signature), the
+  Taşköprü arches, palms and the Seyhan (in petrol). Faint, decorative.
+- Motion is CSS-only keyframes in `app/+html.tsx` (float, wing flutter, wave,
+  Zzz), automatically frozen by the existing `prefers-reduced-motion` /
+  `data-motion="reduce"` kill switch — so it's a still drawing for anyone who
+  opts out, and adds nothing to the scored cold-load. **No 3D/WebGL** (would
+  bloat the bundle, sit outside the theming/a11y system, and read as a generic
+  template — the opposite of the point).
+
 **Signature element:** report list rows are styled as ledger entries, not cards — a thin rule between rows, tabular alignment (category · neighborhood · date · confirmation count), and status shown as a small circular stamp mark rather than a rounded pill badge. This is the one place the design takes a real position; everything else (forms, buttons, the routing result screen) stays quiet and standard so the ledger rows read as intentional rather than as one choice among many competing ones.
 
 Spend the visual budget there. The report/category-picker screen, the routing result, and the how-it-works screen should all be plain, clear, and fast — no decoration competing with the one job those screens have.

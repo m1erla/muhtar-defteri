@@ -2,7 +2,9 @@ import { Link, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AdanaSkyline from '@/components/adana-skyline';
 import Disclosure from '@/components/disclosure';
+import Sivri from '@/components/sivri';
 import StatusStamp from '@/components/status-stamp';
 import { colors, fonts } from '@/lib/theme';
 
@@ -35,6 +37,9 @@ export default function HowItWorks() {
     <>
       <Stack.Screen options={{ title: 'Nasıl Çalışır?' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.introMascot}>
+          <Sivri size={112} mood="idle" />
+        </View>
         <Text style={styles.heading} accessibilityRole="header">
           Mahalle Defteri nedir, ne değildir?
         </Text>
@@ -220,6 +225,8 @@ export default function HowItWorks() {
         <Link href="/channels" style={styles.directoryLink}>
           Kanal Rehberi'ni aç — tüm hatlar tek sayfada →
         </Link>
+
+        <AdanaSkyline opacity={0.45} />
       </ScrollView>
     </>
   );
@@ -229,6 +236,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
+  },
+  introMascot: {
+    alignItems: 'center',
+    paddingTop: 4,
   },
   content: {
     padding: 20,
