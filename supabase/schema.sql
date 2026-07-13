@@ -97,10 +97,13 @@ alter table confirmations add constraint confirmations_one_per_session
 create index if not exists reports_session_created_idx on reports (session_id, created_at);
 create index if not exists confirmations_session_created_idx on confirmations (session_id, created_at);
 
--- Reports must be inside (a generous margin around) Adana province.
+-- Reports must be inside Adana province. Snug box (all 15 district centres fit
+-- with margin) so it excludes the open sea to the south and most of neighbouring
+-- Mersin/Tarsus — the hard "Adana only" invariant. KEEP IN SYNC with the same
+-- box in lib/geocode.ts (BBOX), which bounds the address search to these limits.
 alter table reports drop constraint if exists reports_within_adana;
 alter table reports add constraint reports_within_adana
-  check (latitude between 35.5 and 38.7 and longitude between 34.0 and 37.0);
+  check (latitude between 36.35 and 38.5 and longitude between 34.7 and 36.5);
 
 -- Civic reports don't need URLs; spam does.
 alter table reports drop constraint if exists reports_description_no_links;

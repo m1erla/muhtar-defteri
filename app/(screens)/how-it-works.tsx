@@ -203,6 +203,11 @@ export default function HowItWorks() {
           açıklama, eklediğin fotoğraf ve yaklaşık konum herkese açık görünür. Adın, numaran ya da
           kimliğin istenmez ve saklanmaz.
         </Text>
+        <Text style={styles.body}>
+          Konum için adres arattığında, yazdığın metin koordinatı bulmak üzere harita servisine
+          (OpenStreetMap) gönderilir. Bu yüzden arama kutusuna kişisel bilgi değil, adres/mahalle
+          bilgisi yazman yeterli.
+        </Text>
 
         <Text style={styles.subheading} accessibilityRole="header">
           Yönlendirdiği kanallar

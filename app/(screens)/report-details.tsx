@@ -59,6 +59,15 @@ export default function ReportDetails() {
     setSearchError(null);
   };
 
+  // Move+zoom the map to the current coords and drop any stale search results.
+  // EVERY location method ends with this, so a new one can't forget the
+  // focusKey bump — the bump (not setCoords) is what actually re-centers.
+  const jumpTo = (zoom: number) => {
+    setFocusZoom(zoom);
+    setFocusKey((k) => k + 1);
+    clearResults();
+  };
+
   // The non-map way to set location: pick a district and the map jumps to it.
   // Accessible (keyboard/screen-reader) — the map is never the only path.
   const pickDistrict = (slug: string) => {
@@ -66,20 +75,22 @@ export default function ReportDetails() {
     if (!d) return;
     setDistrict(slug);
     setCoords({ latitude: d.latitude, longitude: d.longitude });
-    setFocusZoom(d.zoom);
-    setFocusKey((k) => k + 1);
+    setAddressQuery('');
     setLocationError(null);
-    clearResults();
+    jumpTo(d.zoom);
   };
 
   // Type an address / mahalle / cadde → Adana-bounded geocode → results to pick
   // from. Triggered by the button or the keyboard's search key, never on every
-  // keystroke.
+  // keystroke. Clears prior results up front so a failed re-search can't leave
+  // the old list showing next to the error banner.
   const searchAddress = async () => {
     const q = addressQuery.trim();
     if (q.length < 3 || searching) return;
     setSearching(true);
     setSearchError(null);
+    setResults([]);
+    setSearched(false);
     try {
       const found = await searchAdanaAddress(q);
       setResults(found);
@@ -93,15 +104,21 @@ export default function ReportDetails() {
     }
   };
 
+  // Editing the query invalidates the previous result list / "not found", so a
+  // stale result can't stay tappable (or a false "bulunamadı" linger) for text
+  // that no longer matches what was searched.
+  const onQueryChange = (t: string) => {
+    setAddressQuery(t);
+    if (results.length > 0 || searched || searchError) clearResults();
+  };
+
   // Pick a search result: drop the pin there and let the user fine-tune by drag.
   const pickResult = (r: GeoResult) => {
     setCoords({ latitude: r.latitude, longitude: r.longitude });
-    setFocusZoom(17);
-    setFocusKey((k) => k + 1);
     setAddressQuery(r.label);
     setDistrict(null);
     setLocationError(null);
-    clearResults();
+    jumpTo(17);
   };
 
   const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('LocationPickerMap');
@@ -139,9 +156,8 @@ export default function ReportDetails() {
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10_000)),
       ]);
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-      setFocusZoom(16);
-      setFocusKey((k) => k + 1);
-      clearResults();
+      setAddressQuery('');
+      jumpTo(16);
     } catch {
       setLocationError('Konum alınamadı. Pini elle sürükleyebilirsin.');
     } finally {
@@ -263,7 +279,7 @@ export default function ReportDetails() {
                 placeholderTextColor={colors.inkMuted}
                 accessibilityLabel="Adres ara"
                 value={addressQuery}
-                onChangeText={setAddressQuery}
+                onChangeText={onQueryChange}
                 onSubmitEditing={searchAddress}
                 returnKeyType="search"
                 autoCorrect={false}
@@ -278,6 +294,13 @@ export default function ReportDetails() {
                 <Text style={styles.searchBtnText}>{searching ? 'Aranıyor…' : 'Ara'}</Text>
               </Pressable>
             </View>
+            {/* The typed text is sent to an external map service (OpenStreetMap)
+                to find coordinates — so steer people toward place names, not
+                personal info. */}
+            <Text style={styles.qualityHint}>
+              Aramayı harita servisi (OpenStreetMap) yapar — kutuya kişisel bilgi değil,
+              adres/mahalle/cadde yaz.
+            </Text>
 
             {results.length > 0 ? (
               <View style={styles.results} accessibilityRole="menu">

@@ -34,7 +34,7 @@ export default function LedgerRow({
     >
       <CategoryMark slug={category?.slug ?? 'pin'} size={30} iconSize={20} />
       <Text style={styles.place} numberOfLines={1}>
-        {report.neighborhood ?? 'Adana'}
+        {report.neighborhood || 'Adana'}
       </Text>
       {clusterCount > 1 ? (
         <Text

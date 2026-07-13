@@ -1,5 +1,6 @@
 import type { CategorySlug } from './categories';
 import { ARCHIVE_DAYS, calendarDaysSince } from './format';
+import { nominatimFetch } from './geocode';
 import { generateId, getSessionId } from './session';
 import { getSupabase } from './supabase';
 
@@ -107,20 +108,19 @@ export async function fetchSameSpotCount(report: Report): Promise<number> {
 // grouping falls back to coordinates and rows display "Adana".
 async function reverseNeighborhood(latitude: number, longitude: number): Promise<string | null> {
   try {
-    // Feature-detect: AbortSignal.timeout is missing on older Safari — without
-    // the guard the TypeError would silently disable geocoding entirely.
-    const signal =
-      typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(4000) : undefined;
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&accept-language=tr&zoom=14`,
-      { signal }
+    const res = await nominatimFetch(
+      `reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&accept-language=tr&zoom=14`,
+      4000
     );
     if (!res.ok) return null;
     const json = (await res.json()) as {
       address?: Record<string, string | undefined>;
     };
     const a = json.address ?? {};
-    return a.neighbourhood ?? a.suburb ?? a.quarter ?? a.village ?? a.town ?? null;
+    const name = a.neighbourhood ?? a.suburb ?? a.quarter ?? a.village ?? a.town;
+    // Trim and treat blank as "unknown": an empty/whitespace string would slip
+    // past the `?? 'Adana'` display fallbacks and render a blank place cell.
+    return name?.trim() || null;
   } catch {
     return null;
   }

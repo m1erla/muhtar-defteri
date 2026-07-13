@@ -76,7 +76,7 @@ export default function ReportDetail() {
   const shareReport = async (report: Report) => {
     const label = getCategory(report.category)?.label ?? 'Kayıt';
     const url = window.location.href;
-    const text = `${label} — ${report.neighborhood ?? 'Adana'} | Mahalle Defteri kaydı: ${url}`;
+    const text = `${label} — ${report.neighborhood || 'Adana'} | Mahalle Defteri kaydı: ${url}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Mahalle Defteri', text, url });
@@ -164,7 +164,7 @@ export default function ReportDetail() {
               <Text style={styles.category}>{getCategory(ready.report.category)?.label}</Text>
             </View>
 
-            <Text style={styles.place}>{ready.report.neighborhood ?? 'Adana'}</Text>
+            <Text style={styles.place}>{ready.report.neighborhood || 'Adana'}</Text>
 
             {ready.report.description ? (
               <Text style={styles.description}>{ready.report.description}</Text>
