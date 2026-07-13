@@ -18,6 +18,10 @@ export default function AddToMap() {
   const draft = getDraft();
   const [state, setState] = useState<SubmitState>('idle');
   const [errorText, setErrorText] = useState<string | null>(null);
+  // Resolve the spinner colour at the top level — never inside the `busy` JSX
+  // branch, or the hook would be called conditionally (a crash the moment busy
+  // flips true on submit).
+  const spinnerColor = PALETTES[useResolvedTheme()].petrol;
 
   if (!draft.category) {
     return <Redirect href="/report-category" />;
@@ -91,7 +95,7 @@ export default function AddToMap() {
 
         {busy ? (
           <View style={styles.busyRow}>
-            <ActivityIndicator color={PALETTES[useResolvedTheme()].petrol} />
+            <ActivityIndicator color={spinnerColor} />
             <Text style={styles.bodyDim}>
               {state === 'locating' ? 'Konum alınıyor…' : 'Kayıt ekleniyor…'}
             </Text>

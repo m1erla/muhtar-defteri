@@ -11,7 +11,8 @@ import { colors, fonts } from '@/lib/theme';
 // Görünüm ve Erişilebilirlik — theme, contrast, text size, motion. All applied
 // live and persisted (localStorage) by the display-settings provider. Controls
 // are keyboard-focusable, ≥44px, and never signal state by colour alone (the
-// selected option is filled AND announced via accessibilityState).
+// selected option is filled AND announced — the segmented controls are a
+// radiogroup of radios so a screen reader hears "N of 3, selected").
 
 function Segmented<T extends string>({
   label,
@@ -29,14 +30,18 @@ function Segmented<T extends string>({
       <Text style={styles.label} accessibilityRole="header">
         {label}
       </Text>
-      <View style={styles.segRow}>
+      <View style={styles.segRow} accessibilityRole="radiogroup" accessibilityLabel={label}>
         {options.map((o) => {
           const selected = o.value === value;
           return (
             <Pressable
               key={o.value}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              // RN-Web doesn't emit aria-checked from accessibilityState here
+              // (same quirk handled in flag-form.tsx) — set it explicitly so the
+              // active choice reaches assistive tech.
+              aria-checked={selected}
               onPress={() => onChange(o.value)}
               style={[styles.seg, selected && styles.segOn]}
             >

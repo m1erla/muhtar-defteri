@@ -1,6 +1,5 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -47,6 +46,13 @@ export function DisplaySettingsProvider({ children }: PropsWithChildren) {
   const [textScale, setScaleState] = useState<TextScale>('md');
   const [reducedMotion, setMotionState] = useState(false);
   const [systemIsDark, setSystemIsDark] = useState(false);
+  // Gates the reflect effect below until the mount reconcile has committed the
+  // saved prefs. Without it, the reflect effect fires once with the still-default
+  // render state (light/system) and rewrites <html> data-theme + localStorage
+  // before reconcile lands — a light flash for dark-mode users that defeats the
+  // no-flash script in +html.tsx. The inline script already set the correct
+  // pre-paint value, so skipping that first write loses nothing.
+  const [ready, setReady] = useState(false);
 
   // Reconcile with saved prefs on mount, and follow the OS scheme for 'system'.
   useEffect(() => {
@@ -58,6 +64,7 @@ export function DisplaySettingsProvider({ children }: PropsWithChildren) {
     setMotionState(read(KEY.motion) === '1');
 
     setSystemIsDark(systemDark());
+    setReady(true);
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => setSystemIsDark(mq.matches);
     mq.addEventListener('change', onChange);
@@ -67,9 +74,11 @@ export function DisplaySettingsProvider({ children }: PropsWithChildren) {
   const resolvedTheme: 'light' | 'dark' =
     themePref === 'system' ? (systemIsDark ? 'dark' : 'light') : themePref;
 
-  // Reflect state onto <html> + localStorage. Runs on the client only.
+  // Reflect state onto <html> + localStorage. Runs on the client only, and only
+  // after the mount reconcile (ready) so the first write can't clobber saved
+  // prefs with the default render state.
   useEffect(() => {
-    if (!hasWindow) return;
+    if (!hasWindow || !ready) return;
     const d = document.documentElement;
     d.dataset.theme = resolvedTheme;
     window.localStorage.setItem(KEY.theme, themePref);
@@ -85,18 +94,23 @@ export function DisplaySettingsProvider({ children }: PropsWithChildren) {
     if (reducedMotion) d.dataset.motion = 'reduce';
     else delete d.dataset.motion;
     window.localStorage.setItem(KEY.motion, reducedMotion ? '1' : '0');
-  }, [resolvedTheme, themePref, contrast, textScale, reducedMotion]);
+  }, [ready, resolvedTheme, themePref, contrast, textScale, reducedMotion]);
 
+  // useState setters are already stable identities, so the context object only
+  // needs to change when a displayed value does. (Never wrap these in useCallback
+  // *inside* this factory — a hook nested in the useMemo callback isn't run on
+  // renders where the deps are unchanged, which crashes with "rendered fewer
+  // hooks than expected".)
   const value = useMemo<Ctx>(
     () => ({
       themePref,
-      setThemePref: useCallback((v: ThemePref) => setTheme(v), []),
+      setThemePref: setTheme,
       contrast,
-      setContrast: useCallback((v: boolean) => setContrastState(v), []),
+      setContrast: setContrastState,
       textScale,
-      setTextScale: useCallback((v: TextScale) => setScaleState(v), []),
+      setTextScale: setScaleState,
       reducedMotion,
-      setReducedMotion: useCallback((v: boolean) => setMotionState(v), []),
+      setReducedMotion: setMotionState,
       resolvedTheme,
     }),
     [themePref, contrast, textScale, reducedMotion, resolvedTheme]

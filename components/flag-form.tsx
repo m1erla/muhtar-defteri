@@ -96,7 +96,11 @@ export default function FlagForm({
         onChangeText={setDetail}
       />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text style={styles.error} accessibilityRole="alert">
+          {error}
+        </Text>
+      ) : null}
 
       <PrimaryButton
         label={submitting ? 'Gönderiliyor…' : 'Gönder'}

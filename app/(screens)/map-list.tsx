@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import LedgerRow from '@/components/ledger-row';
@@ -64,12 +64,18 @@ export default function MapList() {
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
   const all = state.status === 'ready' ? state.data : [];
-  const counts = clusterCounts(all);
-  const filtered = all.filter(
-    (r) => (!category || r.category === category) && (!status || r.status === status)
-  );
-  const visible = showOld ? filtered : filtered.filter((r) => !isArchivable(r));
-  const hiddenCount = filtered.length - visible.length;
+  // Derive the counts + filtered/visible sets once per input change, not on every
+  // render — this screen re-renders on resize, the toast timer, focus refetch and
+  // each chip toggle, and clusterCounts + the isArchivable date-parse both run
+  // over all ~500 rows. Stable refs also keep <MapView> from re-clustering.
+  const { counts, filtered, visible, hiddenCount } = useMemo(() => {
+    const counts = clusterCounts(all);
+    const filtered = all.filter(
+      (r) => (!category || r.category === category) && (!status || r.status === status)
+    );
+    const visible = showOld ? filtered : filtered.filter((r) => !isArchivable(r));
+    return { counts, filtered, visible, hiddenCount: filtered.length - visible.length };
+  }, [all, category, status, showOld]);
 
   const list = (
     <>

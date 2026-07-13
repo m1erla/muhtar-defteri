@@ -217,7 +217,11 @@ export default function ReportDetail() {
               </View>
             ) : null}
 
-            {confirmError ? <Text style={styles.error}>{confirmError}</Text> : null}
+            {confirmError ? (
+              <Text style={styles.error} accessibilityRole="alert">
+                {confirmError}
+              </Text>
+            ) : null}
 
             {ready.mine ? (
               <Text style={styles.confirmedNote}>

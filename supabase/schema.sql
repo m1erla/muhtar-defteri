@@ -342,7 +342,11 @@ drop policy if exists "anyone can flag a report once" on flags;
 create policy "anyone can flag a report once" on flags
   for insert to anon, authenticated with check (status = 'open');
 
-revoke insert, update, delete, truncate, references, trigger on flags from anon, authenticated;
+-- Belt-and-suspenders: revoke SELECT too, so flags stay private even if a future
+-- edit disabled RLS or added a permissive policy. flags carry free-text detail
+-- that may quote the personal info being reported — the owner reads them via
+-- OPERATIONS.md (service role, which bypasses these grants), never the anon key.
+revoke select, insert, update, delete, truncate, references, trigger on flags from anon, authenticated;
 grant insert (report_id, reason, detail, session_id) on flags to anon, authenticated;
 
 -- ── Storage: report photos ───────────────────────────────────────────────────
