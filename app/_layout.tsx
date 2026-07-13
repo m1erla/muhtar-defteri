@@ -5,14 +5,53 @@ import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono/500Mediu
 import { WorkSans_400Regular } from '@expo-google-fonts/work-sans/400Regular';
 import { WorkSans_600SemiBold } from '@expo-google-fonts/work-sans/600SemiBold';
 import { useFonts } from 'expo-font';
-import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { Stack, usePathname, useRouter, type ErrorBoundaryProps } from 'expo-router';
 import Head from 'expo-router/head';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import OutlineButton from '@/components/outline-button';
 import ThemeToggle from '@/components/theme-toggle';
 import { DisplaySettingsProvider } from '@/lib/display-settings';
 import { colors, fonts } from '@/lib/theme';
+
+// A back control that never vanishes. The default header back button only shows
+// when the JS navigation stack has a previous entry — so it disappeared after a
+// full reload, a directly-opened link (a shared /report-detail), or any
+// router.replace() (routing-result "Bitti", add-to-map submit/cancel), which all
+// leave the target with no back entry. This always renders on non-home screens
+// and falls back to Home when there's genuinely nowhere to go back to.
+function HeaderBack() {
+  const router = useRouter();
+  const pathname = usePathname();
+  // Home is the root — no back control there.
+  if (pathname === '/home' || pathname === '/' || pathname === '/index') return null;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Geri"
+      onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
+      style={hb.btn}
+      hitSlop={8}
+    >
+      <Text style={hb.text}>‹ Geri</Text>
+    </Pressable>
+  );
+}
+
+const hb = StyleSheet.create({
+  btn: {
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: 'center',
+    paddingRight: 12,
+    paddingLeft: 2,
+  },
+  text: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 17,
+    color: colors.ink,
+  },
+});
 
 // expo-router renders this instead of a blank white screen if any route throws.
 // Stability is a scored competition criterion; keep it plain and on-brand.
@@ -68,6 +107,7 @@ export default function RootLayout() {
           headerTintColor: colors.ink,
           headerTitleStyle: { color: colors.ink, fontFamily: fonts.sansSemiBold },
           contentStyle: { backgroundColor: colors.paper },
+          headerLeft: () => <HeaderBack />,
           headerRight: () => <ThemeToggle />,
         }}
       />
