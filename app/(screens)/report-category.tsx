@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import Page from '@/components/page';
 
 import CategoryTile from '@/components/category-tile';
 import { CATEGORIES, type CategorySlug } from '@/lib/categories';
@@ -19,7 +20,7 @@ export default function ReportCategory() {
   return (
     <>
       <Stack.Screen options={{ title: 'Sorun Bildir' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Ne tür bir sorun?
         </Text>
@@ -27,7 +28,7 @@ export default function ReportCategory() {
         {CATEGORIES.map((c) => (
           <CategoryTile key={c.slug} label={c.label} slug={c.slug} onPress={() => pick(c.slug)} />
         ))}
-      </ScrollView>
+      </Page>
     </>
   );
 }

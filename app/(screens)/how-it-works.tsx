@@ -1,6 +1,7 @@
 import { Link, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import AdanaSkyline from '@/components/adana-skyline';
 import Disclosure from '@/components/disclosure';
@@ -36,7 +37,7 @@ export default function HowItWorks() {
   return (
     <>
       <Stack.Screen options={{ title: 'Nasıl Çalışır?' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <View style={styles.introMascot}>
           <Sivri size={112} mood="idle" />
           <Link href="/about-sivri" style={styles.sivriLink}>
@@ -230,7 +231,7 @@ export default function HowItWorks() {
         </Link>
 
         <AdanaSkyline opacity={0.45} />
-      </ScrollView>
+      </Page>
     </>
   );
 }

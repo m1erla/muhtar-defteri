@@ -1,5 +1,6 @@
 import { Link, Stack, useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import AdanaSkyline from '@/components/adana-skyline';
 import Icon from '@/components/icon';
@@ -31,7 +32,7 @@ export default function Home() {
   return (
     <>
       <Stack.Screen options={{ title: 'Mahalle Defteri' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         {/* Instant "this is an Adana app" signal — the first thing on the
             landing screen (reuses the deep-teal ADANA badge language + brand
             pin; readable in both themes). */}
@@ -108,7 +109,7 @@ export default function Home() {
         </Link>
 
         <AdanaSkyline opacity={0.5} />
-      </ScrollView>
+      </Page>
     </>
   );
 }

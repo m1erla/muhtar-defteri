@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import Page from '@/components/page';
 
 import CategoryMark from '@/components/category-mark';
 import { ChannelContact, ScopePill } from '@/components/channel-contact';
@@ -56,7 +57,7 @@ export default function ChannelDirectory() {
   return (
     <>
       <Stack.Screen options={{ title: 'Kanal Rehberi' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Kanal Rehberi
         </Text>
@@ -106,7 +107,7 @@ export default function ChannelDirectory() {
             ))}
           </View>
         ))}
-      </ScrollView>
+      </Page>
     </>
   );
 }

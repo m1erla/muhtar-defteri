@@ -1,6 +1,7 @@
 import { Link, Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import { ChannelContact, ScopePill } from '@/components/channel-contact';
 import LoadStateView from '@/components/load-state-view';
@@ -111,7 +112,7 @@ export default function RoutingResult() {
   return (
     <>
       <Stack.Screen options={{ title: 'Doğru Kanal' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <Text style={styles.heading}>İşte doğru yer:</Text>
         <Text style={styles.sub}>
           {category.label} için başvurabileceğin resmi kanallar. Bu uygulama resmi bir kanal
@@ -146,7 +147,7 @@ export default function RoutingResult() {
         <Link href="/home" replace style={styles.doneLink}>
           Bitti — Ana sayfaya dön
         </Link>
-      </ScrollView>
+      </Page>
     </>
   );
 }

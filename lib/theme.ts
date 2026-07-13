@@ -25,6 +25,14 @@ export const colors = {
   // OSM tiles, so this stays a dark shade in every theme, just a touch stronger as
   // contrast rises. A token so the divIcon markup has no raw hex.
   mapPinShadow: 'var(--map-pin-shadow)',
+  // Wide-viewport "ledger sheet on a desk" framing (web-only, ≥768px). Emitted as
+  // CSS vars, consumed by the media query in app/+html.tsx — the centered column
+  // becomes a paper sheet (paper fill + sheetEdge hairline + deskShadow) on the
+  // toned `desk` backdrop. Below the breakpoint none of this applies → mobile is
+  // pixel-identical.
+  desk: 'var(--desk)',
+  sheetEdge: 'var(--sheet-edge)',
+  deskShadow: 'var(--desk-shadow)',
 } as const;
 
 // Concrete palettes behind the variables. LIGHT is the original FRONTEND.md
@@ -39,6 +47,7 @@ export type Palette = {
   pressOverlay: string; stampOpen: string; stampResolved: string;
   scopeAdanaBg: string; scopeAdanaText: string;
   mapPinShadow: string;
+  desk: string; sheetEdge: string; deskShadow: string;
 };
 
 export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
@@ -50,6 +59,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     stampOpen: 'rgba(188,90,60,0.13)', stampResolved: 'rgba(91,112,82,0.13)',
     scopeAdanaBg: '#1F5C5C', scopeAdanaText: '#EDE6D8', // cream on deep petrol
     mapPinShadow: 'rgba(0,0,0,0.40)',
+    desk: '#E4DBC9', sheetEdge: 'rgba(43,38,32,0.14)', deskShadow: 'rgba(43,38,32,0.10)',
   },
   dark: {
     ink: '#E8E1D3', paper: '#201C17', petrol: '#63ADAD',
@@ -60,6 +70,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     // Deep teal (not the bright link-petrol) so white text clears AA (~5.4:1).
     scopeAdanaBg: '#2A6E6E', scopeAdanaText: '#FFFFFF',
     mapPinShadow: 'rgba(0,0,0,0.50)',
+    desk: '#17130F', sheetEdge: 'rgba(232,225,211,0.16)', deskShadow: 'rgba(0,0,0,0.40)',
   },
   hc: {
     ink: '#161310', paper: '#F4EFE4', petrol: '#0F3F3F',
@@ -69,6 +80,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     stampOpen: 'rgba(180,73,31,0.18)', stampResolved: 'rgba(58,77,46,0.18)',
     scopeAdanaBg: '#0F3F3F', scopeAdanaText: '#FFFFFF',
     mapPinShadow: 'rgba(0,0,0,0.55)',
+    desk: '#E7E0D1', sheetEdge: 'rgba(22,19,16,0.28)', deskShadow: 'rgba(22,19,16,0.10)',
   },
 };
 

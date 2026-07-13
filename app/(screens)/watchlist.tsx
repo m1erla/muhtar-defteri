@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
@@ -31,7 +32,7 @@ export default function Watchlist() {
   return (
     <>
       <Stack.Screen options={{ title: 'Takip Ettiklerim' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Takip Ettiklerim
         </Text>
@@ -69,7 +70,7 @@ export default function Watchlist() {
             ))}
           </View>
         ) : null}
-      </ScrollView>
+      </Page>
     </>
   );
 }

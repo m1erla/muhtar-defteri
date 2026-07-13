@@ -1,7 +1,8 @@
 import * as Location from 'expo-location';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import PrimaryButton from '@/components/primary-button';
 import Sivri from '@/components/sivri';
@@ -82,7 +83,7 @@ export default function AddToMap() {
   return (
     <>
       <Stack.Screen options={{ title: 'Haritaya Ekle' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         <View style={{ alignItems: 'center' }}>
           <Sivri size={88} mood="idle" />
         </View>
@@ -121,7 +122,7 @@ export default function AddToMap() {
             </Pressable>
           </>
         )}
-      </ScrollView>
+      </Page>
     </>
   );
 }

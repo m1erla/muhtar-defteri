@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Page from '@/components/page';
 
 import CategoryMark from '@/components/category-mark';
 import FlagForm from '@/components/flag-form';
@@ -148,7 +149,7 @@ export default function ReportDetail() {
   return (
     <>
       <Stack.Screen options={{ title: 'Bildirim' }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Page contentStyle={styles.content}>
         {state.status === 'loading' ? <LoadStateView loading /> : null}
 
         {state.status === 'error' ? (
@@ -308,7 +309,7 @@ export default function ReportDetail() {
             )}
           </>
         ) : null}
-      </ScrollView>
+      </Page>
     </>
   );
 }
