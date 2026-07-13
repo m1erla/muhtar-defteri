@@ -10,6 +10,7 @@ import { buildReportMessage, fetchChannels, type Channel } from '@/lib/channels'
 import { getDraft } from '@/lib/report-draft';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
+import { useLayout } from '@/lib/use-layout';
 import { useLoad } from '@/lib/use-load';
 
 function ChannelCard({ channel }: { channel: Channel }) {
@@ -99,6 +100,7 @@ export default function RoutingResult() {
   const params = useLocalSearchParams<{ category?: string | string[] }>();
   const paramCategory = Array.isArray(params.category) ? params.category[0] : params.category;
   const category = getCategory(paramCategory) ?? getCategory(getDraft().category);
+  const { isTablet } = useLayout();
 
   const { state, reload } = useLoad(
     () => fetchChannels(category!.slug),
@@ -109,10 +111,16 @@ export default function RoutingResult() {
     return <Redirect href="/report-category" />;
   }
 
+  // Cards flow into two balanced columns on tablet/desktop; one on the phone.
+  const cards = state.status === 'ready' ? state.data : [];
+  const columnCount = isTablet ? 2 : 1;
+  const columns: Channel[][] = Array.from({ length: columnCount }, () => []);
+  cards.forEach((c, i) => columns[i % columnCount].push(c));
+
   return (
     <>
       <Stack.Screen options={{ title: 'Doğru Kanal' }} />
-      <Page contentStyle={styles.content}>
+      <Page contentStyle={[styles.content, isTablet && styles.contentWide]}>
         <Text style={styles.heading}>İşte doğru yer:</Text>
         <Text style={styles.sub}>
           {category.label} için başvurabileceğin resmi kanallar. Bu uygulama resmi bir kanal
@@ -134,9 +142,17 @@ export default function RoutingResult() {
           <LoadStateView message="Bu kategori için kayıtlı kanal bulunamadı." />
         ) : null}
 
-        {state.status === 'ready'
-          ? state.data.map((c) => <ChannelCard key={c.id} channel={c} />)
-          : null}
+        {state.status === 'ready' && cards.length > 0 ? (
+          <View style={isTablet ? styles.columnsRow : undefined}>
+            {columns.map((col, ci) => (
+              <View key={ci} style={[styles.column, isTablet && styles.columnFlex]}>
+                {col.map((c) => (
+                  <ChannelCard key={c.id} channel={c} />
+                ))}
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <Link href="/add-to-map" style={styles.mapLink}>
           Haritaya da Ekle →
@@ -164,6 +180,20 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     paddingBottom: 40,
+  },
+  contentWide: {
+    maxWidth: 940,
+  },
+  columnsRow: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-start',
+  },
+  column: {
+    gap: 14,
+  },
+  columnFlex: {
+    flex: 1,
   },
   heading: {
     fontFamily: fonts.sansSemiBold,

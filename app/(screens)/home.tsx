@@ -9,10 +9,12 @@ import PrimaryButton from '@/components/primary-button';
 import Sivri from '@/components/sivri';
 import { fetchReports, fetchReportStats } from '@/lib/reports';
 import { colors, fonts } from '@/lib/theme';
+import { useLayout } from '@/lib/use-layout';
 import { useLoad } from '@/lib/use-load';
 
 export default function Home() {
   const router = useRouter();
+  const { isTablet } = useLayout();
 
   // Focus refetch so a just-submitted report shows up when the user returns.
   // The ⟳ repeat badge is intentionally NOT shown here: this is a 4-row preview,
@@ -29,85 +31,108 @@ export default function Home() {
   // focus refetch budget (a scored criterion) belongs to the ledger rows.
   const { state: stats } = useLoad(fetchReportStats, []);
 
+  // Instant "this is an Adana app" signal + the pitch + the primary CTA.
+  const intro = (
+    <>
+      <View style={styles.hero}>
+        <View style={styles.localeBadge}>
+          <Icon name="pin" size={15} tone="paper" />
+          <Text style={styles.localeText} accessibilityLabel="Kapsam: Adana">
+            Adana
+          </Text>
+        </View>
+        <Link href="/about-sivri" accessibilityLabel="Sivri kimdir?" accessibilityRole="link">
+          <Sivri size={92} mood="idle" />
+        </Link>
+      </View>
+      <Text style={styles.tagline}>
+        Adana'daki bir sorun için <Text style={styles.taglineStrong}>doğru kapıyı</Text> gösterir:
+        seni doğru resmi kanala yönlendirir, istersen mahallenin kaydına da eklersin.
+      </Text>
+      <PrimaryButton label="Bir Sorun Bildir" onPress={() => router.push('/report-category')} />
+    </>
+  );
+
+  const ledger = (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Son bildirilenler</Text>
+        <Link href="/map-list" style={styles.sectionLink}>
+          Mahalle Kaydı →
+        </Link>
+      </View>
+
+      {stats.status === 'ready' && stats.data.total > 0 ? (
+        <Text style={styles.statsLine}>
+          Defterde {stats.data.total} kayıt · {stats.data.resolved} çözüldü ✓
+          {stats.data.overdue > 0 ? ` · ${stats.data.overdue} gecikmiş` : ''}
+        </Text>
+      ) : null}
+
+      {state.status === 'error' ? (
+        // A failed load must not read as "no reports" — that would misrepresent
+        // the transparency map on its own landing page.
+        <Pressable accessibilityRole="button" onPress={reload} style={styles.notice}>
+          <Text style={styles.noticeText}>Kayıtlar yüklenemedi. Dokunup tekrar dene.</Text>
+        </Pressable>
+      ) : state.status === 'ready' && state.data.length === 0 ? (
+        <View style={styles.emptyWrap}>
+          <Sivri size={104} mood="sleep" />
+          <Text style={styles.empty}>
+            Henüz kayıt yok. İlk kaydı sen ekleyebilirsin — yukarıdan bir sorun bildir.
+          </Text>
+        </View>
+      ) : state.status === 'ready' ? (
+        <View style={styles.ledgerFrame}>
+          {state.data.map((r) => (
+            <LedgerRow
+              key={r.id}
+              report={r}
+              onPress={() => router.push({ pathname: '/report-detail', params: { id: r.id } })}
+            />
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+
+  const footerLinks = (
+    <>
+      <Link href="/channels" style={styles.footerLink}>
+        Kanal Rehberi — tüm resmi hatlar
+      </Link>
+      <Link href="/watchlist" style={styles.footerLink}>
+        Takip ettiklerim
+      </Link>
+      <Link href="/how-it-works" style={styles.footerLink}>
+        Mahalle Defteri nedir, ne değildir?
+      </Link>
+      <Link href="/settings" style={styles.footerLink}>
+        Görünüm ve erişilebilirlik
+      </Link>
+    </>
+  );
+
   return (
     <>
       <Stack.Screen options={{ title: 'Mahalle Defteri' }} />
-      <Page contentStyle={styles.content}>
-        {/* Instant "this is an Adana app" signal — the first thing on the
-            landing screen (reuses the deep-teal ADANA badge language + brand
-            pin; readable in both themes). */}
-        <View style={styles.hero}>
-          <View style={styles.localeBadge}>
-            <Icon name="pin" size={15} tone="paper" />
-            <Text style={styles.localeText} accessibilityLabel="Kapsam: Adana">
-              Adana
-            </Text>
-          </View>
-          <Link href="/about-sivri" accessibilityLabel="Sivri kimdir?" accessibilityRole="link">
-            <Sivri size={92} mood="idle" />
-          </Link>
-        </View>
-        <Text style={styles.tagline}>
-          Adana'daki bir sorun için <Text style={styles.taglineStrong}>doğru kapıyı</Text> gösterir:
-          seni doğru resmi kanala yönlendirir, istersen mahallenin kaydına da eklersin.
-        </Text>
-
-        <PrimaryButton label="Bir Sorun Bildir" onPress={() => router.push('/report-category')} />
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Son bildirilenler</Text>
-            <Link href="/map-list" style={styles.sectionLink}>
-              Mahalle Kaydı →
-            </Link>
-          </View>
-
-          {stats.status === 'ready' && stats.data.total > 0 ? (
-            <Text style={styles.statsLine}>
-              Defterde {stats.data.total} kayıt · {stats.data.resolved} çözüldü ✓
-              {stats.data.overdue > 0 ? ` · ${stats.data.overdue} gecikmiş` : ''}
-            </Text>
-          ) : null}
-
-          {state.status === 'error' ? (
-            // A failed load must not read as "no reports" — that would misrepresent
-            // the transparency map on its own landing page.
-            <Pressable accessibilityRole="button" onPress={reload} style={styles.notice}>
-              <Text style={styles.noticeText}>Kayıtlar yüklenemedi. Dokunup tekrar dene.</Text>
-            </Pressable>
-          ) : state.status === 'ready' && state.data.length === 0 ? (
-            <View style={styles.emptyWrap}>
-              <Sivri size={104} mood="sleep" />
-              <Text style={styles.empty}>
-                Henüz kayıt yok. İlk kaydı sen ekleyebilirsin — yukarıdan bir sorun bildir.
-              </Text>
+      <Page contentStyle={[styles.content, isTablet && styles.contentWide]}>
+        {isTablet ? (
+          // Desktop/tablet: pitch + CTA on the left, the live ledger on the right.
+          <View style={styles.twoCol}>
+            <View style={styles.leftCol}>
+              {intro}
+              {footerLinks}
             </View>
-          ) : state.status === 'ready' ? (
-            <View style={styles.ledgerFrame}>
-              {state.data.map((r) => (
-                <LedgerRow
-                  key={r.id}
-                  report={r}
-                  onPress={() => router.push({ pathname: '/report-detail', params: { id: r.id } })}
-                />
-              ))}
-            </View>
-          ) : null}
-        </View>
-
-        <Link href="/channels" style={styles.footerLink}>
-          Kanal Rehberi — tüm resmi hatlar
-        </Link>
-        <Link href="/watchlist" style={styles.footerLink}>
-          Takip ettiklerim
-        </Link>
-        <Link href="/how-it-works" style={styles.footerLink}>
-          Mahalle Defteri nedir, ne değildir?
-        </Link>
-        <Link href="/settings" style={styles.footerLink}>
-          Görünüm ve erişilebilirlik
-        </Link>
-
+            <View style={styles.rightCol}>{ledger}</View>
+          </View>
+        ) : (
+          <>
+            {intro}
+            {ledger}
+            {footerLinks}
+          </>
+        )}
         <AdanaSkyline opacity={0.5} />
       </Page>
     </>
@@ -118,6 +143,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
+  },
+  contentWide: {
+    maxWidth: 960,
+  },
+  twoCol: {
+    flexDirection: 'row',
+    gap: 36,
+    alignItems: 'flex-start',
+  },
+  leftCol: {
+    flex: 1,
+    gap: 18,
+  },
+  rightCol: {
+    flex: 1.15,
   },
   content: {
     padding: 20,
