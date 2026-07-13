@@ -27,11 +27,16 @@ function ChannelCard({ channel }: { channel: Channel }) {
     }
   };
 
+  const isAdana = channel.scope === 'adana';
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.scopeTag}>{channel.scope === 'adana' ? 'ADANA' : 'ULUSAL'}</Text>
-        <Pressable accessibilityRole="button" onPress={copy}>
+        <View style={[styles.scopePill, isAdana ? styles.scopePillAdana : styles.scopePillNational]}>
+          <Text style={[styles.scopePillText, isAdana && styles.scopePillTextAdana]}>
+            {isAdana ? 'ADANA' : 'ULUSAL'}
+          </Text>
+        </View>
+        <Pressable accessibilityRole="button" onPress={copy} hitSlop={6}>
           <Text style={styles.actionLink}>{copied ? 'Kopyalandı ✓' : 'Bilgileri Kopyala'}</Text>
         </Pressable>
       </View>
@@ -40,11 +45,13 @@ function ChannelCard({ channel }: { channel: Channel }) {
 
       {channel.contact_phone ? (
         <Pressable
-          accessibilityRole="link"
-          accessibilityLabel={`Telefon: ${channel.contact_phone}, aramak için dokun`}
+          accessibilityRole="button"
+          accessibilityLabel={`Ara: ${channel.contact_phone}`}
           onPress={() => Linking.openURL(`tel:${channel.contact_phone!.replace(/\s/g, '')}`)}
+          style={styles.callBtn}
         >
-          <Text style={styles.mono}>☎ {channel.contact_phone}</Text>
+          <Text style={styles.callNumber}>{channel.contact_phone}</Text>
+          <Text style={styles.callHint}>Ara →</Text>
         </Pressable>
       ) : null}
       {channel.contact_url ? (
@@ -52,8 +59,12 @@ function ChannelCard({ channel }: { channel: Channel }) {
           accessibilityRole="link"
           accessibilityLabel="Web sayfasını aç"
           onPress={() => openContactUrl(channel.contact_url!)}
+          style={styles.urlRow}
         >
-          <Text style={styles.mono}>🔗 {channel.contact_url.replace(/^https?:\/\//, '')}</Text>
+          <Text style={styles.urlText} numberOfLines={1}>
+            {channel.contact_url.replace(/^https?:\/\//, '')}
+          </Text>
+          <Text style={styles.urlArrow}>Aç →</Text>
         </Pressable>
       ) : null}
 
@@ -176,11 +187,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  scopeTag: {
+  scopePill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderWidth: 1.5,
+  },
+  scopePillAdana: {
+    backgroundColor: colors.petrol,
+    borderColor: colors.petrol,
+  },
+  scopePillNational: {
+    backgroundColor: 'transparent',
+    borderColor: colors.ink,
+  },
+  scopePillText: {
     fontFamily: fonts.monoMedium,
-    fontSize: 12,
-    color: colors.petrol,
+    fontSize: 11,
     letterSpacing: 1,
+    color: colors.ink,
+  },
+  scopePillTextAdana: {
+    color: colors.paper,
   },
   actionLink: {
     fontFamily: fonts.sansSemiBold,
@@ -197,15 +225,49 @@ const styles = StyleSheet.create({
   channelDesc: {
     fontFamily: fonts.sans,
     fontSize: 14,
-    color: colors.ink,
-    opacity: 0.8,
+    color: colors.inkMuted,
+    lineHeight: 20,
   },
-  mono: {
+  // The primary action per channel: a clear, bordered "call" affordance.
+  callBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    minHeight: 50,
+    borderWidth: 1.5,
+    borderColor: colors.petrol,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    marginTop: 2,
+  },
+  callNumber: {
     fontFamily: fonts.monoMedium,
-    fontSize: 16,
+    fontSize: 18,
     color: colors.petrol,
-    paddingVertical: 12,
+  },
+  callHint: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
+  },
+  urlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
     minHeight: 44,
+  },
+  urlText: {
+    flex: 1,
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.petrol,
+  },
+  urlArrow: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
   },
   checklist: {
     gap: 2,

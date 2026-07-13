@@ -19,15 +19,28 @@ function ChannelRow({ channel }: { channel: Channel }) {
     <View style={styles.row}>
       <View style={styles.rowHead}>
         <Text style={styles.name}>{channel.name}</Text>
-        <Text style={styles.scope}>{channel.scope === 'adana' ? 'ADANA' : 'ULUSAL'}</Text>
+        {(() => {
+          const isAdana = channel.scope === 'adana';
+          return (
+            <View
+              style={[styles.scopePill, isAdana ? styles.scopePillAdana : styles.scopePillNational]}
+            >
+              <Text style={[styles.scopeText, isAdana && styles.scopeTextAdana]}>
+                {isAdana ? 'ADANA' : 'ULUSAL'}
+              </Text>
+            </View>
+          );
+        })()}
       </View>
       {channel.contact_phone ? (
         <Pressable
-          accessibilityRole="link"
-          accessibilityLabel={`Telefon: ${channel.contact_phone}, aramak için dokun`}
+          accessibilityRole="button"
+          accessibilityLabel={`Ara: ${channel.contact_phone}`}
           onPress={() => Linking.openURL(`tel:${channel.contact_phone!.replace(/\s/g, '')}`)}
+          style={styles.contactRow}
         >
-          <Text style={styles.contact}>☎ {channel.contact_phone}</Text>
+          <Text style={styles.contactText}>{channel.contact_phone}</Text>
+          <Text style={styles.contactHint}>Ara →</Text>
         </Pressable>
       ) : null}
       {channel.contact_url ? (
@@ -35,8 +48,12 @@ function ChannelRow({ channel }: { channel: Channel }) {
           accessibilityRole="link"
           accessibilityLabel="Web sayfasını aç"
           onPress={() => openContactUrl(channel.contact_url!)}
+          style={styles.contactRow}
         >
-          <Text style={styles.contact}>🔗 {channel.contact_url.replace(/^https?:\/\//, '')}</Text>
+          <Text style={styles.contactText} numberOfLines={1}>
+            {channel.contact_url.replace(/^https?:\/\//, '')}
+          </Text>
+          <Text style={styles.contactHint}>Aç →</Text>
         </Pressable>
       ) : null}
     </View>
@@ -151,16 +168,37 @@ const styles = StyleSheet.create({
     color: colors.ink,
     lineHeight: 21,
   },
-  scope: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 11,
-    color: colors.petrol,
-    letterSpacing: 1,
+  scopePill: {
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 2,
+    borderWidth: 1.5,
   },
-  contact: {
+  scopePillAdana: { backgroundColor: colors.petrol, borderColor: colors.petrol },
+  scopePillNational: { backgroundColor: 'transparent', borderColor: colors.ink },
+  scopeText: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 10,
+    letterSpacing: 1,
+    color: colors.ink,
+  },
+  scopeTextAdana: { color: colors.paper },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    minHeight: 40,
+  },
+  contactText: {
+    flex: 1,
     fontFamily: fonts.mono,
     fontSize: 14,
     color: colors.petrol,
-    paddingVertical: 6,
+  },
+  contactHint: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 13,
+    color: colors.petrol,
   },
 });
