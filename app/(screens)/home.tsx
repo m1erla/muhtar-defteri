@@ -1,6 +1,7 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import Icon from '@/components/icon';
 import LedgerRow from '@/components/ledger-row';
 import PrimaryButton from '@/components/primary-button';
 import { fetchReports, fetchReportStats } from '@/lib/reports';
@@ -29,6 +30,15 @@ export default function Home() {
     <>
       <Stack.Screen options={{ title: 'Mahalle Defteri' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {/* Instant "this is an Adana app" signal — the first thing on the
+            landing screen (reuses the deep-teal ADANA badge language + brand
+            pin; readable in both themes). */}
+        <View style={styles.localeBadge}>
+          <Icon name="pin" size={15} tone="paper" />
+          <Text style={styles.localeText} accessibilityLabel="Kapsam: Adana">
+            Adana
+          </Text>
+        </View>
         <Text style={styles.tagline}>
           Adana'daki bir sorunu doğru resmi kanala bildir — istersen mahallenin kaydına da ekle.
         </Text>
@@ -99,12 +109,28 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingBottom: 40,
   },
+  localeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.scopeAdanaBg,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 8,
+  },
+  localeText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.scopeAdanaText,
+    letterSpacing: 0.5,
+  },
   tagline: {
     fontFamily: fonts.sans,
     fontSize: 16,
     color: colors.ink,
     lineHeight: 23,
-    marginTop: 8,
   },
   section: {
     marginTop: 8,
