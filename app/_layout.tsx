@@ -58,7 +58,9 @@ export default function RootLayout() {
   return (
     <DisplaySettingsProvider>
       <Head>
-        <title>Mahalle Defteri</title>
+        {/* Default browser-tab title — includes the city so a shared link or a
+            bookmarked tab reads as an Adana app. Per-screen titles override it. */}
+        <title>Mahalle Defteri · Adana</title>
       </Head>
       <Stack
         screenOptions={{

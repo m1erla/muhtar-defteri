@@ -85,7 +85,7 @@ export default function Root({ children }: PropsWithChildren) {
             so a root og:url would make crawlers (Facebook especially)
             canonicalize shared /report-detail links back to the homepage. With
             no og:url, crawlers fall back to the fetched URL. */}
-        <meta property="og:title" content="Mahalle Defteri" />
+        <meta property="og:title" content="Mahalle Defteri · Adana" />
         <meta
           property="og:description"
           content="Adana'daki yerel bir sorunu doğru resmi kanala yönlendirir; istersen mahallenin açık kaydına eklersin. Resmi bir kanal değil."
@@ -94,7 +94,7 @@ export default function Root({ children }: PropsWithChildren) {
             root-relative og:image. */}
         <meta property="og:image" content="https://muhtar-defteri.com/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mahalle Defteri" />
+        <meta name="twitter:title" content="Mahalle Defteri · Adana" />
         <meta name="twitter:image" content="https://muhtar-defteri.com/og-image.png" />
 
         {/* Branded stamp mark — SVG for crisp tabs, PNG for iOS home-screen. */}
