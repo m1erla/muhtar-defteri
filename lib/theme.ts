@@ -21,6 +21,10 @@ export const colors = {
   // the fill stays dark enough for the light/white label to clear AA.
   scopeAdanaBg: 'var(--scope-adana-bg)',
   scopeAdanaText: 'var(--scope-adana-text)',
+  // Drop shadow under the Leaflet map pins. The pins sit on the (theme-independent)
+  // OSM tiles, so this stays a dark shade in every theme, just a touch stronger as
+  // contrast rises. A token so the divIcon markup has no raw hex.
+  mapPinShadow: 'var(--map-pin-shadow)',
 } as const;
 
 // Concrete palettes behind the variables. LIGHT is the original FRONTEND.md
@@ -34,6 +38,7 @@ export type Palette = {
   terracottaText: string; mossText: string; inkMuted: string;
   pressOverlay: string; stampOpen: string; stampResolved: string;
   scopeAdanaBg: string; scopeAdanaText: string;
+  mapPinShadow: string;
 };
 
 export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
@@ -44,6 +49,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     pressOverlay: 'rgba(43,38,32,0.06)',
     stampOpen: 'rgba(188,90,60,0.13)', stampResolved: 'rgba(91,112,82,0.13)',
     scopeAdanaBg: '#1F5C5C', scopeAdanaText: '#EDE6D8', // cream on deep petrol
+    mapPinShadow: 'rgba(0,0,0,0.40)',
   },
   dark: {
     ink: '#E8E1D3', paper: '#201C17', petrol: '#63ADAD',
@@ -53,6 +59,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     stampOpen: 'rgba(211,134,107,0.20)', stampResolved: 'rgba(140,163,127,0.20)',
     // Deep teal (not the bright link-petrol) so white text clears AA (~5.4:1).
     scopeAdanaBg: '#2A6E6E', scopeAdanaText: '#FFFFFF',
+    mapPinShadow: 'rgba(0,0,0,0.50)',
   },
   hc: {
     ink: '#161310', paper: '#F4EFE4', petrol: '#0F3F3F',
@@ -61,6 +68,7 @@ export const PALETTES: Record<'light' | 'dark' | 'hc', Palette> = {
     pressOverlay: 'rgba(22,19,16,0.12)',
     stampOpen: 'rgba(180,73,31,0.18)', stampResolved: 'rgba(58,77,46,0.18)',
     scopeAdanaBg: '#0F3F3F', scopeAdanaText: '#FFFFFF',
+    mapPinShadow: 'rgba(0,0,0,0.55)',
   },
 };
 

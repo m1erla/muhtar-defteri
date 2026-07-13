@@ -1,10 +1,11 @@
 import { Link, Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ChannelContact, ScopePill } from '@/components/channel-contact';
 import LoadStateView from '@/components/load-state-view';
 import { getCategory } from '@/lib/categories';
-import { fetchChannels, openContactUrl, type Channel } from '@/lib/channels';
+import { fetchChannels, type Channel } from '@/lib/channels';
 import { getDraft } from '@/lib/report-draft';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -27,15 +28,10 @@ function ChannelCard({ channel }: { channel: Channel }) {
     }
   };
 
-  const isAdana = channel.scope === 'adana';
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <View style={[styles.scopePill, isAdana ? styles.scopePillAdana : styles.scopePillNational]}>
-          <Text style={[styles.scopePillText, isAdana && styles.scopePillTextAdana]}>
-            {isAdana ? 'ADANA' : 'ULUSAL'}
-          </Text>
-        </View>
+        <ScopePill scope={channel.scope} />
         <Pressable accessibilityRole="button" onPress={copy} hitSlop={6}>
           <Text style={styles.actionLink}>{copied ? 'Kopyalandı ✓' : 'Bilgileri Kopyala'}</Text>
         </Pressable>
@@ -43,30 +39,7 @@ function ChannelCard({ channel }: { channel: Channel }) {
       <Text style={styles.channelName}>{channel.name}</Text>
       {channel.description ? <Text style={styles.channelDesc}>{channel.description}</Text> : null}
 
-      {channel.contact_phone ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Ara: ${channel.contact_phone}`}
-          onPress={() => Linking.openURL(`tel:${channel.contact_phone!.replace(/\s/g, '')}`)}
-          style={styles.callBtn}
-        >
-          <Text style={styles.callNumber}>{channel.contact_phone}</Text>
-          <Text style={styles.callHint}>Ara →</Text>
-        </Pressable>
-      ) : null}
-      {channel.contact_url ? (
-        <Pressable
-          accessibilityRole="link"
-          accessibilityLabel="Web sayfasını aç"
-          onPress={() => openContactUrl(channel.contact_url!)}
-          style={styles.urlRow}
-        >
-          <Text style={styles.urlText} numberOfLines={1}>
-            {channel.contact_url.replace(/^https?:\/\//, '')}
-          </Text>
-          <Text style={styles.urlArrow}>Aç →</Text>
-        </Pressable>
-      ) : null}
+      <ChannelContact channel={channel} prominent />
 
       {channel.required_info?.length ? (
         <View style={styles.checklist}>
@@ -187,29 +160,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  scopePill: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderWidth: 1.5,
-  },
-  scopePillAdana: {
-    backgroundColor: colors.scopeAdanaBg,
-    borderColor: colors.scopeAdanaBg,
-  },
-  scopePillNational: {
-    backgroundColor: 'transparent',
-    borderColor: colors.ink,
-  },
-  scopePillText: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.ink,
-  },
-  scopePillTextAdana: {
-    color: colors.scopeAdanaText,
-  },
   actionLink: {
     fontFamily: fonts.sansSemiBold,
     fontSize: 15,
@@ -227,47 +177,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.inkMuted,
     lineHeight: 20,
-  },
-  // The primary action per channel: a clear, bordered "call" affordance.
-  callBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    minHeight: 50,
-    borderWidth: 1.5,
-    borderColor: colors.petrol,
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    marginTop: 2,
-  },
-  callNumber: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 18,
-    color: colors.petrol,
-  },
-  callHint: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 14,
-    color: colors.petrol,
-  },
-  urlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    minHeight: 44,
-  },
-  urlText: {
-    flex: 1,
-    fontFamily: fonts.mono,
-    fontSize: 14,
-    color: colors.petrol,
-  },
-  urlArrow: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 14,
-    color: colors.petrol,
   },
   checklist: {
     gap: 2,

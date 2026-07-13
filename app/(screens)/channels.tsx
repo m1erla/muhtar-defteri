@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CategoryMark from '@/components/category-mark';
+import { ChannelContact, ScopePill } from '@/components/channel-contact';
 import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES } from '@/lib/categories';
-import { fetchChannels, openContactUrl, type Channel } from '@/lib/channels';
+import { fetchChannels, type Channel } from '@/lib/channels';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
@@ -19,43 +20,9 @@ function ChannelRow({ channel }: { channel: Channel }) {
     <View style={styles.row}>
       <View style={styles.rowHead}>
         <Text style={styles.name}>{channel.name}</Text>
-        {(() => {
-          const isAdana = channel.scope === 'adana';
-          return (
-            <View
-              style={[styles.scopePill, isAdana ? styles.scopePillAdana : styles.scopePillNational]}
-            >
-              <Text style={[styles.scopeText, isAdana && styles.scopeTextAdana]}>
-                {isAdana ? 'ADANA' : 'ULUSAL'}
-              </Text>
-            </View>
-          );
-        })()}
+        <ScopePill scope={channel.scope} />
       </View>
-      {channel.contact_phone ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Ara: ${channel.contact_phone}`}
-          onPress={() => Linking.openURL(`tel:${channel.contact_phone!.replace(/\s/g, '')}`)}
-          style={styles.contactRow}
-        >
-          <Text style={styles.contactText}>{channel.contact_phone}</Text>
-          <Text style={styles.contactHint}>Ara →</Text>
-        </Pressable>
-      ) : null}
-      {channel.contact_url ? (
-        <Pressable
-          accessibilityRole="link"
-          accessibilityLabel="Web sayfasını aç"
-          onPress={() => openContactUrl(channel.contact_url!)}
-          style={styles.contactRow}
-        >
-          <Text style={styles.contactText} numberOfLines={1}>
-            {channel.contact_url.replace(/^https?:\/\//, '')}
-          </Text>
-          <Text style={styles.contactHint}>Aç →</Text>
-        </Pressable>
-      ) : null}
+      <ChannelContact channel={channel} />
     </View>
   );
 }
@@ -167,38 +134,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.ink,
     lineHeight: 21,
-  },
-  scopePill: {
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 2,
-    borderWidth: 1.5,
-  },
-  scopePillAdana: { backgroundColor: colors.scopeAdanaBg, borderColor: colors.scopeAdanaBg },
-  scopePillNational: { backgroundColor: 'transparent', borderColor: colors.ink },
-  scopeText: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 10,
-    letterSpacing: 1,
-    color: colors.ink,
-  },
-  scopeTextAdana: { color: colors.scopeAdanaText },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    minHeight: 40,
-  },
-  contactText: {
-    flex: 1,
-    fontFamily: fonts.mono,
-    fontSize: 14,
-    color: colors.petrol,
-  },
-  contactHint: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 13,
-    color: colors.petrol,
   },
 });

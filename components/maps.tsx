@@ -21,7 +21,7 @@ function dotIcon(color: string, sizePx: number) {
   const border = Math.max(2, Math.round(sizePx / 7));
   return divIcon({
     className: '',
-    html: `<div style="width:${sizePx}px;height:${sizePx}px;border-radius:${sizePx / 2}px;background:${color};border:${border}px solid ${colors.paper};box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+    html: `<div style="width:${sizePx}px;height:${sizePx}px;border-radius:${sizePx / 2}px;background:${color};border:${border}px solid ${colors.paper};box-shadow:0 1px 4px ${colors.mapPinShadow};"></div>`,
     iconSize: [sizePx, sizePx],
     iconAnchor: [sizePx / 2, sizePx / 2],
   });
@@ -110,7 +110,7 @@ function clusterPinIcon(status: 'open' | 'resolved', count: number) {
     const size = 26;
     return divIcon({
       className: '',
-      html: `<div title="${label} · ${count} kayıt" style="width:${size}px;height:${size}px;border-radius:${size / 2}px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 4px rgba(0,0,0,0.45);color:${colors.paper};font-family:monospace;font-weight:700;font-size:13px;line-height:${size - 4}px;text-align:center;">${count}</div>`,
+      html: `<div title="${label} · ${count} kayıt" style="width:${size}px;height:${size}px;border-radius:${size / 2}px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 4px ${colors.mapPinShadow};color:${colors.paper};font-family:monospace;font-weight:700;font-size:13px;line-height:${size - 4}px;text-align:center;">${count}</div>`,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
     });
@@ -121,7 +121,7 @@ function clusterPinIcon(status: 'open' | 'resolved', count: number) {
       : '';
   return divIcon({
     className: '',
-    html: `<div title="${label}" style="width:18px;height:18px;border-radius:9px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 3px rgba(0,0,0,0.4);">${check}</div>`,
+    html: `<div title="${label}" style="width:18px;height:18px;border-radius:9px;background:${color};border:2px solid ${colors.paper};box-shadow:0 1px 3px ${colors.mapPinShadow};">${check}</div>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
   });
