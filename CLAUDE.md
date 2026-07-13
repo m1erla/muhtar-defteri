@@ -33,10 +33,11 @@ app/
   _layout.tsx            -- root Stack, font loading, global ErrorBoundary
   +html.tsx              -- static web shell: lang, meta/OG, favicon links
   index.tsx              -- redirect to /home
-  (screens)/             -- the 10 screens (home, report-category, report-details,
+  (screens)/             -- the 11 screens (home, report-category, report-details,
                             routing-result, add-to-map, map-list, report-detail,
                             how-it-works, channels = Kanal Rehberi directory,
-                            settings = Görünüm/erişilebilirlik)
+                            settings = Görünüm/erişilebilirlik,
+                            watchlist = Takip Ettiklerim, device-local)
 components/              -- sibling of app/, NOT inside it — expo-router treats
 lib/                     -- files under app/ as routes
   supabase.ts            -- lazy client + SupabaseConfigError/friendlyDbError
