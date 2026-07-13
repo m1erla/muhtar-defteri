@@ -87,6 +87,9 @@ export default function AddToMap() {
           Fotoğrafın ve yaklaşık konumun herkese açık haritada görünür. Kişisel bilgin paylaşılmaz.
         </Text>
         <Text style={styles.bodyDim}>
+          Başkalarının yüzü, aracı veya kişisel bilgileri görünüyorsa paylaşmamaya özen göster.
+        </Text>
+        <Text style={styles.bodyDim}>
           Bu adım isteğe bağlı — resmi kanala başvurunu zaten yaptın ya da yapabilirsin. Haritaya
           eklemek sadece sorunun kaydını mahallen için görünür kılar.
         </Text>

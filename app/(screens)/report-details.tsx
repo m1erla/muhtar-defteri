@@ -181,6 +181,9 @@ export default function ReportDetails() {
           />
         )}
         {photoError ? <Text style={styles.locationError}>{photoError}</Text> : null}
+        <Text style={styles.qualityHint}>
+          Fotoğrafta başkalarının yüzü, aracı veya kişisel bilgileri varsa paylaşmamaya özen göster.
+        </Text>
 
         {Platform.OS === 'web' ? (
           <>
