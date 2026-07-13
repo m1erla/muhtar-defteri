@@ -1,5 +1,5 @@
 import type { CategorySlug } from './categories';
-import { ARCHIVE_DAYS, calendarDaysSince } from './format';
+import { ARCHIVE_DAYS, RESPONSE_BENCHMARK_DAYS, businessDaysSince, calendarDaysSince } from './format';
 import { nominatimFetch } from './geocode';
 import { generateId, getSessionId } from './session';
 import { getSupabase } from './supabase';
@@ -29,6 +29,13 @@ export type ReportFilters = {
 
 export function confirmationCount(report: Report): number {
   return report.confirmations?.[0]?.count ?? 0;
+}
+
+// An open report past Adana Büyükşehir's stated response-time benchmark (PRD §11)
+// — the same "gecikmiş" test the detail screen shows, so the map/list chip, the
+// stats strip and Home's count all agree with the per-report line.
+export function isOverdue(report: Pick<Report, 'status' | 'created_at'>): boolean {
+  return report.status === 'open' && businessDaysSince(report.created_at) > RESPONSE_BENCHMARK_DAYS;
 }
 
 // A report the community has let go stale: still open, never re-verified by
@@ -69,13 +76,42 @@ export async function fetchReports(filters: ReportFilters = {}, limit = 100): Pr
   return (data ?? []) as Report[];
 }
 
-// Two head-only counts for Home's ledger stats line — no rows transferred.
-export async function fetchReportStats(): Promise<{ total: number; resolved: number }> {
-  const base = () => getSupabase().from('reports').select('*', { count: 'exact', head: true });
-  const [totalRes, resolvedRes] = await Promise.all([base(), base().eq('status', 'resolved')]);
+// Home's ledger stats line: two head-only counts (no rows) + the overdue tally.
+// Overdue needs business-day math per row, so it pulls only the open rows'
+// created_at (small payload, capped) and applies isOverdue client-side so the
+// count matches the detail screen exactly.
+export async function fetchReportStats(): Promise<{
+  total: number;
+  resolved: number;
+  overdue: number;
+}> {
+  const sb = getSupabase();
+  const head = () => sb.from('reports').select('*', { count: 'exact', head: true });
+  const [totalRes, resolvedRes, openRows] = await Promise.all([
+    head(),
+    head().eq('status', 'resolved'),
+    sb.from('reports').select('created_at').eq('status', 'open').limit(1000),
+  ]);
   if (totalRes.error) throw new Error(totalRes.error.message);
   if (resolvedRes.error) throw new Error(resolvedRes.error.message);
-  return { total: totalRes.count ?? 0, resolved: resolvedRes.count ?? 0 };
+  if (openRows.error) throw new Error(openRows.error.message);
+  const overdue = ((openRows.data ?? []) as { created_at: string }[]).filter((r) =>
+    isOverdue({ status: 'open', created_at: r.created_at })
+  ).length;
+  return { total: totalRes.count ?? 0, resolved: resolvedRes.count ?? 0, overdue };
+}
+
+// Reports for the device-local watchlist (lib/watchlist.ts). Fetched by id in
+// one round trip; caller re-orders to the saved order. A watched report that was
+// purged simply drops out. Empty in → empty out (no query).
+export async function fetchReportsByIds(ids: string[]): Promise<Report[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await getSupabase()
+    .from('reports')
+    .select('*, confirmations(count)')
+    .in('id', ids);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Report[];
 }
 
 export async function fetchReport(id: string): Promise<Report | null> {

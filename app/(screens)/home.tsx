@@ -57,6 +57,7 @@ export default function Home() {
           {stats.status === 'ready' && stats.data.total > 0 ? (
             <Text style={styles.statsLine}>
               Defterde {stats.data.total} kayıt · {stats.data.resolved} çözüldü ✓
+              {stats.data.overdue > 0 ? ` · ${stats.data.overdue} gecikmiş` : ''}
             </Text>
           ) : null}
 
@@ -85,6 +86,9 @@ export default function Home() {
 
         <Link href="/channels" style={styles.footerLink}>
           Kanal Rehberi — tüm resmi hatlar
+        </Link>
+        <Link href="/watchlist" style={styles.footerLink}>
+          Takip ettiklerim
         </Link>
         <Link href="/how-it-works" style={styles.footerLink}>
           Mahalle Defteri nedir, ne değildir?

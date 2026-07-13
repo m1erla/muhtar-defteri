@@ -1,14 +1,30 @@
 import { Stack } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import CategoryMark from '@/components/category-mark';
 import { ChannelContact, ScopePill } from '@/components/channel-contact';
 import LoadStateView from '@/components/load-state-view';
-import { CATEGORIES } from '@/lib/categories';
+import { CATEGORIES, getCategory } from '@/lib/categories';
 import { fetchChannels, type Channel } from '@/lib/channels';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
+import { trMatch } from '@/lib/tr-normalize';
 import { useLoad } from '@/lib/use-load';
+
+// Does a channel match the directory search? Folds Turkish characters, and
+// searches name + category label + description + phone so "cukurova", "185" or
+// "cimer" all land.
+function channelMatches(channel: Channel, query: string): boolean {
+  if (!query.trim()) return true;
+  const hay = [
+    channel.name,
+    getCategory(channel.category)?.label ?? '',
+    channel.description ?? '',
+    channel.contact_phone ?? '',
+  ].join(' ');
+  return trMatch(hay, query);
+}
 
 // Kanal Rehberi — the phone list in the back of the ledger. Every verified
 // channel, browsable without filing a report. Compact rows on purpose: the
@@ -29,6 +45,13 @@ function ChannelRow({ channel }: { channel: Channel }) {
 
 export default function ChannelDirectory() {
   const { state, reload } = useLoad(() => fetchChannels(), []);
+  const [query, setQuery] = useState('');
+
+  const data = state.status === 'ready' ? state.data : [];
+  const groups = CATEGORIES.map((c) => ({
+    category: c,
+    rows: data.filter((ch) => ch.category === c.slug && channelMatches(ch, query)),
+  })).filter((g) => g.rows.length > 0);
 
   return (
     <>
@@ -42,6 +65,19 @@ export default function ChannelDirectory() {
           Defteri'nin bu kanallarla resmi bir bağı yoktur.
         </Text>
 
+        {state.status === 'ready' ? (
+          <TextInput
+            style={styles.search}
+            placeholder="Ara: kanal, kategori ya da numara"
+            placeholderTextColor={colors.inkMuted}
+            accessibilityLabel="Kanallarda ara"
+            value={query}
+            onChangeText={setQuery}
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+          />
+        ) : null}
+
         {state.status === 'loading' ? <LoadStateView loading /> : null}
         {state.status === 'error' ? (
           <LoadStateView
@@ -53,25 +89,23 @@ export default function ChannelDirectory() {
           />
         ) : null}
 
-        {state.status === 'ready'
-          ? CATEGORIES.map((c) => {
-              const rows = state.data.filter((ch) => ch.category === c.slug);
-              if (rows.length === 0) return null;
-              return (
-                <View key={c.slug} style={styles.group}>
-                  <View style={styles.groupHeader}>
-                    <CategoryMark slug={c.slug} size={40} iconSize={24} />
-                    <Text style={styles.groupTitle} accessibilityRole="header">
-                      {c.label}
-                    </Text>
-                  </View>
-                  {rows.map((ch) => (
-                    <ChannelRow key={ch.id} channel={ch} />
-                  ))}
-                </View>
-              );
-            })
-          : null}
+        {state.status === 'ready' && groups.length === 0 ? (
+          <LoadStateView message="Bu aramayla eşleşen kanal yok." />
+        ) : null}
+
+        {groups.map(({ category: c, rows }) => (
+          <View key={c.slug} style={styles.group}>
+            <View style={styles.groupHeader}>
+              <CategoryMark slug={c.slug} size={40} iconSize={24} />
+              <Text style={styles.groupTitle} accessibilityRole="header">
+                {c.label}
+              </Text>
+            </View>
+            {rows.map((ch) => (
+              <ChannelRow key={ch.id} channel={ch} />
+            ))}
+          </View>
+        ))}
       </ScrollView>
     </>
   );
@@ -101,6 +135,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.inkMuted,
     lineHeight: 22,
+  },
+  search: {
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 6,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    fontFamily: fonts.sans,
+    fontSize: 16,
+    color: colors.ink,
+    marginTop: 4,
   },
   group: {
     marginTop: 10,

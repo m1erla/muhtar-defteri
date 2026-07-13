@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ChannelContact, ScopePill } from '@/components/channel-contact';
 import LoadStateView from '@/components/load-state-view';
 import { getCategory } from '@/lib/categories';
-import { fetchChannels, type Channel } from '@/lib/channels';
+import { buildReportMessage, fetchChannels, type Channel } from '@/lib/channels';
 import { getDraft } from '@/lib/report-draft';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -13,6 +13,7 @@ import { useLoad } from '@/lib/use-load';
 
 function ChannelCard({ channel }: { channel: Channel }) {
   const [copied, setCopied] = useState(false);
+  const [msgCopied, setMsgCopied] = useState(false);
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
   const copy = async () => {
@@ -28,6 +29,19 @@ function ChannelCard({ channel }: { channel: Channel }) {
     }
   };
 
+  // For form/portal channels, hand the resident a ready-to-paste complaint text
+  // built from their draft — writing the message is the real friction. Plainly
+  // their own words; the app never submits for them.
+  const copyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(buildReportMessage());
+      setMsgCopied(true);
+      setTimeout(() => setMsgCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — the form is still one tap away via "Aç →".
+    }
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -39,7 +53,20 @@ function ChannelCard({ channel }: { channel: Channel }) {
       <Text style={styles.channelName}>{channel.name}</Text>
       {channel.description ? <Text style={styles.channelDesc}>{channel.description}</Text> : null}
 
-      <ChannelContact channel={channel} prominent />
+      <ChannelContact channel={channel} prominent whatsappText={buildReportMessage()} />
+
+      {channel.contact_url ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Başvuru metnini kopyala"
+          onPress={copyMessage}
+          style={styles.copyMsgBtn}
+        >
+          <Text style={styles.copyMsgText}>
+            {msgCopied ? 'Başvuru metni kopyalandı ✓' : 'Başvuru metnini kopyala'}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {channel.required_info?.length ? (
         <View style={styles.checklist}>
@@ -177,6 +204,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.inkMuted,
     lineHeight: 20,
+  },
+  copyMsgBtn: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+  },
+  copyMsgText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.ink,
   },
   checklist: {
     gap: 2,

@@ -21,9 +21,12 @@ create table if not exists channels (
   description text,
   contact_phone text,
   contact_url text,
+  contact_whatsapp text,         -- tappable wa.me line (ALO 153); null for most
   required_info text[],
   notes text
 );
+-- Added after the initial table shipped; keep for existing databases.
+alter table channels add column if not exists contact_whatsapp text;
 
 create table if not exists reports (
   id uuid primary key default gen_random_uuid(),

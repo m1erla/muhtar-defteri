@@ -167,3 +167,9 @@ insert into channels (category, name, scope, description, contact_phone, contact
  '181', 'https://alo181.gov.tr',
  array['Konum tarifi', 'Gürültünün kaynağı', 'Web formu için TC kimlik no'],
  'Arama ücretlidir (acil numara değildir). WhatsApp: 0532 010 11 81 (resmi sitede listeli).');
+
+-- ── WhatsApp lines ───────────────────────────────────────────────────────────
+-- Tappable wa.me hand-off for ALO 153 (verified 0535 454 01 01, adana.bel.tr,
+-- Tem 2026 — live-test before the demo). Only the ALO 153 Adana rows carry it;
+-- kept as an UPDATE so the inserts above stay column-stable.
+update channels set contact_whatsapp = '0535 454 01 01' where contact_phone = '153';

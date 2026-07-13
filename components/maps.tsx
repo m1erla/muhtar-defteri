@@ -99,6 +99,33 @@ export function LocationPickerMap({
   );
 }
 
+// Read-only single-pin map for the report-detail screen. A report's location is
+// otherwise only a neighborhood name — invisible when reverse-geocoding failed —
+// so this shows WHERE the problem is. The pin isn't draggable; the user can
+// still pan/zoom to get their bearings.
+export function ReportLocationMap({
+  latitude,
+  longitude,
+  status,
+}: {
+  latitude: number;
+  longitude: number;
+  status: 'open' | 'resolved';
+}) {
+  return (
+    <MapContainer center={[latitude, longitude]} zoom={16} style={{ width: '100%', height: '100%' }}>
+      <TileLayer
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      />
+      <Marker
+        position={[latitude, longitude]}
+        icon={dotIcon(status === 'open' ? colors.terracotta : colors.moss, 22)}
+      />
+    </MapContainer>
+  );
+}
+
 // Read-only cluster pins for the map/list view. Status is never color-only
 // (FRONTEND.md §7): a lone resolved pin carries a check glyph. A cluster of >1
 // report at the same spot shows its count, larger — density visible at a glance

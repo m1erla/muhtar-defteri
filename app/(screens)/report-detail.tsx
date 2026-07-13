@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CategoryMark from '@/components/category-mark';
@@ -9,6 +9,8 @@ import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
 import { getCategory } from '@/lib/categories';
+import { useLazyMap } from '@/lib/use-lazy-map';
+import { isWatched, toggleWatch } from '@/lib/watchlist';
 import {
   businessDaysSince,
   calendarDaysSince,
@@ -69,6 +71,15 @@ export default function ReportDetail() {
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [shared, setShared] = useState(false);
   const [flagOpen, setFlagOpen] = useState(false);
+  const [watched, setWatched] = useState(false);
+
+  const { Map: LocationMap } = useLazyMap('ReportLocationMap');
+
+  const reportId = state.status === 'ready' ? state.data.report?.id : undefined;
+  // Sync the follow state from localStorage once the report id is known.
+  useEffect(() => {
+    setWatched(reportId ? isWatched(reportId) : false);
+  }, [reportId]);
 
   // Native share sheet where the browser has one (mobile — WhatsApp is the
   // point); clipboard fallback elsewhere. Never throws: a dismissed sheet is
@@ -179,6 +190,16 @@ export default function ReportDetail() {
               />
             ) : null}
 
+            {LocationMap ? (
+              <View style={styles.mapBox}>
+                <LocationMap
+                  latitude={ready.report.latitude}
+                  longitude={ready.report.longitude}
+                  status={ready.report.status}
+                />
+              </View>
+            ) : null}
+
             <View style={styles.ledgerBlock}>
               <Text style={styles.mono}>
                 İlk bildirilme: {daysAgoLabel(ready.report.created_at)}
@@ -245,6 +266,20 @@ export default function ReportDetail() {
                 />
               </View>
             )}
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: watched }}
+              accessibilityLabel={watched ? 'Takibi bırak' : 'Bu kaydı takip et'}
+              onPress={() => {
+                if (reportId) setWatched(toggleWatch(reportId));
+              }}
+              style={styles.watchRow}
+            >
+              <Text style={styles.watchLink}>
+                {watched ? 'Takip ediliyor ✓ — bırak' : 'Takip et — durumunu buradan izle'}
+              </Text>
+            </Pressable>
 
             <Pressable
               accessibilityRole="button"
@@ -343,6 +378,25 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: colors.ink,
+  },
+  mapBox: {
+    height: 200,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    overflow: 'hidden',
+  },
+  watchRow: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  watchLink: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
+    textAlign: 'center',
+    paddingVertical: 12,
   },
   ledgerBlock: {
     borderTopWidth: StyleSheet.hairlineWidth,

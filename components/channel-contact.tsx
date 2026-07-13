@@ -1,6 +1,6 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { openContactUrl, type Channel } from '@/lib/channels';
+import { openContactUrl, whatsappHref, type Channel } from '@/lib/channels';
 import { colors, fonts } from '@/lib/theme';
 
 // Shared channel bits used by BOTH the routing result (rich card) and the Kanal
@@ -26,9 +26,13 @@ export function ScopePill({ scope }: { scope: Channel['scope'] }) {
 export function ChannelContact({
   channel,
   prominent = false,
+  whatsappText,
 }: {
   channel: Channel;
   prominent?: boolean;
+  // Pre-filled message for the WhatsApp hand-off (routing result, where a draft
+  // exists). Omitted on the directory — the CTA then just opens the chat.
+  whatsappText?: string;
 }) {
   return (
     <>
@@ -41,6 +45,17 @@ export function ChannelContact({
         >
           <Text style={prominent ? s.callNumber : s.text}>{channel.contact_phone}</Text>
           <Text style={prominent ? s.callHint : s.hint}>Ara →</Text>
+        </Pressable>
+      ) : null}
+      {channel.contact_whatsapp ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`WhatsApp ile yaz: ${channel.contact_whatsapp}`}
+          onPress={() => Linking.openURL(whatsappHref(channel.contact_whatsapp!, whatsappText))}
+          style={s.row}
+        >
+          <Text style={s.text}>WhatsApp · {channel.contact_whatsapp}</Text>
+          <Text style={s.hint}>Yaz →</Text>
         </Pressable>
       ) : null}
       {channel.contact_url ? (

@@ -2,12 +2,13 @@ import { Stack, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import CategoryMark from '@/components/category-mark';
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
-import { CATEGORIES, type CategorySlug } from '@/lib/categories';
-import { clusterCounts, clusterKey } from '@/lib/cluster';
+import { CATEGORIES, getCategory, type CategorySlug } from '@/lib/categories';
+import { clusterCounts, clusterKey, clusterReports } from '@/lib/cluster';
 import { consumeReportAdded } from '@/lib/flash';
-import { fetchReports, isArchivable } from '@/lib/reports';
+import { fetchReports, isArchivable, isOverdue } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -34,6 +35,8 @@ export default function MapList() {
 
   const [category, setCategory] = useState<CategorySlug | null>(null);
   const [status, setStatus] = useState<'open' | 'resolved' | null>(null);
+  // Show only reports past the response benchmark (accountability filter).
+  const [overdueOnly, setOverdueOnly] = useState(false);
   // Old, never-re-verified open reports drop off the default view (kept in the
   // DB) so the active map stays honest; the toggle brings them back.
   const [showOld, setShowOld] = useState(false);
@@ -68,17 +71,90 @@ export default function MapList() {
   // render — this screen re-renders on resize, the toast timer, focus refetch and
   // each chip toggle, and clusterCounts + the isArchivable date-parse both run
   // over all ~500 rows. Stable refs also keep <MapView> from re-clustering.
-  const { counts, filtered, visible, hiddenCount } = useMemo(() => {
+  const { counts, filtered, visible, hiddenCount, spotlight, stats } = useMemo(() => {
     const counts = clusterCounts(all);
     const filtered = all.filter(
-      (r) => (!category || r.category === category) && (!status || r.status === status)
+      (r) =>
+        (!category || r.category === category) &&
+        (!status || r.status === status) &&
+        (!overdueOnly || isOverdue(r))
     );
     const visible = showOld ? filtered : filtered.filter((r) => !isArchivable(r));
-    return { counts, filtered, visible, hiddenCount: filtered.length - visible.length };
-  }, [all, category, status, showOld]);
+
+    // Spotlight the worst recurring spots (⟳ > 1), most-reported first — computed
+    // over ALL reports so it's a stable, filter-independent signal.
+    const spotlight = clusterReports(all)
+      .filter((c) => c.count > 1)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    // Transparency numbers over the loaded set.
+    const resolved = all.filter((r) => r.status === 'resolved').length;
+    const overdue = all.filter(isOverdue).length;
+    const catCount = new Map<string, number>();
+    const nbCount = new Map<string, number>();
+    for (const r of all) {
+      catCount.set(r.category, (catCount.get(r.category) ?? 0) + 1);
+      const nb = r.neighborhood || 'Adana';
+      nbCount.set(nb, (nbCount.get(nb) ?? 0) + 1);
+    }
+    const top = (m: Map<string, number>) =>
+      [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const topCat = top(catCount);
+    const stats = {
+      total: all.length,
+      resolved,
+      overdue,
+      topCategory: topCat ? getCategory(topCat)?.label ?? null : null,
+      topNeighborhood: top(nbCount),
+    };
+
+    return { counts, filtered, visible, hiddenCount: filtered.length - visible.length, spotlight, stats };
+  }, [all, category, status, overdueOnly, showOld]);
 
   const list = (
     <>
+      {state.status === 'ready' && stats.total > 0 ? (
+        <View style={styles.statsStrip} accessibilityRole="summary">
+          <Text style={styles.statsLine}>
+            {stats.total} kayıt · %{Math.round((stats.resolved / stats.total) * 100)} çözüldü
+            {stats.overdue > 0 ? ` · ${stats.overdue} gecikmiş` : ''}
+          </Text>
+          {stats.topCategory || stats.topNeighborhood ? (
+            <Text style={styles.statsSub}>
+              En çok: {[stats.topCategory, stats.topNeighborhood].filter(Boolean).join(' · ')}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {state.status === 'ready' && spotlight.length > 0 ? (
+        <View style={styles.spotlight}>
+          <Text style={styles.spotlightTitle}>En çok bildirilenler</Text>
+          {spotlight.map((c) => (
+            <Pressable
+              key={c.key}
+              accessibilityRole="button"
+              accessibilityLabel={`${c.representative.neighborhood || 'Adana'}, ${
+                getCategory(c.representative.category)?.label ?? ''
+              }, bu noktada ${c.count} kayıt`}
+              onPress={() => openDetail(c.representative.id)}
+              style={styles.spotlightRow}
+            >
+              <CategoryMark
+                slug={getCategory(c.representative.category)?.slug ?? 'pin'}
+                size={28}
+                iconSize={18}
+              />
+              <Text style={styles.spotlightText} numberOfLines={1}>
+                {c.representative.neighborhood || 'Adana'} — {getCategory(c.representative.category)?.label}
+              </Text>
+              <Text style={styles.spotlightCount}>⟳{c.count}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
       {state.status === 'loading' ? <LoadStateView loading /> : null}
 
       {state.status === 'error' ? (
@@ -167,6 +243,11 @@ export default function MapList() {
             label="Çözüldü"
             active={status === 'resolved'}
             onPress={() => setStatus(status === 'resolved' ? null : 'resolved')}
+          />
+          <Chip
+            label="Gecikmiş"
+            active={overdueOnly}
+            onPress={() => setOverdueOnly((v) => !v)}
           />
         </ScrollView>
 
@@ -264,6 +345,53 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     width: '100%',
     alignSelf: 'center',
+  },
+  statsStrip: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 6,
+    gap: 2,
+  },
+  statsLine: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 13,
+    color: colors.ink,
+  },
+  statsSub: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.inkMuted,
+  },
+  spotlight: {
+    marginTop: 12,
+    gap: 2,
+  },
+  spotlightTitle: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 4,
+  },
+  spotlightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 44,
+    paddingVertical: 6,
+  },
+  spotlightText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  spotlightCount: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 14,
+    color: colors.terracottaText,
   },
   legend: {
     fontFamily: fonts.mono,
