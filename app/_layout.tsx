@@ -10,6 +10,7 @@ import Head from 'expo-router/head';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import OutlineButton from '@/components/outline-button';
+import SideDecor from '@/components/side-decor';
 import ThemeToggle from '@/components/theme-toggle';
 import { DisplaySettingsProvider } from '@/lib/display-settings';
 import { colors, fonts } from '@/lib/theme';
@@ -111,6 +112,9 @@ export default function RootLayout() {
           headerRight: () => <ThemeToggle />,
         }}
       />
+      {/* Decorative margins on wide screens (web-only, ≥980px) — never touches
+          the centred content. */}
+      <SideDecor />
     </DisplaySettingsProvider>
   );
 }
