@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Link, Stack } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -15,7 +16,12 @@ export default function AboutSivri() {
       <Stack.Screen options={{ title: 'Sivri kim?' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.hero}>
-          <Sivri size={140} mood="idle" />
+          <Image
+            source={{ uri: '/decor/sivri-hero.webp' }}
+            style={styles.heroImage}
+            contentFit="contain"
+            accessibilityLabel="Sivri, kalemiyle deftere yazan sivrisinek; arkada Adana silüeti"
+          />
         </View>
         <Text style={styles.heading} accessibilityRole="header">
           Sivri kim?
@@ -92,6 +98,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   hero: { alignItems: 'center', paddingTop: 4 },
+  heroImage: { width: '100%', maxWidth: 340, aspectRatio: 1 },
   heading: { fontFamily: fonts.sansSemiBold, fontSize: 26, color: colors.ink, textAlign: 'center' },
   lead: {
     fontFamily: fonts.sans,

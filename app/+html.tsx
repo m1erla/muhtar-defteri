@@ -55,12 +55,13 @@ body::after{
 .sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
 .sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
 .sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
-/* Decorative Adana margin art (components/side-decor.tsx). Two fixed panels fill
-   the empty desktop gutters with the AI-generated ledger-edge + skyline art. They
-   occupy ONLY the side gutters (calc), never the centred column; pointer-events
-   :none. The art is bottom-weighted + fades to transparent, so cover anchored
-   to the outer-bottom corner fills any viewport height while keeping the edge
-   stripe and skyline. Hidden ≤980px and in dark mode (the art is light cream). */
+/* Decorative Adana margin art (components/side-decor.tsx) — now genuinely
+   transparent PNG→WebP, so no blend hacks: the art sits over the page directly.
+   Two fixed panels fill ONLY the side gutters (calc), never the centred column;
+   pointer-events:none. cover anchored to the outer-bottom corner fills any
+   viewport height while keeping the edge stripe + skyline; a soft inner mask
+   fades the art off the content. Hidden ≤980px. Shown in both themes; the dark
+   treatment (if any) is set below. */
 .mdr-side{
   position:fixed; top:0; bottom:0; z-index:0;
   width:calc((100% - 640px) / 2);
@@ -68,18 +69,13 @@ body::after{
   pointer-events:none;
   background-repeat:no-repeat;
   background-size:cover;
-  /* The art's paper flattened to near-white (no alpha). multiply blends white
-     into the cream page (white is multiply's identity) so the rectangular border
-     vanishes and only the darker ink/teal/terracotta art shows. A soft inner
-     fade keeps the art off the content column. */
-  mix-blend-mode:multiply;
+  opacity:0.92;
 }
-.mdr-side-l{ -webkit-mask-image:linear-gradient(to right,#000 60%,transparent); mask-image:linear-gradient(to right,#000 60%,transparent); }
-.mdr-side-r{ -webkit-mask-image:linear-gradient(to left,#000 60%,transparent); mask-image:linear-gradient(to left,#000 60%,transparent); }
-.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left; }
-.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right; }
+.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left;
+  -webkit-mask-image:linear-gradient(to right,#000 62%,transparent); mask-image:linear-gradient(to right,#000 62%,transparent); }
+.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right;
+  -webkit-mask-image:linear-gradient(to left,#000 62%,transparent); mask-image:linear-gradient(to left,#000 62%,transparent); }
 @media (max-width:980px){ .mdr-side{ display:none; } }
-:root[data-theme="dark"] .mdr-side{ display:none; }
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display
