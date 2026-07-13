@@ -68,7 +68,14 @@ body::after{
   pointer-events:none;
   background-repeat:no-repeat;
   background-size:cover;
+  /* The art's paper flattened to near-white (no alpha). multiply blends white
+     into the cream page (white is multiply's identity) so the rectangular border
+     vanishes and only the darker ink/teal/terracotta art shows. A soft inner
+     fade keeps the art off the content column. */
+  mix-blend-mode:multiply;
 }
+.mdr-side-l{ -webkit-mask-image:linear-gradient(to right,#000 60%,transparent); mask-image:linear-gradient(to right,#000 60%,transparent); }
+.mdr-side-r{ -webkit-mask-image:linear-gradient(to left,#000 60%,transparent); mask-image:linear-gradient(to left,#000 60%,transparent); }
 .mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left; }
 .mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right; }
 @media (max-width:980px){ .mdr-side{ display:none; } }
