@@ -120,14 +120,21 @@ export default function ReportDetails() {
   // as low-signal: a handful of characters, or one character repeated.
   const trimmed = description.trim();
   const looksRepeated = trimmed.length >= 4 && /^(.)\1+$/.test(trimmed.replace(/\s/g, ''));
+  // Privacy nudge (soft, never blocks): a run of 10+ digits separated only by
+  // phone-like characters reads as a phone / TC number. Catches "0532 123 45 67"
+  // and "05321234567" but not short institutional numbers (185, 444 27 54) or
+  // dates. The record is public, so we suggest — we don't stop the user.
+  const looksLikePhone = /(?:\d[\s\-().]?){10,}/.test(trimmed);
   const qualityHint =
     trimmed.length === 0
       ? null
-      : looksRepeated
-        ? 'İpucu: birkaç kelimeyle ne olduğunu yazarsan daha kolay anlaşılır.'
-        : trimmed.length < 10
-          ? 'İpucu: birkaç kelime daha eklersen sorun daha net anlaşılır (zorunlu değil).'
-          : null;
+      : looksLikePhone
+        ? 'İpucu: açıklamada telefon numarası gibi görünen bir bilgi var. Kayıt herkese açık olacağı için kişisel numaranı paylaşmamanı öneririz.'
+        : looksRepeated
+          ? 'İpucu: birkaç kelimeyle ne olduğunu yazarsan daha kolay anlaşılır.'
+          : trimmed.length < 10
+            ? 'İpucu: birkaç kelime daha eklersen sorun daha net anlaşılır (zorunlu değil).'
+            : null;
 
   return (
     <>
