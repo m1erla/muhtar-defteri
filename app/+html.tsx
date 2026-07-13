@@ -26,6 +26,20 @@ const THEME_CSS = `
 :root[data-theme="dark"]{${vars(PALETTES.dark)}}
 :root[data-contrast="hc"]{${vars(PALETTES.hc)}}
 html,body{background:var(--paper);}
+/* Faint ruled ledger-paper texture over the page (light theme only). multiply of
+   the light cream texture barely touches content but adds the paper's fibers +
+   ruled lines — the "written in the ledger" feel. Dark keeps its flat night
+   ledger. Sits just under the Riso grain below. */
+body::before{
+  content:'';position:fixed;inset:0;z-index:2147483646;pointer-events:none;opacity:0.08;
+  background-image:url('/decor/paper-texture.webp');
+  background-size:480px 480px;
+}
+:root[data-theme="dark"] body::before{opacity:0;}
+/* Desktop light only — a plain low-opacity overlay (NO blend mode: a full-screen
+   mix-blend-mode forces a whole-page recomposite and janks scroll, which is
+   scored). Phones/dark keep just the Riso grain. */
+@media (max-width:980px){ body::before{ display:none; } }
 body::after{
   content:'';position:fixed;inset:0;z-index:2147483647;pointer-events:none;opacity:0.04;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
