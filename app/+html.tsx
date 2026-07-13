@@ -77,7 +77,7 @@ body::after{
    fades the art off the content. Hidden ≤980px. Shown in both themes; the dark
    treatment (if any) is set below. */
 .mdr-side{
-  position:fixed; top:0; bottom:0; z-index:0;
+  position:fixed; top:64px; bottom:0; z-index:0;   /* start below the 64px header */
   width:calc((100% - 640px) / 2);
   max-width:440px;
   pointer-events:none;
