@@ -126,6 +126,40 @@ update flags set status = 'reviewed' where report_id = '<report-id>' and status 
 (Taking down / redacting the report itself uses the report commands below —
 flags are only the signal.)
 
+## Retention & freshness (keeping reports current)
+
+There is no official municipal status feed, so a report's freshness is defined
+as **time since the last *community* confirmation**. The app derives all of this
+at render — no cron, no background writes:
+
+- Every "Ben de Gördüm" / "Bu Düzeldi" is a verification. The detail screen shows
+  **"Son doğrulama: N gün önce"**.
+- **Open + no verification for `STALE_DAYS` (45)** → a *"Bu kayıt bir süredir
+  doğrulanmadı — hâlâ duruyor mu?"* prompt on the detail screen. **Anyone** who
+  passes the spot can re-verify. (There are no accounts, so we can't notify the
+  original reporter — community re-verification is the replacement, and it's more
+  robust: it doesn't depend on one absent person returning.)
+- **Open + never verified + `ARCHIVE_DAYS` (60) old** → the report drops off the
+  default map (`isArchivable` in lib/reports.ts), behind an *"N eski kayıt gizli
+  · Göster"* toggle. It is **hidden, not deleted**. Thresholds live in
+  `lib/format.ts` (`STALE_DAYS` / `ARCHIVE_DAYS`) — change them there.
+
+**No automatic deletion.** Civic records are durable by design (CLAUDE.md never
+auto-deletes), and there's no server to run a purge. Deletion is a deliberate
+owner act. When you want to purge genuinely dead reports (old, never verified,
+and you know they're gone) — set whatever retention window you like:
+
+```sql
+-- 1. Review candidates (open, 180+ days, never confirmed):
+select id, category, neighborhood, created_at from reports r
+where status = 'open' and created_at < now() - interval '180 days'
+  and not exists (select 1 from confirmations c where c.report_id = r.id);
+-- 2. Delete the ones you've decided are dead (confirmations first — FK).
+--    Take a backup first (see Backups).
+delete from confirmations where report_id in ('<id>', ...);
+delete from reports where id in ('<id>', ...);
+```
+
 ## Moderation
 
 The community writes only two tables directly editable by them: `reports` and

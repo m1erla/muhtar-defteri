@@ -40,7 +40,8 @@ export default function Home() {
           </Text>
         </View>
         <Text style={styles.tagline}>
-          Adana'daki bir sorunu doğru resmi kanala bildir — istersen mahallenin kaydına da ekle.
+          Adana'daki bir sorun için <Text style={styles.taglineStrong}>doğru kapıyı</Text> gösterir:
+          seni doğru resmi kanala yönlendirir, istersen mahallenin kaydına da eklersin.
         </Text>
 
         <PrimaryButton label="Bir Sorun Bildir" onPress={() => router.push('/report-category')} />
@@ -131,6 +132,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
     lineHeight: 23,
+  },
+  taglineStrong: {
+    fontFamily: fonts.sansSemiBold,
+    color: colors.petrol,
   },
   section: {
     marginTop: 8,

@@ -9,10 +9,17 @@ import LoadStateView from '@/components/load-state-view';
 import OutlineButton from '@/components/outline-button';
 import StatusStamp from '@/components/status-stamp';
 import { getCategory } from '@/lib/categories';
-import { businessDaysSince, daysAgoLabel, RESPONSE_BENCHMARK_DAYS } from '@/lib/format';
+import {
+  businessDaysSince,
+  calendarDaysSince,
+  daysAgoLabel,
+  RESPONSE_BENCHMARK_DAYS,
+  STALE_DAYS,
+} from '@/lib/format';
 import {
   confirmationCount,
   confirmReport,
+  fetchLastConfirmation,
   fetchMyConfirmation,
   fetchReport,
   fetchSameSpotCount,
@@ -25,7 +32,12 @@ import { useLoad } from '@/lib/use-load';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type DetailData = { report: Report | null; mine: ConfirmationType | null; sameSpot: number };
+type DetailData = {
+  report: Report | null;
+  mine: ConfirmationType | null;
+  sameSpot: number;
+  lastVerifiedAt: string | null; // newest confirmation, or null if never verified
+};
 
 export default function ReportDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -36,14 +48,15 @@ export default function ReportDetail() {
 
   const { state, reload, mutate } = useLoad<DetailData>(
     async () => {
-      if (!id) return { report: null, mine: null, sameSpot: 0 };
+      if (!id) return { report: null, mine: null, sameSpot: 0, lastVerifiedAt: null };
       const report = await fetchReport(id);
-      if (!report) return { report: null, mine: null, sameSpot: 0 };
-      const [mine, sameSpot] = await Promise.all([
+      if (!report) return { report: null, mine: null, sameSpot: 0, lastVerifiedAt: null };
+      const [mine, sameSpot, lastVerifiedAt] = await Promise.all([
         fetchMyConfirmation(id),
         fetchSameSpotCount(report),
+        fetchLastConfirmation(id),
       ]);
-      return { report, mine, sameSpot };
+      return { report, mine, sameSpot, lastVerifiedAt };
     },
     [id],
     // Keep the report on screen if the post-confirm reload fails (offline is the
@@ -101,6 +114,7 @@ export default function ReportDetail() {
           },
           mine: type,
           sameSpot: state.data.sameSpot,
+          lastVerifiedAt: new Date().toISOString(), // this confirmation IS a fresh verify
         });
       } else {
         // This session had already confirmed (e.g. a second tab); nothing changed
@@ -170,6 +184,9 @@ export default function ReportDetail() {
                 İlk bildirilme: {daysAgoLabel(ready.report.created_at)}
               </Text>
               <Text style={styles.mono}>{confirmationCount(ready.report)} kişi bunu doğruladı</Text>
+              {ready.lastVerifiedAt ? (
+                <Text style={styles.mono}>Son doğrulama: {daysAgoLabel(ready.lastVerifiedAt)}</Text>
+              ) : null}
               {ready.sameSpot > 1 ? (
                 <Text style={styles.mono}>Bu noktada {ready.sameSpot} kayıt var</Text>
               ) : null}
@@ -189,6 +206,16 @@ export default function ReportDetail() {
                   })()
                 : null}
             </View>
+
+            {ready.report.status === 'open' &&
+            !ready.mine &&
+            calendarDaysSince(ready.lastVerifiedAt ?? ready.report.created_at) >= STALE_DAYS ? (
+              <View style={styles.staleNote}>
+                <Text style={styles.staleText}>
+                  Bu kayıt bir süredir doğrulanmadı. Sorun hâlâ duruyor mu? Aşağıdan bildirebilirsin.
+                </Text>
+              </View>
+            ) : null}
 
             {confirmError ? <Text style={styles.error}>{confirmError}</Text> : null}
 
@@ -328,6 +355,19 @@ const styles = StyleSheet.create({
   overdue: {
     fontFamily: fonts.monoMedium,
     color: colors.terracottaText,
+  },
+  staleNote: {
+    borderWidth: 1.5,
+    borderColor: colors.terracotta,
+    borderRadius: 6,
+    backgroundColor: colors.stampOpen,
+    padding: 12,
+  },
+  staleText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 20,
   },
   actions: {
     gap: 10,

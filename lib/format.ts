@@ -36,6 +36,23 @@ export function businessDaysSince(iso: string): number {
   return days;
 }
 
+// Calendar days elapsed since a date (the numeric form of daysAgoLabel) —
+// used for the freshness / staleness thresholds below.
+export function calendarDaysSince(iso: string): number {
+  const then = new Date(iso);
+  const now = new Date();
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return Math.max(0, Math.round((startOfDay(now) - startOfDay(then)) / 86_400_000));
+}
+
 // Adana Büyükşehir's published response standard (PRD §11 / channels seed
 // notes): 15 business days, 30 if the request spans departments.
 export const RESPONSE_BENCHMARK_DAYS = 15;
+
+// Freshness thresholds for the community re-verification model (there is no
+// official status feed, so freshness = time since the last community
+// confirmation). An open report with no verification for STALE_DAYS prompts
+// "hâlâ duruyor mu?"; open + never verified + ARCHIVE_DAYS old drops off the
+// default map (hidden, never deleted — CLAUDE.md: nothing auto-deletes).
+export const STALE_DAYS = 45;
+export const ARCHIVE_DAYS = 60;

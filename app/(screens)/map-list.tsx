@@ -7,7 +7,7 @@ import LoadStateView from '@/components/load-state-view';
 import { CATEGORIES, type CategorySlug } from '@/lib/categories';
 import { clusterCounts, clusterKey } from '@/lib/cluster';
 import { consumeReportAdded } from '@/lib/flash';
-import { fetchReports } from '@/lib/reports';
+import { fetchReports, isArchivable } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -34,6 +34,9 @@ export default function MapList() {
 
   const [category, setCategory] = useState<CategorySlug | null>(null);
   const [status, setStatus] = useState<'open' | 'resolved' | null>(null);
+  // Old, never-re-verified open reports drop off the default view (kept in the
+  // DB) so the active map stays honest; the toggle brings them back.
+  const [showOld, setShowOld] = useState(false);
 
   // One-shot success toast after add-to-map — read from a module flag (consumed
   // once, resets on full reload) so it never re-appears on back-nav/reload.
@@ -65,6 +68,8 @@ export default function MapList() {
   const filtered = all.filter(
     (r) => (!category || r.category === category) && (!status || r.status === status)
   );
+  const visible = showOld ? filtered : filtered.filter((r) => !isArchivable(r));
+  const hiddenCount = filtered.length - visible.length;
 
   const list = (
     <>
@@ -86,17 +91,37 @@ export default function MapList() {
 
       {state.status === 'ready' && filtered.length > 0 ? (
         <>
-          <Text style={styles.legend}>Mahalle · tarih · kaç kişi doğruladı · durum</Text>
-          <View style={styles.ledgerFrame}>
-            {filtered.map((r) => (
-              <LedgerRow
-                key={r.id}
-                report={r}
-                clusterCount={counts.get(clusterKey(r)) ?? 1}
-                onPress={() => openDetail(r.id)}
-              />
-            ))}
-          </View>
+          {visible.length > 0 ? (
+            <>
+              <Text style={styles.legend}>Mahalle · tarih · kaç kişi doğruladı · durum</Text>
+              <View style={styles.ledgerFrame}>
+                {visible.map((r) => (
+                  <LedgerRow
+                    key={r.id}
+                    report={r}
+                    clusterCount={counts.get(clusterKey(r)) ?? 1}
+                    onPress={() => openDetail(r.id)}
+                  />
+                ))}
+              </View>
+            </>
+          ) : (
+            <LoadStateView message="Görünür kayıt yok — eski, doğrulanmamış kayıtlar gizlendi." />
+          )}
+
+          {hiddenCount > 0 || showOld ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setShowOld((v) => !v)}
+              style={styles.oldToggle}
+            >
+              <Text style={styles.oldToggleText}>
+                {showOld
+                  ? 'Eski, doğrulanmamış kayıtları gizle'
+                  : `${hiddenCount} eski kayıt gizli · Göster`}
+              </Text>
+            </Pressable>
+          ) : null}
         </>
       ) : null}
     </>
@@ -143,7 +168,7 @@ export default function MapList() {
           <View style={styles.wideRow}>
             <View style={styles.mapPane}>
               {MapView ? (
-                <MapView reports={filtered} counts={counts} onSelect={openDetail} />
+                <MapView reports={visible} counts={counts} onSelect={openDetail} />
               ) : mapFailed ? (
                 <LoadStateView message="Harita yüklenemedi." onRetry={retryMap} />
               ) : (
@@ -244,5 +269,15 @@ const styles = StyleSheet.create({
   ledgerFrame: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.ink,
+  },
+  oldToggle: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  oldToggleText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
   },
 });

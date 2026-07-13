@@ -1,4 +1,5 @@
 import type { CategorySlug } from './categories';
+import { ARCHIVE_DAYS, calendarDaysSince } from './format';
 import { generateId, getSessionId } from './session';
 import { getSupabase } from './supabase';
 
@@ -27,6 +28,31 @@ export type ReportFilters = {
 
 export function confirmationCount(report: Report): number {
   return report.confirmations?.[0]?.count ?? 0;
+}
+
+// A report the community has let go stale: still open, never re-verified by
+// anyone, and older than the archive window. Hidden from the default map (kept
+// in the DB — nothing auto-deletes). Derived, so it needs no writes or cron.
+export function isArchivable(report: Report): boolean {
+  return (
+    report.status === 'open' &&
+    confirmationCount(report) === 0 &&
+    calendarDaysSince(report.created_at) >= ARCHIVE_DAYS
+  );
+}
+
+// The newest confirmation's timestamp for a report — the "last verified" moment
+// that drives the freshness line + the stale re-verification prompt. null when
+// no one has confirmed yet.
+export async function fetchLastConfirmation(reportId: string): Promise<string | null> {
+  const { data, error } = await getSupabase()
+    .from('confirmations')
+    .select('created_at')
+    .eq('report_id', reportId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return (data?.[0]?.created_at as string) ?? null;
 }
 
 export async function fetchReports(filters: ReportFilters = {}, limit = 100): Promise<Report[]> {
