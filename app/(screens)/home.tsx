@@ -42,7 +42,9 @@ export default function Home() {
               Adana
             </Text>
           </View>
-          <Sivri size={92} mood="idle" />
+          <Link href="/about-sivri" accessibilityLabel="Sivri kimdir?" accessibilityRole="link">
+            <Sivri size={92} mood="idle" />
+          </Link>
         </View>
         <Text style={styles.tagline}>
           Adana'daki bir sorun için <Text style={styles.taglineStrong}>doğru kapıyı</Text> gösterir:

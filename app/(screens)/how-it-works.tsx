@@ -39,6 +39,9 @@ export default function HowItWorks() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.introMascot}>
           <Sivri size={112} mood="idle" />
+          <Link href="/about-sivri" style={styles.sivriLink}>
+            Bu sivrisinek kim? — Sivri'yi tanı →
+          </Link>
         </View>
         <Text style={styles.heading} accessibilityRole="header">
           Mahalle Defteri nedir, ne değildir?
@@ -240,6 +243,14 @@ const styles = StyleSheet.create({
   introMascot: {
     alignItems: 'center',
     paddingTop: 4,
+    gap: 2,
+  },
+  sivriLink: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 14,
+    color: colors.petrol,
+    paddingVertical: 8,
+    textAlign: 'center',
   },
   content: {
     padding: 20,
