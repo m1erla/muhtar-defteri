@@ -13,6 +13,7 @@ const VAR: Record<keyof Palette, string> = {
   terracotta: '--terracotta', moss: '--moss',
   terracottaText: '--terracotta-text', mossText: '--moss-text', inkMuted: '--ink-muted',
   pressOverlay: '--press-overlay', stampOpen: '--stamp-open', stampResolved: '--stamp-resolved',
+  scopeAdanaBg: '--scope-adana-bg', scopeAdanaText: '--scope-adana-text',
 };
 const vars = (p: Palette) =>
   (Object.keys(VAR) as (keyof Palette)[]).map((k) => `${VAR[k]}:${p[k]};`).join('');

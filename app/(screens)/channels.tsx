@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderWidth: 1.5,
   },
-  scopePillAdana: { backgroundColor: colors.petrol, borderColor: colors.petrol },
+  scopePillAdana: { backgroundColor: colors.scopeAdanaBg, borderColor: colors.scopeAdanaBg },
   scopePillNational: { backgroundColor: 'transparent', borderColor: colors.ink },
   scopeText: {
     fontFamily: fonts.monoMedium,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     color: colors.ink,
   },
-  scopeTextAdana: { color: colors.paper },
+  scopeTextAdana: { color: colors.scopeAdanaText },
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',

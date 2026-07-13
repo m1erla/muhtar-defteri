@@ -194,8 +194,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   scopePillAdana: {
-    backgroundColor: colors.petrol,
-    borderColor: colors.petrol,
+    backgroundColor: colors.scopeAdanaBg,
+    borderColor: colors.scopeAdanaBg,
   },
   scopePillNational: {
     backgroundColor: 'transparent',
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   scopePillTextAdana: {
-    color: colors.paper,
+    color: colors.scopeAdanaText,
   },
   actionLink: {
     fontFamily: fonts.sansSemiBold,
