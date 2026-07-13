@@ -1,6 +1,5 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
-import Page from '@/components/page';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import AdanaSkyline from '@/components/adana-skyline';
 import Sivri from '@/components/sivri';
@@ -14,7 +13,7 @@ export default function AboutSivri() {
   return (
     <>
       <Stack.Screen options={{ title: 'Sivri kim?' }} />
-      <Page contentStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <Sivri size={140} mood="idle" />
         </View>
@@ -77,7 +76,7 @@ export default function AboutSivri() {
         </Link>
 
         <AdanaSkyline opacity={0.45} />
-      </Page>
+      </ScrollView>
     </>
   );
 }

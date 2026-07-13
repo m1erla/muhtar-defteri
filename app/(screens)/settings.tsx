@@ -1,6 +1,5 @@
 import { Stack } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Page from '@/components/page';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
   useDisplaySettings,
@@ -90,7 +89,7 @@ export default function Settings() {
   return (
     <>
       <Stack.Screen options={{ title: 'Görünüm' }} />
-      <Page contentStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Görünüm ve Erişilebilirlik
         </Text>
@@ -133,7 +132,7 @@ export default function Settings() {
           value={s.reducedMotion}
           onChange={s.setReducedMotion}
         />
-      </Page>
+      </ScrollView>
     </>
   );
 }

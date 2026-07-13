@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
-import Page from '@/components/page';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import CategoryMark from '@/components/category-mark';
 import { ChannelContact, ScopePill } from '@/components/channel-contact';
@@ -11,26 +10,7 @@ import { fetchChannels, type Channel } from '@/lib/channels';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { trMatch } from '@/lib/tr-normalize';
-import { useLayout } from '@/lib/use-layout';
 import { useLoad } from '@/lib/use-load';
-
-type Group = { category: (typeof CATEGORIES)[number]; rows: Channel[] };
-
-function ChannelGroup({ group }: { group: Group }) {
-  return (
-    <View style={styles.group}>
-      <View style={styles.groupHeader}>
-        <CategoryMark slug={group.category.slug} size={40} iconSize={24} />
-        <Text style={styles.groupTitle} accessibilityRole="header">
-          {group.category.label}
-        </Text>
-      </View>
-      {group.rows.map((ch) => (
-        <ChannelRow key={ch.id} channel={ch} />
-      ))}
-    </View>
-  );
-}
 
 // Does a channel match the directory search? Folds Turkish characters, and
 // searches name + category label + description + phone so "cukurova", "185" or
@@ -66,24 +46,17 @@ function ChannelRow({ channel }: { channel: Channel }) {
 export default function ChannelDirectory() {
   const { state, reload } = useLoad(() => fetchChannels(), []);
   const [query, setQuery] = useState('');
-  const { isTablet } = useLayout();
 
   const data = state.status === 'ready' ? state.data : [];
-  const groups: Group[] = CATEGORIES.map((c) => ({
+  const groups = CATEGORIES.map((c) => ({
     category: c,
     rows: data.filter((ch) => ch.category === c.slug && channelMatches(ch, query)),
   })).filter((g) => g.rows.length > 0);
 
-  // Two balanced columns on tablet/desktop (round-robin so heights stay even);
-  // one column on the phone.
-  const columnCount = isTablet ? 2 : 1;
-  const columns: Group[][] = Array.from({ length: columnCount }, () => []);
-  groups.forEach((g, i) => columns[i % columnCount].push(g));
-
   return (
     <>
       <Stack.Screen options={{ title: 'Kanal Rehberi' }} />
-      <Page contentStyle={[styles.content, isTablet && styles.contentWide]}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Kanal Rehberi
         </Text>
@@ -120,18 +93,20 @@ export default function ChannelDirectory() {
           <LoadStateView message="Bu aramayla eşleşen kanal yok." />
         ) : null}
 
-        {groups.length > 0 ? (
-          <View style={isTablet ? styles.columnsRow : undefined}>
-            {columns.map((colGroups, ci) => (
-              <View key={ci} style={isTablet ? styles.column : undefined}>
-                {colGroups.map((g) => (
-                  <ChannelGroup key={g.category.slug} group={g} />
-                ))}
-              </View>
+        {groups.map(({ category: c, rows }) => (
+          <View key={c.slug} style={styles.group}>
+            <View style={styles.groupHeader}>
+              <CategoryMark slug={c.slug} size={40} iconSize={24} />
+              <Text style={styles.groupTitle} accessibilityRole="header">
+                {c.label}
+              </Text>
+            </View>
+            {rows.map((ch) => (
+              <ChannelRow key={ch.id} channel={ch} />
             ))}
           </View>
-        ) : null}
-      </Page>
+        ))}
+      </ScrollView>
     </>
   );
 }
@@ -148,17 +123,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     paddingBottom: 40,
-  },
-  contentWide: {
-    maxWidth: 960,
-  },
-  columnsRow: {
-    flexDirection: 'row',
-    gap: 28,
-    alignItems: 'flex-start',
-  },
-  column: {
-    flex: 1,
   },
   heading: {
     fontFamily: fonts.sansSemiBold,

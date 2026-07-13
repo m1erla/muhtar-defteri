@@ -3,8 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import Page from '@/components/page';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import Combobox from '@/components/combobox';
 import Icon from '@/components/icon';
@@ -208,7 +207,7 @@ export default function ReportDetails() {
   return (
     <>
       <Stack.Screen options={{ title: 'Detaylar' }} />
-      <Page contentStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.heading} accessibilityRole="header">
           Detayları ekle
         </Text>
@@ -365,7 +364,7 @@ export default function ReportDetails() {
         ) : null}
 
         <PrimaryButton label="Devam Et" onPress={continueToRouting} />
-      </Page>
+      </ScrollView>
     </>
   );
 }

@@ -15,7 +15,6 @@ const VAR: Record<keyof Palette, string> = {
   pressOverlay: '--press-overlay', stampOpen: '--stamp-open', stampResolved: '--stamp-resolved',
   scopeAdanaBg: '--scope-adana-bg', scopeAdanaText: '--scope-adana-text',
   mapPinShadow: '--map-pin-shadow',
-  desk: '--desk', sheetEdge: '--sheet-edge', deskShadow: '--desk-shadow',
 };
 const vars = (p: Palette) =>
   (Object.keys(VAR) as (keyof Palette)[]).map((k) => `${VAR[k]}:${p[k]};`).join('');
@@ -56,22 +55,6 @@ body::after{
 .sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
 .sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
 .sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
-/* Wide-viewport "ledger sheet on a desk". The single-column screens wrap their
-   content in <Page> (components/page.tsx), which stamps data-mdr-desk on the
-   scroll area and data-mdr-sheet on the centred column. Below 768px neither rule
-   applies, so mobile is pixel-identical to the old paper layout. */
-@media (min-width:768px){
-  /* !important so the desk/sheet fills beat react-native-web's base resets,
-     which set background-color/border-width on every View at equal specificity. */
-  [data-mdr-desk]{background:var(--desk)!important;}
-  [data-mdr-sheet]{
-    background:var(--paper)!important;
-    border-left:1px solid var(--sheet-edge)!important;
-    border-right:1px solid var(--sheet-edge)!important;
-    box-shadow:0 2px 28px var(--desk-shadow);
-    min-height:100%;
-  }
-}
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display

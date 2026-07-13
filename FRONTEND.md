@@ -109,8 +109,6 @@ Local component state plus a small context for the anonymous session id. Nothing
 
 Mobile-first, always. Build every screen at a ~375px viewport first, then check it scales up. The map component specifically needs testing at mobile width early — it's the screen most likely to break first when adapted from a desktop-first build.
 
-**Wide-viewport "ledger sheet on a desk"** (added 2026-07-13) — a single-column layout centered at 560px reads as an empty mobile app on a wide desktop. So every single-column screen wraps its content in `components/page.tsx` (`<Page>`), which stamps `data-mdr-desk` on the scroll area and `data-mdr-sheet` on the centered column. At **≥768px** the CSS in `app/+html.tsx` turns the column into a paper **sheet** (`paper` fill + `sheetEdge` hairline + `deskShadow`) on a toned **desk** backdrop (`desk`) — the empty margins become the muhtar's desk, on-metaphor. Below the breakpoint the attributes do nothing, so **mobile is pixel-identical** to the old ScrollView layout (verified: transparent bg, no border/shadow < 768px). The `desk`/`sheetEdge`/`deskShadow` tokens live in all three palettes; the fills need `!important` to beat react-native-web's base View resets. The map/list screen keeps its own full-width split layout and isn't wrapped.
-
 ## 7. Accessibility baseline
 
 - Minimum 44px tap targets throughout, 64px for the category picker specifically (see §2).
