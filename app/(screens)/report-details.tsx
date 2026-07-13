@@ -12,6 +12,7 @@ import OutlineButton from '@/components/outline-button';
 import PrimaryButton from '@/components/primary-button';
 import { ADANA_DISTRICTS, getDistrict } from '@/lib/adana-districts';
 import { useResolvedTheme } from '@/lib/display-settings';
+import { searchAdanaAddress, type GeoResult } from '@/lib/geocode';
 import { getDraft, updateDraft } from '@/lib/report-draft';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -36,10 +37,27 @@ export default function ReportDetails() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [district, setDistrict] = useState<string | null>(null);
+  // Address search (Adana-bounded forward geocode). User-triggered, not
+  // per-keystroke (Nominatim policy). Results let the user drop a pin by typing
+  // a mahalle/cadde/adres instead of hunting on the map.
+  const [addressQuery, setAddressQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<GeoResult[]>([]);
+  const [searched, setSearched] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   // Bumping `focusKey` jumps+zooms the map to the current coords (district pick /
-  // geolocation) without a jump on every pin drag. `focusZoom` is the level.
+  // geolocation / address pick) without a jump on every pin drag. `focusZoom` is
+  // the level.
   const [focusKey, setFocusKey] = useState(0);
   const [focusZoom, setFocusZoom] = useState(16);
+
+  // Clear a pending address-search result list — called whenever the user sets
+  // the location another way, so a stale list never lingers under the map.
+  const clearResults = () => {
+    setResults([]);
+    setSearched(false);
+    setSearchError(null);
+  };
 
   // The non-map way to set location: pick a district and the map jumps to it.
   // Accessible (keyboard/screen-reader) — the map is never the only path.
@@ -51,6 +69,39 @@ export default function ReportDetails() {
     setFocusZoom(d.zoom);
     setFocusKey((k) => k + 1);
     setLocationError(null);
+    clearResults();
+  };
+
+  // Type an address / mahalle / cadde → Adana-bounded geocode → results to pick
+  // from. Triggered by the button or the keyboard's search key, never on every
+  // keystroke.
+  const searchAddress = async () => {
+    const q = addressQuery.trim();
+    if (q.length < 3 || searching) return;
+    setSearching(true);
+    setSearchError(null);
+    try {
+      const found = await searchAdanaAddress(q);
+      setResults(found);
+      setSearched(true);
+    } catch {
+      setSearchError(
+        'Adres araması yapılamadı. Haritadan işaretleyebilir ya da "Konumumu Bul" diyebilirsin.'
+      );
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Pick a search result: drop the pin there and let the user fine-tune by drag.
+  const pickResult = (r: GeoResult) => {
+    setCoords({ latitude: r.latitude, longitude: r.longitude });
+    setFocusZoom(17);
+    setFocusKey((k) => k + 1);
+    setAddressQuery(r.label);
+    setDistrict(null);
+    setLocationError(null);
+    clearResults();
   };
 
   const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('LocationPickerMap');
@@ -90,6 +141,7 @@ export default function ReportDetails() {
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
       setFocusZoom(16);
       setFocusKey((k) => k + 1);
+      clearResults();
     } catch {
       setLocationError('Konum alınamadı. Pini elle sürükleyebilirsin.');
     } finally {
@@ -201,7 +253,58 @@ export default function ReportDetails() {
               </Pressable>
             </View>
 
-            {/* Non-map way to set location (accessibility): pick an Adana
+            {/* Type-an-address path: search a mahalle/cadde/adres within Adana
+                and drop the pin on a result. Fine-tune by dragging; if nothing
+                matches, fall back to the district picker or "Konumumu Bul". */}
+            <View style={styles.searchRow}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Adres, mahalle veya cadde ara"
+                placeholderTextColor={colors.inkMuted}
+                accessibilityLabel="Adres ara"
+                value={addressQuery}
+                onChangeText={setAddressQuery}
+                onSubmitEditing={searchAddress}
+                returnKeyType="search"
+                autoCorrect={false}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Adresi ara"
+                onPress={searchAddress}
+                disabled={searching || addressQuery.trim().length < 3}
+                style={styles.searchBtn}
+              >
+                <Text style={styles.searchBtnText}>{searching ? 'Aranıyor…' : 'Ara'}</Text>
+              </Pressable>
+            </View>
+
+            {results.length > 0 ? (
+              <View style={styles.results} accessibilityRole="menu">
+                {results.map((r, i) => (
+                  <Pressable
+                    key={`${r.latitude},${r.longitude},${i}`}
+                    accessibilityRole="menuitem"
+                    accessibilityLabel={r.label}
+                    onPress={() => pickResult(r)}
+                    style={styles.resultRow}
+                  >
+                    <Icon name="pin" size={16} tone={iconTone} />
+                    <Text style={styles.resultText} numberOfLines={2}>
+                      {r.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : searched ? (
+              <Text style={styles.qualityHint}>
+                Adres bulunamadı. İlçe seçebilir, haritadan işaretleyebilir ya da "Konumumu Bul"
+                diyebilirsin.
+              </Text>
+            ) : null}
+            {searchError ? <Text style={styles.locationError}>{searchError}</Text> : null}
+
+            {/* Non-map fallback (accessibility, works offline): pick an Adana
                 district and the map jumps there; fine-tune with the pin. */}
             <Combobox
               label="İlçe seç"
@@ -232,7 +335,7 @@ export default function ReportDetails() {
             <Text style={styles.mapHint}>
               {coords
                 ? 'Pini sürükleyerek düzeltebilirsin'
-                : 'Konum henüz ayarlanmadı — ilçe seç, pini sürükle ya da "Konumumu Bul" de'}
+                : 'Konum henüz ayarlanmadı — adres ara, ilçe seç, pini sürükle ya da "Konumumu Bul" de'}
             </Text>
           </>
         ) : null}
@@ -331,6 +434,59 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 14,
     color: colors.terracottaText,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'stretch',
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 6,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    fontFamily: fonts.sans,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  searchBtn: {
+    minHeight: 48,
+    minWidth: 72,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    backgroundColor: colors.petrol,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchBtnText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 15,
+    color: colors.paper,
+  },
+  results: {
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  resultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.ink,
+  },
+  resultText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    color: colors.ink,
+    lineHeight: 20,
   },
   mapBox: {
     height: 220,
