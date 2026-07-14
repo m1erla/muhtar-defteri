@@ -53,13 +53,21 @@ export function whatsappHref(phone: string, text?: string): string {
   return `https://wa.me/${intl}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 }
 
-// A ready-to-send Turkish message assembled from the current report draft, for
-// the WhatsApp hand-off and the "başvuru metnini kopyala" button. It is plainly
-// the resident's OWN message to the channel — Mahalle Defteri never submits on
-// their behalf. Includes an OSM location link when the draft has coordinates.
-export function buildReportMessage(): string {
+// A ready-to-send Turkish message for the WhatsApp hand-off and the copy button.
+// It is plainly the resident's OWN message to the channel — Mahalle Defteri never
+// submits on their behalf. Includes an OSM location link when the draft has
+// coordinates.
+//
+// The category is passed in, not read from the draft. routing-result resolves it
+// from the URL param precisely BECAUSE the draft doesn't survive a reload, a
+// shared link, or the resetDraft() that add-to-map does on submit — and this
+// helper used to read the draft alone, so on all three paths the screen showed
+// the right channel while the WhatsApp prefill said "Bir sorun". The description
+// and coordinates genuinely only live in the draft (report-draft.ts: a refresh
+// restarts the flow), so they're appended only when they're actually there.
+export function buildReportMessage(category: CategorySlug): string {
   const d = getDraft();
-  const label = getCategory(d.category)?.label ?? 'Bir sorun';
+  const label = getCategory(category)?.label ?? 'Bir sorun';
   const lines = [`Merhaba, ${label} ile ilgili bir bildirim iletmek istiyorum.`];
   const desc = d.description?.trim();
   if (desc) lines.push(desc);

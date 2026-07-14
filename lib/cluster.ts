@@ -12,16 +12,6 @@ export function clusterKey(r: Located): string {
   return `${r.category}|${r.latitude.toFixed(3)}|${r.longitude.toFixed(3)}`;
 }
 
-// key → how many reports sit in that cluster. Used to badge ledger rows.
-export function clusterCounts(reports: Report[]): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const r of reports) {
-    const k = clusterKey(r);
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  return counts;
-}
-
 export type ReportCluster = {
   key: string;
   latitude: number;

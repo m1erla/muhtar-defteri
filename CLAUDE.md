@@ -40,13 +40,24 @@ app/
                             watchlist = Takip Ettiklerim, device-local,
                             about-sivri = the mascot's story)
 components/              -- sibling of app/, NOT inside it — expo-router treats
-lib/                     -- files under app/ as routes
+                            files under app/ as routes. maps.tsx (the ONLY leaflet
+                            import site), sivri.tsx (the mascot), side-decor.tsx +
+                            adana-skyline.tsx (the Adana art), combobox.tsx,
+                            flag-form.tsx, category-mark.tsx, ledger-row.tsx, …
+lib/
   supabase.ts            -- lazy client + SupabaseConfigError/friendlyDbError
   session.ts             -- anonymous session id, local persistence
   reports.ts, channels.ts, categories.ts, cluster.ts, format.ts,
-  report-draft.ts, theme.ts, use-load.ts, use-lazy-map.ts
+  report-draft.ts, theme.ts, use-load.ts, use-lazy-map.ts,
+  display-settings.tsx (theme/a11y prefs), geocode.ts (Adana-bounded
+  Nominatim), adana-districts.ts, tr-normalize.ts, watchlist.ts
+  (device-local follows), flags.ts, flash.ts
 public/                  -- copied verbatim to the web export root
   favicon.svg, apple-touch-icon.png, og-image.png, _headers
+  decor/                 -- ~1.4MB of Adana art (margin-*, skyline-band-*,
+                            sivri-hero, paper-texture; light + dark variants).
+                            Desktop-only and never fetched ≤980px; cached a week
+                            via _headers. NOT on the mobile critical path.
 supabase/
   schema.sql             -- authoritative migration (tables + RLS + storage);
                             PRD.md §10 mirrors it, keep in sync

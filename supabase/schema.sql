@@ -113,6 +113,19 @@ alter table reports drop constraint if exists reports_description_no_links;
 alter table reports add constraint reports_description_no_links
   check (description is null or description !~* '(https?://|www\.)');
 
+-- `neighborhood` is in the anon INSERT grant below, so it is user-writable even
+-- though the app only ever fills it from a reverse-geocode. It was the one
+-- writable text column with NO bound at all: a crafted POST could park an
+-- arbitrarily long spam string in it, and it renders verbatim on the map, the
+-- ledger rows and the report detail. Same two guards `description` already has —
+-- a real Adana mahalle name is comfortably inside 80 chars.
+alter table reports drop constraint if exists reports_neighborhood_sane;
+alter table reports add constraint reports_neighborhood_sane
+  check (
+    neighborhood is null
+    or (char_length(neighborhood) <= 80 and neighborhood !~* '(https?://|www\.)')
+  );
+
 -- Per-session flood + double-submit guard on report inserts.
 create or replace function moderate_report_insert() returns trigger
 language plpgsql as $$

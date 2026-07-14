@@ -116,12 +116,15 @@ export default function Sivri({
         <ellipse cx={84} cy={70} rx={6} ry={4} style={{ fill: 'var(--terracotta)', opacity: 0.26 }} />
         {mood === 'idle' ? (
           <>
-            <ellipse cx={58} cy={60} rx={9} ry={11} fill="#F8F3E7" stroke={INK.stroke} strokeWidth={2.2} />
-            <ellipse cx={77} cy={58} rx={9} ry={11} fill="#F8F3E7" stroke={INK.stroke} strokeWidth={2.2} />
+            {/* paper, not a baked cream hex: in dark mode `ink` IS cream, so a
+                hardcoded light sclera swallowed the currentColor pupil whole and
+                Sivri went blank-eyed. Tokens flip with the theme; hex does not. */}
+            <ellipse cx={58} cy={60} rx={9} ry={11} style={paperFill} stroke={INK.stroke} strokeWidth={2.2} />
+            <ellipse cx={77} cy={58} rx={9} ry={11} style={paperFill} stroke={INK.stroke} strokeWidth={2.2} />
             <circle cx={59} cy={64} r={4.6} fill="currentColor" />
             <circle cx={78} cy={62} r={4.6} fill="currentColor" />
-            <circle cx={57} cy={61} r={1.7} fill="#fff" />
-            <circle cx={76} cy={59} r={1.7} fill="#fff" />
+            <circle cx={57} cy={61} r={1.7} style={paperFill} />
+            <circle cx={76} cy={59} r={1.7} style={paperFill} />
           </>
         ) : (
           // happy + sleep: cheerful closed "^ ^" / "‿ ‿" eyes

@@ -35,6 +35,11 @@ body::before{
   background-size:480px 480px;
 }
 :root[data-theme="dark"] body::before{display:none;}  /* display:none also skips the fetch */
+/* High contrast is an INDEPENDENT axis from theme, and its palette is a light one
+   — so without this rule a low-vision user on a light+HC desktop still got a
+   texture image painted over every glyph, degrading exactly the contrast they
+   asked to maximise. Same rule the Riso grain already follows below. */
+:root[data-contrast="hc"] body::before{display:none;}
 /* Desktop light only — a plain low-opacity overlay (NO blend mode: a full-screen
    mix-blend-mode forces a whole-page recomposite and janks scroll, which is
    scored). Phones/dark keep just the Riso grain. */
@@ -68,6 +73,19 @@ body::after{
 .sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
 .sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
 .sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
+/* The Adana skyline footer band (components/adana-skyline.tsx). The variant is
+   picked here rather than in JS so it's correct on the FIRST paint — a
+   JS-resolved theme is only known after hydration, which made every dark-mode
+   visitor fetch and flash the light band. aspect-ratio keeps the box reserved,
+   so there's no layout shift while it loads. */
+.mdr-skyline{
+  width:100%; max-width:640px; aspect-ratio:1600/333;
+  background-image:url('/decor/skyline-band.webp');
+  background-size:contain; background-repeat:no-repeat; background-position:center;
+  pointer-events:none;
+}
+:root[data-theme="dark"] .mdr-skyline{ background-image:url('/decor/skyline-band-dark.webp'); }
+:root[data-contrast="hc"] .mdr-skyline{ background-image:url('/decor/skyline-band.webp'); }
 /* The header wordmark + separator (app/_layout.tsx HomeLink) — "Mahalle Defteri ·
    <screen>", where the brand is the home link. On the narrowest phones the bar
    can't hold back + brand + title + toggle, so the brand steps aside rather than
@@ -102,6 +120,12 @@ body::after{
    orange blossom + cotton — deliberately different Adana motifs per side. */
 :root[data-theme="dark"] .mdr-side-l{ background-image:url('/decor/margin-left-dark.webp'); }
 :root[data-theme="dark"] .mdr-side-r{ background-image:url('/decor/margin-right-dark.webp'); }
+/* data-contrast="hc" overrides the palette to a LIGHT one whatever the theme is,
+   so dark + high-contrast would otherwise paint the cream night-ledger art onto
+   light paper — washed out and low-contrast. Contrast wins over theme here, the
+   same way it does for the colour tokens. */
+:root[data-contrast="hc"] .mdr-side-l{ background-image:url('/decor/margin-left.webp'); }
+:root[data-contrast="hc"] .mdr-side-r{ background-image:url('/decor/margin-right.webp'); }
 @media (max-width:980px){ .mdr-side{ display:none; } }
 `;
 

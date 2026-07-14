@@ -11,7 +11,10 @@ import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
 
-function ChannelCard({ channel }: { channel: Channel }) {
+// `message` is built once by the screen from the RESOLVED category (URL param
+// first), not per-card from the draft — so the WhatsApp prefill, the copy button
+// and the heading can never name different categories.
+function ChannelCard({ channel, message }: { channel: Channel; message: string }) {
   const [copied, setCopied] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
   const [checked, setChecked] = useState<Record<number, boolean>>({});
@@ -29,12 +32,11 @@ function ChannelCard({ channel }: { channel: Channel }) {
     }
   };
 
-  // For form/portal channels, hand the resident a ready-to-paste complaint text
-  // built from their draft — writing the message is the real friction. Plainly
-  // their own words; the app never submits for them.
+  // For form/portal channels, hand the resident a ready-to-paste message — writing
+  // it is the real friction. Plainly their own words; the app never submits for them.
   const copyMessage = async () => {
     try {
-      await navigator.clipboard.writeText(buildReportMessage());
+      await navigator.clipboard.writeText(message);
       setMsgCopied(true);
       setTimeout(() => setMsgCopied(false), 2000);
     } catch {
@@ -53,17 +55,20 @@ function ChannelCard({ channel }: { channel: Channel }) {
       <Text style={styles.channelName}>{channel.name}</Text>
       {channel.description ? <Text style={styles.channelDesc}>{channel.description}</Text> : null}
 
-      <ChannelContact channel={channel} prominent whatsappText={buildReportMessage()} />
+      <ChannelContact channel={channel} prominent whatsappText={message} />
 
+      {/* "Mesaj", not "başvuru": several of these contact_url rows are an
+          informational department page, not an application form, and the app
+          never files anything on the resident's behalf (CLAUDE.md). */}
       {channel.contact_url ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Başvuru metnini kopyala"
+          accessibilityLabel="Hazır mesajı kopyala"
           onPress={copyMessage}
           style={styles.copyMsgBtn}
         >
           <Text style={styles.copyMsgText}>
-            {msgCopied ? 'Başvuru metni kopyalandı ✓' : 'Başvuru metnini kopyala'}
+            {msgCopied ? 'Mesaj kopyalandı ✓' : 'Hazır mesajı kopyala'}
           </Text>
         </Pressable>
       ) : null}
@@ -76,6 +81,10 @@ function ChannelCard({ channel }: { channel: Channel }) {
               key={i}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: !!checked[i] }}
+              // RN-Web doesn't emit aria-checked from accessibilityState here,
+              // so a screen reader would announce every item as unchecked
+              // (same fix as flag-form.tsx / settings.tsx).
+              aria-checked={!!checked[i]}
               onPress={() => setChecked((prev) => ({ ...prev, [i]: !prev[i] }))}
               style={styles.checkRow}
             >
@@ -134,7 +143,9 @@ export default function RoutingResult() {
         ) : null}
 
         {state.status === 'ready'
-          ? state.data.map((c) => <ChannelCard key={c.id} channel={c} />)
+          ? state.data.map((c) => (
+              <ChannelCard key={c.id} channel={c} message={buildReportMessage(category.slug)} />
+            ))
           : null}
 
         <Link href="/add-to-map" style={styles.mapLink}>

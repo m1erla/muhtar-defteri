@@ -46,9 +46,10 @@ export default function AboutSivri() {
         </Text>
         <Text style={styles.body}>
           Sivri'nin burnu bir kalem. Çünkü o ısırmıyor — kaydını tutuyor. Mahalle Defteri de tam
-          bunu yapar: bir sorunu şikâyet olmaktan çıkarıp doğru resmi kapıya, yazılı ve takip
-          edilebilir bir kayda dönüştürür. Rahatsız eden şeyi, çözülmesine yardımcı olan bir şeye
-          çeviriyoruz.
+          bunu yapar: sorunun hangi resmi kanala ait olduğunu gösterir, yanına götüreceğin hazır bir
+          metin verir ve istersen mahallenin açık defterine bir not düşer. Başvuruyu senin adına
+          yapmaz — o adımı sen atarsın; biz sadece doğru kapıyı ve mahallenin ortak kaydını
+          tutuyoruz.
         </Text>
 
         <Text style={styles.subheading} accessibilityRole="header">

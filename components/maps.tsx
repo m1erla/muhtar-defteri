@@ -101,8 +101,17 @@ export function LocationPickerMap({
 
 // Read-only single-pin map for the report-detail screen. A report's location is
 // otherwise only a neighborhood name — invisible when reverse-geocoding failed —
-// so this shows WHERE the problem is. The pin isn't draggable; the user can
-// still pan/zoom to get their bearings.
+// so this shows WHERE the problem is.
+//
+// EVERY gesture handler is off. This is a 200px band sitting mid-page inside the
+// detail screen's ScrollView, so with Leaflet's defaults (dragging, scrollWheelZoom,
+// touchZoom and keyboard are all ON) it becomes a scroll trap: a phone user swiping
+// up through the report with a finger on the map pans the map while the page stays
+// put (Leaflet preventDefaults the touchmove), a desktop wheel zooms the map instead
+// of scrolling the article, and a keyboard user who tabs onto it has arrow keys eaten
+// (Leaflet's Keyboard handler sets tabIndex=0 and stops the event). The zoom buttons
+// stay: they zoom without capturing the scroll. Full-map context is one tap away on
+// the ledger map.
 export function ReportLocationMap({
   latitude,
   longitude,
@@ -113,15 +122,23 @@ export function ReportLocationMap({
   status: 'open' | 'resolved';
 }) {
   return (
-    <MapContainer center={[latitude, longitude]} zoom={16} style={{ width: '100%', height: '100%' }}>
+    <MapContainer
+      center={[latitude, longitude]}
+      zoom={16}
+      dragging={false}
+      scrollWheelZoom={false}
+      touchZoom={false}
+      doubleClickZoom={false}
+      keyboard={false}
+      style={{ width: '100%', height: '100%' }}
+    >
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
-      <Marker
-        position={[latitude, longitude]}
-        icon={dotIcon(status === 'open' ? colors.terracotta : colors.moss, 22)}
-      />
+      {/* Same pin as the ledger map — status is never colour-only (CLAUDE.md):
+          the resolved pin carries a ✓, and both carry a text tooltip. */}
+      <Marker position={[latitude, longitude]} icon={clusterPinIcon(status, 1)} />
     </MapContainer>
   );
 }

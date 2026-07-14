@@ -89,8 +89,16 @@ export default function ChannelDirectory() {
           />
         ) : null}
 
+        {/* Don't blame a search the user never made: the same empty list appears
+            when the channels table itself comes back empty. */}
         {state.status === 'ready' && groups.length === 0 ? (
-          <LoadStateView message="Bu aramayla eşleşen kanal yok." />
+          <LoadStateView
+            message={
+              query.trim()
+                ? 'Bu aramayla eşleşen kanal yok.'
+                : 'Kanal rehberi şu an boş görünüyor. Biraz sonra tekrar dene.'
+            }
+          />
         ) : null}
 
         {groups.map(({ category: c, rows }) => (

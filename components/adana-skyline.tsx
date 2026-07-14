@@ -1,25 +1,21 @@
-import { Image } from 'expo-image';
 import { Platform, View } from 'react-native';
 
-import { useResolvedTheme } from '@/lib/display-settings';
-
 // A thin Adana skyline band (Sabancı Camii's six minarets, the Taşköprü, palms,
-// the Seyhan) used as a quiet footer accent. Uses the AI art, with a cream-ink
-// "night ledger" variant so it reads on the dark theme too. Decorative —
-// aria-hidden, pointer-events:none, web-only. `opacity` keeps it faint.
+// the Seyhan) used as a quiet footer accent. Decorative — aria-hidden, web-only.
+// `opacity` keeps it faint.
+//
+// The light/dark variant is chosen in CSS (.mdr-skyline in app/+html.tsx), not from
+// the JS-resolved theme. useResolvedTheme() only knows the real theme AFTER
+// hydration, so with the static export every dark-mode visitor fetched the LIGHT
+// band, painted it, then swapped — a visible flash and a wasted 68KB. The CSS
+// variant is right on the first paint (the no-flash script sets data-theme before
+// anything renders), and it lets high-contrast override the theme, which the JS
+// path could not.
 export default function AdanaSkyline({ opacity = 0.5 }: { opacity?: number }) {
-  const theme = useResolvedTheme();
   if (Platform.OS !== 'web') return null;
-  const src = theme === 'dark' ? '/decor/skyline-band-dark.webp' : '/decor/skyline-band.webp';
   return (
-    <View style={{ width: '100%', opacity, alignItems: 'center' }} pointerEvents="none">
-      <Image
-        source={{ uri: src }}
-        style={{ width: '100%', maxWidth: 640, aspectRatio: 1600 / 333 }}
-        contentFit="contain"
-        accessibilityLabel=""
-        accessible={false}
-      />
+    <View style={{ width: '100%', alignItems: 'center' }} pointerEvents="none">
+      <div className="mdr-skyline" style={{ opacity }} aria-hidden="true" />
     </View>
   );
 }

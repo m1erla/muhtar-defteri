@@ -7,9 +7,9 @@ import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
 import Sivri from '@/components/sivri';
 import { CATEGORIES, getCategory, type CategorySlug } from '@/lib/categories';
-import { clusterCounts, clusterKey, clusterReports } from '@/lib/cluster';
+import { clusterKey, clusterReports } from '@/lib/cluster';
 import { consumeReportAdded } from '@/lib/flash';
-import { fetchReports, isArchivable, isOverdue } from '@/lib/reports';
+import { fetchReportStats, fetchReports, isArchivable, isOverdue } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -21,6 +21,10 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      // RN-Web drops accessibilityState here, so without this the ONLY signal
+      // that a filter is on is the petrol fill — invisible to a screen reader
+      // and colour-only for everyone else (same fix as flag-form/settings).
+      aria-pressed={active}
       style={[styles.chip, active && styles.chipActive]}
     >
       <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>{label}</Text>
@@ -63,17 +67,59 @@ export default function MapList() {
     keepDataWhileReloading: true,
   });
 
+  // The strip's numbers come from the SAME head-count query Home uses, not from
+  // the 500-row page below: counting the page would have made this screen
+  // contradict Home's figures the moment the ledger passed the cap, and a
+  // transparency number that disagrees with itself is worse than no number.
+  // Three head-only counts — no rows.
+  const { state: statsState } = useLoad(() => fetchReportStats(), [], { refetchOnFocus: true });
+
   const { Map: MapView, failed: mapFailed, retry: retryMap } = useLazyMap('ReportsMap', showMapPane);
 
   const openDetail = (id: string) => router.push({ pathname: '/report-detail', params: { id } });
 
   const all = state.status === 'ready' ? state.data : [];
-  // Derive the counts + filtered/visible sets once per input change, not on every
-  // render — this screen re-renders on resize, the toast timer, focus refetch and
-  // each chip toggle, and clusterCounts + the isArchivable date-parse both run
-  // over all ~500 rows. Stable refs also keep <MapView> from re-clustering.
-  const { counts, filtered, visible, hiddenCount, spotlight, stats } = useMemo(() => {
-    const counts = clusterCounts(all);
+
+  // Split in two on purpose. Everything here depends ONLY on the fetched rows —
+  // clustering walks all ~500 of them — so it must not be recomputed every time a
+  // filter chip is tapped. clusterReports() already returns each group with its
+  // count, so `counts` is derived from it rather than walking the rows a second
+  // time with clusterCounts().
+  const { counts, spotlight, topCategory, topNeighborhood } = useMemo(() => {
+    const groups = clusterReports(all);
+    const counts = new Map(groups.map((g) => [g.key, g.count]));
+
+    // The worst recurring spots (⟳ > 1), most-reported first — over ALL reports,
+    // so it stays a stable, filter-independent signal.
+    const spotlight = groups
+      .filter((c) => c.count > 1)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
+    const catCount = new Map<string, number>();
+    const nbCount = new Map<string, number>();
+    for (const r of all) {
+      catCount.set(r.category, (catCount.get(r.category) ?? 0) + 1);
+      // Only real mahalle names compete for "en çok". Reports whose reverse-geocode
+      // failed used to be folded into a pseudo-mahalle called "Adana", which could
+      // then WIN and be shown as the city's most-reported neighbourhood.
+      const nb = r.neighborhood?.trim();
+      if (nb) nbCount.set(nb, (nbCount.get(nb) ?? 0) + 1);
+    }
+    const top = (m: Map<string, number>) =>
+      [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const topCat = top(catCount);
+
+    return {
+      counts,
+      spotlight,
+      topCategory: topCat ? getCategory(topCat)?.label ?? null : null,
+      topNeighborhood: top(nbCount),
+    };
+  }, [all]);
+
+  // Only this depends on the filter chips.
+  const { filtered, visible, hiddenCount } = useMemo(() => {
     const filtered = all.filter(
       (r) =>
         (!category || r.category === category) &&
@@ -81,49 +127,37 @@ export default function MapList() {
         (!overdueOnly || isOverdue(r))
     );
     const visible = showOld ? filtered : filtered.filter((r) => !isArchivable(r));
-
-    // Spotlight the worst recurring spots (⟳ > 1), most-reported first — computed
-    // over ALL reports so it's a stable, filter-independent signal.
-    const spotlight = clusterReports(all)
-      .filter((c) => c.count > 1)
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
-
-    // Transparency numbers over the loaded set.
-    const resolved = all.filter((r) => r.status === 'resolved').length;
-    const overdue = all.filter(isOverdue).length;
-    const catCount = new Map<string, number>();
-    const nbCount = new Map<string, number>();
-    for (const r of all) {
-      catCount.set(r.category, (catCount.get(r.category) ?? 0) + 1);
-      const nb = r.neighborhood || 'Adana';
-      nbCount.set(nb, (nbCount.get(nb) ?? 0) + 1);
-    }
-    const top = (m: Map<string, number>) =>
-      [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-    const topCat = top(catCount);
-    const stats = {
-      total: all.length,
-      resolved,
-      overdue,
-      topCategory: topCat ? getCategory(topCat)?.label ?? null : null,
-      topNeighborhood: top(nbCount),
-    };
-
-    return { counts, filtered, visible, hiddenCount: filtered.length - visible.length, spotlight, stats };
+    return { filtered, visible, hiddenCount: filtered.length - visible.length };
   }, [all, category, status, overdueOnly, showOld]);
+
+  const stats = statsState.status === 'ready' ? statsState.data : null;
+
+  // "Gecikmiş" means open-and-past-the-benchmark (isOverdue), so it and "Çözüldü"
+  // can never both match a report — leaving them independently selectable gave a
+  // dead combination that always rendered the empty state. Turning either on now
+  // turns the other off.
+  const toggleStatus = (s: 'open' | 'resolved') => {
+    const next = status === s ? null : s;
+    setStatus(next);
+    if (next === 'resolved') setOverdueOnly(false);
+  };
+  const toggleOverdue = () => {
+    const next = !overdueOnly;
+    setOverdueOnly(next);
+    if (next && status === 'resolved') setStatus(null);
+  };
 
   const list = (
     <>
-      {state.status === 'ready' && stats.total > 0 ? (
+      {stats && stats.total > 0 ? (
         <View style={styles.statsStrip} accessibilityRole="summary">
           <Text style={styles.statsLine}>
             {stats.total} kayıt · %{Math.round((stats.resolved / stats.total) * 100)} çözüldü
             {stats.overdue > 0 ? ` · ${stats.overdue} gecikmiş` : ''}
           </Text>
-          {stats.topCategory || stats.topNeighborhood ? (
+          {topCategory || topNeighborhood ? (
             <Text style={styles.statsSub}>
-              En çok: {[stats.topCategory, stats.topNeighborhood].filter(Boolean).join(' · ')}
+              En çok: {[topCategory, topNeighborhood].filter(Boolean).join(' · ')}
             </Text>
           ) : null}
         </View>
@@ -132,27 +166,25 @@ export default function MapList() {
       {state.status === 'ready' && spotlight.length > 0 ? (
         <View style={styles.spotlight}>
           <Text style={styles.spotlightTitle}>En çok bildirilenler</Text>
-          {spotlight.map((c) => (
-            <Pressable
-              key={c.key}
-              accessibilityRole="button"
-              accessibilityLabel={`${c.representative.neighborhood || 'Adana'}, ${
-                getCategory(c.representative.category)?.label ?? ''
-              }, bu noktada ${c.count} kayıt`}
-              onPress={() => openDetail(c.representative.id)}
-              style={styles.spotlightRow}
-            >
-              <CategoryMark
-                slug={getCategory(c.representative.category)?.slug ?? 'pin'}
-                size={28}
-                iconSize={18}
-              />
-              <Text style={styles.spotlightText} numberOfLines={1}>
-                {c.representative.neighborhood || 'Adana'} — {getCategory(c.representative.category)?.label}
-              </Text>
-              <Text style={styles.spotlightCount}>⟳{c.count}</Text>
-            </Pressable>
-          ))}
+          {spotlight.map((c) => {
+            const place = c.representative.neighborhood?.trim() || 'Adana';
+            const cat = getCategory(c.representative.category);
+            return (
+              <Pressable
+                key={c.key}
+                accessibilityRole="button"
+                accessibilityLabel={`${place}, ${cat?.label ?? ''}, bu noktada ${c.count} kayıt`}
+                onPress={() => openDetail(c.representative.id)}
+                style={styles.spotlightRow}
+              >
+                <CategoryMark slug={c.representative.category} size={28} iconSize={18} />
+                <Text style={styles.spotlightText} numberOfLines={1}>
+                  {place} — {cat?.label}
+                </Text>
+                <Text style={styles.spotlightCount}>⟳{c.count}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       ) : null}
 
@@ -243,21 +275,13 @@ export default function MapList() {
             />
           ))}
           <View style={styles.chipDivider} />
-          <Chip
-            label="Açık"
-            active={status === 'open'}
-            onPress={() => setStatus(status === 'open' ? null : 'open')}
-          />
+          <Chip label="Açık" active={status === 'open'} onPress={() => toggleStatus('open')} />
           <Chip
             label="Çözüldü"
             active={status === 'resolved'}
-            onPress={() => setStatus(status === 'resolved' ? null : 'resolved')}
+            onPress={() => toggleStatus('resolved')}
           />
-          <Chip
-            label="Gecikmiş"
-            active={overdueOnly}
-            onPress={() => setOverdueOnly((v) => !v)}
-          />
+          <Chip label="Gecikmiş" active={overdueOnly} onPress={toggleOverdue} />
         </ScrollView>
 
         {showMapPane ? (

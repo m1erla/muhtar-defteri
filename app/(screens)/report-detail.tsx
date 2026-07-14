@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -25,14 +25,14 @@ import {
   fetchMyConfirmation,
   fetchReport,
   fetchSameSpotCount,
+  isOverdue,
+  isReportId,
   type ConfirmationType,
   type Report,
 } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { useLoad } from '@/lib/use-load';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type DetailData = {
   report: Report | null;
@@ -46,7 +46,7 @@ export default function ReportDetail() {
   const raw = Array.isArray(params.id) ? params.id[0] : params.id;
   // A malformed id (truncated share link) must land on "not found", not on a
   // retry loop against a Postgres uuid parse error.
-  const id = raw && UUID_RE.test(raw) ? raw : null;
+  const id = isReportId(raw) ? raw : null;
 
   const { state, reload, mutate } = useLoad<DetailData>(
     async () => {
@@ -73,9 +73,14 @@ export default function ReportDetail() {
   const [flagOpen, setFlagOpen] = useState(false);
   const [watched, setWatched] = useState(false);
 
-  const { Map: LocationMap } = useLazyMap('ReportLocationMap');
-
   const reportId = state.status === 'ready' ? state.data.report?.id : undefined;
+
+  // Only pull the leaflet chunk once there is actually a report to pin. Ungated,
+  // it downloaded on every mount — including while the fetch was still in flight,
+  // on a failed fetch, and for a bad/missing id (a dead shared link), where it
+  // could never render anything. This screen is the one people open from a
+  // WhatsApp link on a phone, so that was the worst place to spend the bytes.
+  const { Map: LocationMap } = useLazyMap('ReportLocationMap', !!reportId);
   // Sync the follow state from localStorage once the report id is known.
   useEffect(() => {
     setWatched(reportId ? isWatched(reportId) : false);
@@ -214,9 +219,11 @@ export default function ReportDetail() {
               {ready.report.status === 'open'
                 ? (() => {
                     // Adana Büyükşehir's stated response window as the "past due"
-                    // benchmark (PRD §11). A benchmark, not a guarantee.
+                    // benchmark (PRD §11). A benchmark, not a guarantee. isOverdue()
+                    // is the shared test — the chip, the stats count and this line
+                    // must never disagree about what "gecikmiş" means.
                     const bd = businessDaysSince(ready.report.created_at);
-                    const overdue = bd > RESPONSE_BENCHMARK_DAYS;
+                    const overdue = isOverdue(ready.report);
                     return (
                       <Text style={[styles.mono, overdue && styles.overdue]}>
                         {overdue
@@ -270,16 +277,28 @@ export default function ReportDetail() {
             <Pressable
               accessibilityRole="button"
               accessibilityState={{ selected: watched }}
+              // RN-Web drops accessibilityState, so without this the button's only
+              // "you are following this" signal is the ✓ in its label.
+              aria-pressed={watched}
               accessibilityLabel={watched ? 'Takibi bırak' : 'Bu kaydı takip et'}
               onPress={() => {
                 if (reportId) setWatched(toggleWatch(reportId));
               }}
               style={styles.watchRow}
             >
+              {/* The followed list lives on /watchlist, not here — the old copy
+                  ("durumunu buradan izle") pointed at this screen and the screen
+                  offered no way to reach the list. */}
               <Text style={styles.watchLink}>
-                {watched ? 'Takip ediliyor ✓ — bırak' : 'Takip et — durumunu buradan izle'}
+                {watched ? 'Takip ediliyor ✓ — bırak' : 'Takip et — Takip Ettiklerim listene ekle'}
               </Text>
             </Pressable>
+
+            {watched ? (
+              <Link href="/watchlist" style={styles.watchListLink}>
+                Takip Ettiklerim listesini aç →
+              </Link>
+            ) : null}
 
             <Pressable
               accessibilityRole="button"
@@ -390,6 +409,14 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  watchListLink: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.petrol,
+    textAlign: 'center',
+    minHeight: 44,
+    paddingVertical: 14,
   },
   watchLink: {
     fontFamily: fonts.sansSemiBold,

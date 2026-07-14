@@ -76,6 +76,8 @@ No persona requires technical sophistication. Copy and interaction design should
 | **Map / list view** | Public reports shown as a map (desktop/larger screens) or list (fallback and default on narrow viewports), filterable by category and status. Density of reports at the same rough location should be visually obvious. |
 | **Report detail** | Description, photo if present, first-reported date, confirmation count, and two actions: "I see this too" / "this got fixed" — both write to `confirmations`. |
 | **How it works** | States plainly: this is a community information and routing layer, not an official government channel, and doesn't guarantee any outcome. |
+| **Watchlist (Takip Ettiklerim)** | The reports this device chose to follow, newest first. Device-local (`localStorage`), no account, nothing leaves the device — following is how a resident checks back on their issues without us needing an identity to notify. Added 2026-07-13. |
+| **Sivri kim? (about-sivri)** | The mascot's story: why an Adana app leans into the mosquito, and what "ısırmaz, yazar" means. Warm and neutral — Sivri is a neighbourhood face, never an official emblem. Added 2026-07-13. |
 
 ## 9. Non-functional requirements
 
@@ -97,6 +99,7 @@ create table channels (
   scope text not null,           -- 'national' | 'adana'
   description text,
   contact_phone text,
+  contact_whatsapp text,         -- tappable wa.me line (ALO 153); null for most
   contact_url text,
   required_info text[],
   notes text
@@ -133,7 +136,7 @@ create table confirmations (
 - `confirmations` — select and insert (scoped to `report_id`, `type`, `session_id`), with `unique (report_id, session_id)` enforcing one confirmation per anonymous session per report. No update or delete.
 - `report-photos` storage bucket — public read via object URL (no listing), anonymous insert only, capped at 5 MB and image MIME types. `reports.photo_url` carries a check constraint pinning it to this bucket's public path, so the map can't be pointed at an arbitrary external image.
 
-Text columns the public insert path writes (`category`, `type`) carry check constraints, `status` is constrained to `open`/`resolved`, and `description` is capped at the 500 characters the UI enforces.
+Text columns the public insert path writes (`category`, `type`) carry check constraints, `status` is constrained to `open`/`resolved`, and `description` is capped at the 500 characters the UI enforces. `neighborhood` is in the anon insert grant too (the app only ever writes a reverse-geocoded name, but a crafted POST isn't bound by the app) — so it carries the same two guards as `description`: ≤80 chars and no links.
 
 Two things remain intentionally open, as accepted consequences of the anonymous, no-accounts design in §5 (not failures RLS can fix): anyone can mark any report resolved, and anyone can file or confirm reports without attribution. These surface as `RLS Policy Always True` advisor warnings on the two "anyone can …" policies and are expected.
 

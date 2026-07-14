@@ -106,7 +106,11 @@ function AppHeader({ title }: { title: string }) {
             <HomeLink />
           </>
         )}
-        <Text style={hdr.title} numberOfLines={1}>
+        {/* The screen's heading. React Navigation's default HeaderTitle emitted
+            role="heading"; a plain <Text> does not, and five screens (home,
+            map-list, routing-result, add-to-map, report-detail) have no other
+            heading — so replacing the header left them with none at all. */}
+        <Text style={hdr.title} accessibilityRole="header" numberOfLines={1}>
           {title}
         </Text>
         <ThemeToggle />
@@ -132,9 +136,13 @@ const hdr = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     width: '100%',
-    maxWidth: 640,
+    // 560 + the same 20px padding every screen's content column uses, so the back
+    // button and the title line up with the page text beneath them instead of
+    // hanging 44px to its left. Still well inside the 640px column the margin art
+    // leaves clear (app/+html.tsx), so the gutters stay the art's.
+    maxWidth: 560,
     alignSelf: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   brand: {
     flexDirection: 'row',

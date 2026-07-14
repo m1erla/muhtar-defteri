@@ -34,6 +34,28 @@ export function businessDaysSince(iso: string): number {
   return days;
 }
 
+// The instant that splits overdue from on-time, so the "gecikmiş" tally can be a
+// DB head-count instead of a row download. businessDaysSince() is monotonically
+// decreasing in created_at, so `businessDaysSince(t) > n` is exactly equivalent
+// to `t < cutoff` for a single cutoff — walk back day by day until more than `n`
+// weekdays have elapsed, then take the start of the following day. Same local
+// calendar-day math as businessDaysSince, so the count and the per-report line
+// can never disagree.
+export function overdueCutoffISO(n: number = RESPONSE_BENCHMARK_DAYS): string {
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  let elapsed = 0;
+  while (elapsed <= n) {
+    const day = cursor.getDay();
+    if (day !== 0 && day !== 6) elapsed += 1; // the day we're about to step off
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  // cursor is now the newest day that is still overdue; a report is overdue iff
+  // it was created before the END of that day.
+  cursor.setDate(cursor.getDate() + 1);
+  return cursor.toISOString();
+}
+
 // Calendar days elapsed since a date (the numeric form of daysAgoLabel) —
 // used for the freshness / staleness thresholds below.
 export function calendarDaysSince(iso: string): number {

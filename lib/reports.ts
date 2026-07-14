@@ -1,5 +1,11 @@
 import type { CategorySlug } from './categories';
-import { ARCHIVE_DAYS, RESPONSE_BENCHMARK_DAYS, businessDaysSince, calendarDaysSince } from './format';
+import {
+  ARCHIVE_DAYS,
+  RESPONSE_BENCHMARK_DAYS,
+  businessDaysSince,
+  calendarDaysSince,
+  overdueCutoffISO,
+} from './format';
 import { nominatimFetch } from './geocode';
 import { generateId, getSessionId } from './session';
 import { getSupabase } from './supabase';
@@ -76,10 +82,13 @@ export async function fetchReports(filters: ReportFilters = {}, limit = 100): Pr
   return (data ?? []) as Report[];
 }
 
-// Home's ledger stats line: two head-only counts (no rows) + the overdue tally.
-// Overdue needs business-day math per row, so it pulls only the open rows'
-// created_at (small payload, capped) and applies isOverdue client-side so the
-// count matches the detail screen exactly.
+// The ledger stats line (Home + the map/list strip): three head-only counts, ZERO
+// rows downloaded. Overdue needs business-day math, but businessDaysSince() only
+// decreases as created_at rises, so "overdue" is exactly "created before the
+// cutoff" (lib/format overdueCutoffISO) — which Postgres can count. This used to
+// download up to 1000 open rows and run a day-by-day loop over them on the scored
+// landing screen; it was also silently wrong past that cap. Now it is exact at any
+// table size, and both screens read the same numbers from the same query.
 export async function fetchReportStats(): Promise<{
   total: number;
   resolved: number;
@@ -87,29 +96,46 @@ export async function fetchReportStats(): Promise<{
 }> {
   const sb = getSupabase();
   const head = () => sb.from('reports').select('*', { count: 'exact', head: true });
-  const [totalRes, resolvedRes, openRows] = await Promise.all([
+  const [totalRes, resolvedRes, overdueRes] = await Promise.all([
     head(),
     head().eq('status', 'resolved'),
-    sb.from('reports').select('created_at').eq('status', 'open').limit(1000),
+    head().eq('status', 'open').lt('created_at', overdueCutoffISO()),
   ]);
   if (totalRes.error) throw new Error(totalRes.error.message);
   if (resolvedRes.error) throw new Error(resolvedRes.error.message);
-  if (openRows.error) throw new Error(openRows.error.message);
-  const overdue = ((openRows.data ?? []) as { created_at: string }[]).filter((r) =>
-    isOverdue({ status: 'open', created_at: r.created_at })
-  ).length;
-  return { total: totalRes.count ?? 0, resolved: resolvedRes.count ?? 0, overdue };
+  if (overdueRes.error) throw new Error(overdueRes.error.message);
+  return {
+    total: totalRes.count ?? 0,
+    resolved: resolvedRes.count ?? 0,
+    overdue: overdueRes.count ?? 0,
+  };
+}
+
+// Report ids reach us from places Postgres doesn't control — a URL param on a
+// shared link, an entry in localStorage. PostgREST 400s on a malformed uuid, so
+// every such id is checked here before it ever reaches a query.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isReportId(value: unknown): value is string {
+  return typeof value === 'string' && UUID_RE.test(value);
 }
 
 // Reports for the device-local watchlist (lib/watchlist.ts). Fetched by id in
 // one round trip; caller re-orders to the saved order. A watched report that was
 // purged simply drops out. Empty in → empty out (no query).
+//
+// The ids come from localStorage, which is user-editable and can also carry junk
+// from an older build. PostgREST rejects the WHOLE `in.(…)` filter with a 400 if
+// any element isn't a valid uuid, so one bad entry would brick the entire
+// watchlist screen forever (the error is not self-healing — the bad id stays in
+// storage). Drop non-uuids instead: a garbage id can't match a row anyway.
 export async function fetchReportsByIds(ids: string[]): Promise<Report[]> {
-  if (ids.length === 0) return [];
+  const valid = ids.filter(isReportId);
+  if (valid.length === 0) return [];
   const { data, error } = await getSupabase()
     .from('reports')
     .select('*, confirmations(count)')
-    .in('id', ids);
+    .in('id', valid);
   if (error) throw new Error(error.message);
   return (data ?? []) as Report[];
 }
