@@ -72,6 +72,15 @@ same Riso ink language as the icons, never decoration for its own sake:
   bloat the bundle, sit outside the theming/a11y system, and read as a generic
   template — the opposite of the point).
 
+**Header** (`AppHeader` in `app/_layout.tsx`) — a transparent bar whose content sits
+in the same 640px column as the page, so the margin art owns the full-height
+gutters. It reads `‹ Geri · Mahalle Defteri · <screen title>`: the wordmark is the
+**home link** (the site-logo convention — one tap out of any depth, where `‹ Geri`
+only walks back one step), in `petrol` so it reads as tappable rather than as a
+second title. On Home there's neither, since the title *is* "Mahalle Defteri".
+Below 360px the wordmark steps aside (`#mdr-brand`) rather than squeezing the
+screen title, which is the only heading on 5 screens.
+
 **Signature element:** report list rows are styled as ledger entries, not cards — a thin rule between rows, tabular alignment (category · neighborhood · date · confirmation count), and status shown as a small circular stamp mark rather than a rounded pill badge. This is the one place the design takes a real position; everything else (forms, buttons, the routing result screen) stays quiet and standard so the ledger rows read as intentional rather than as one choice among many competing ones.
 
 Spend the visual budget there. The report/category-picker screen, the routing result, and the how-it-works screen should all be plain, clear, and fast — no decoration competing with the one job those screens have.

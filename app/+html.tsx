@@ -68,6 +68,12 @@ body::after{
 .sivri[data-mood="sleep"] .sivri-wings{animation-duration:1.6s}
 .sivri-wave{transform-box:fill-box;transform-origin:top center;animation:sivri-wave 1.7s ease-in-out infinite}
 .sivri-zzz{transform-box:fill-box;animation:sivri-zzz 2.6s ease-in-out infinite}
+/* The header wordmark + separator (app/_layout.tsx HomeLink) — "Mahalle Defteri ·
+   <screen>", where the brand is the home link. On the narrowest phones the bar
+   can't hold back + brand + title + toggle, so the brand steps aside rather than
+   truncating the screen title (which is the only heading on 5 screens). ‹ Geri
+   still gets you out. */
+@media (max-width:360px){ #mdr-brand{ display:none!important; } }
 /* Decorative Adana margin art (components/side-decor.tsx) — now genuinely
    transparent PNG→WebP, so no blend hacks: the art sits over the page directly.
    Two fixed panels fill ONLY the side gutters (calc), never the centred column;

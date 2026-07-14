@@ -24,6 +24,10 @@ import ThemeToggle from '@/components/theme-toggle';
 import { DisplaySettingsProvider } from '@/lib/display-settings';
 import { colors, fonts } from '@/lib/theme';
 
+// Home is the root: no back control and no home link there (linking to the page
+// you're already on is noise). '/' and '/index' cover the pre-redirect frame.
+const isHomePath = (p: string) => p === '/home' || p === '/' || p === '/index';
+
 // A back control that never vanishes. The default header back button only shows
 // when the JS navigation stack has a previous entry — so it disappeared after a
 // full reload, a directly-opened link (a shared /report-detail), or any
@@ -32,9 +36,6 @@ import { colors, fonts } from '@/lib/theme';
 // and falls back to Home when there's genuinely nowhere to go back to.
 function HeaderBack() {
   const router = useRouter();
-  const pathname = usePathname();
-  // Home is the root — no back control there.
-  if (pathname === '/home' || pathname === '/' || pathname === '/index') return null;
   return (
     <Pressable
       accessibilityRole="button"
@@ -53,7 +54,7 @@ const hb = StyleSheet.create({
     minHeight: 44,
     minWidth: 44,
     justifyContent: 'center',
-    paddingRight: 12,
+    paddingRight: 10,
     paddingLeft: 2,
   },
   text: {
@@ -63,16 +64,48 @@ const hb = StyleSheet.create({
   },
 });
 
+// The wordmark, doubling as the home link — the site-logo convention. It reads
+// "Mahalle Defteri · <screen>", so the brand is always in view and one tap gets
+// you out of any depth of the flow (‹ Geri only walks back one step). navigate()
+// rather than push(): it pops to the existing Home if it's already in the stack
+// instead of piling a second copy on top. Petrol (the app's link colour) so it
+// reads as tappable, not as a title. Below 360px it steps aside (#mdr-brand in
+// app/+html.tsx) rather than squeezing the screen title off the bar.
+function HomeLink() {
+  const router = useRouter();
+  return (
+    <View style={hdr.brand} nativeID="mdr-brand">
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Ana sayfaya dön"
+        onPress={() => router.navigate('/home')}
+        style={hdr.brandBtn}
+        hitSlop={6}
+      >
+        <Text style={hdr.wordmark}>Mahalle Defteri</Text>
+      </Pressable>
+      <Text style={hdr.sep}>·</Text>
+    </View>
+  );
+}
+
 // The header bar. Its content is constrained to the SAME centred column as the
 // page content (640px), and the bar itself is transparent — so the left/right
 // gutters stay completely clear and the Adana margin art can run the full height
 // of the viewport behind it, instead of being pushed below a full-width header.
 // On phones maxWidth is a no-op, so the header looks exactly as before.
 function AppHeader({ title }: { title: string }) {
+  const home = isHomePath(usePathname());
   return (
     <View style={hdr.bar}>
       <View style={hdr.inner}>
-        <HeaderBack />
+        {/* On Home the title IS "Mahalle Defteri" — no back, no self-link. */}
+        {home ? null : (
+          <>
+            <HeaderBack />
+            <HomeLink />
+          </>
+        )}
         <Text style={hdr.title} numberOfLines={1}>
           {title}
         </Text>
@@ -102,6 +135,26 @@ const hdr = StyleSheet.create({
     maxWidth: 640,
     alignSelf: 'center',
     paddingHorizontal: 16,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 0, // the title truncates before the brand does
+  },
+  brandBtn: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  wordmark: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 15,
+    color: colors.petrol,
+  },
+  sep: {
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    color: colors.inkMuted,
   },
   title: {
     flex: 1,
