@@ -5,7 +5,16 @@ import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono/500Mediu
 import { WorkSans_400Regular } from '@expo-google-fonts/work-sans/400Regular';
 import { WorkSans_600SemiBold } from '@expo-google-fonts/work-sans/600SemiBold';
 import { useFonts } from 'expo-font';
-import { Stack, usePathname, useRouter, type ErrorBoundaryProps } from 'expo-router';
+// DefaultTheme/ThemeProvider come from expo-router itself — it vendors react-navigation
+// internally and re-exports them; @react-navigation/native is not a dependency here.
+import {
+  DefaultTheme,
+  Stack,
+  ThemeProvider,
+  usePathname,
+  useRouter,
+  type ErrorBoundaryProps,
+} from 'expo-router';
 import Head from 'expo-router/head';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -48,6 +57,54 @@ const hb = StyleSheet.create({
     paddingLeft: 2,
   },
   text: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 17,
+    color: colors.ink,
+  },
+});
+
+// The header bar. Its content is constrained to the SAME centred column as the
+// page content (640px), and the bar itself is transparent — so the left/right
+// gutters stay completely clear and the Adana margin art can run the full height
+// of the viewport behind it, instead of being pushed below a full-width header.
+// On phones maxWidth is a no-op, so the header looks exactly as before.
+function AppHeader({ title }: { title: string }) {
+  return (
+    <View style={hdr.bar}>
+      <View style={hdr.inner}>
+        <HeaderBack />
+        <Text style={hdr.title} numberOfLines={1}>
+          {title}
+        </Text>
+        <ThemeToggle />
+      </View>
+    </View>
+  );
+}
+
+const NAV_THEME = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: 'transparent', card: 'transparent' },
+};
+
+const hdr = StyleSheet.create({
+  bar: {
+    height: 64,
+    width: '100%',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+  },
+  title: {
+    flex: 1,
     fontFamily: fonts.sansSemiBold,
     fontSize: 17,
     color: colors.ink,
@@ -102,16 +159,20 @@ export default function RootLayout() {
             bookmarked tab reads as an Adana app. Per-screen titles override it. */}
         <title>Mahalle Defteri · Adana</title>
       </Head>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.paper },
-          headerTintColor: colors.ink,
-          headerTitleStyle: { color: colors.ink, fontFamily: fonts.sansSemiBold },
-          contentStyle: { backgroundColor: colors.paper },
-          headerLeft: () => <HeaderBack />,
-          headerRight: () => <ThemeToggle />,
-        }}
-      />
+      {/* React Navigation's default theme paints the navigator container light
+          grey (#F2F2F2). With a transparent header that grey showed as a band
+          across the top — over the margin art and wrong in dark mode. Transparent
+          navigator background: the page's own paper (html/body) shows instead. */}
+      <ThemeProvider value={NAV_THEME}>
+        <Stack
+          screenOptions={{
+            contentStyle: { backgroundColor: colors.paper },
+            // Custom header: content centred in the content column, bar transparent,
+            // so the margin art owns the full-height gutters.
+            header: ({ options }) => <AppHeader title={options.title ?? ''} />,
+          }}
+        />
+      </ThemeProvider>
       {/* Decorative Adana margin art on wide screens (web-only, ≥980px, light
           theme) — never touches the centred content. */}
       <SideDecor />

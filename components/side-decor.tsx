@@ -1,12 +1,13 @@
 import { Platform } from 'react-native';
 
 // Decorative side panels for wide screens — the AI-generated Adana margin art
-// (public/decor/margin-left|right.webp): ledger page-edge + the Adana skyline,
-// palms and Taşköprü, bottom-weighted and fading to transparent toward the
-// content. The centred column is untouched: these two fixed panels sit only in
-// the empty gutters (positioned via calc in app/+html.tsx), pointer-events:none,
-// aria-hidden. Web-only. Hidden ≤980px (phones/tablets) and in dark mode (the
-// art is light-theme cream paper — a dark variant can be dropped in later).
+// (public/decor/margin-{left,right}[-dark].webp). Left = Sabancı Camii, Taşköprü
+// and palms; right = Büyük Saat Kulesi, the Varda viadüğü, orange blossom and
+// cotton — deliberately different motifs per side, each with a night-ledger dark
+// variant. The centred column is untouched: these two fixed panels fill only the
+// empty gutters (sized via calc in app/+html.tsx), full viewport height since the
+// header bar is transparent. pointer-events:none, aria-hidden, web-only, and not
+// even fetched ≤980px (phones/tablets).
 export default function SideDecor() {
   if (Platform.OS !== 'web') return null;
   return (

@@ -26,10 +26,9 @@ const THEME_CSS = `
 :root[data-theme="dark"]{${vars(PALETTES.dark)}}
 :root[data-contrast="hc"]{${vars(PALETTES.hc)}}
 html,body{background:var(--paper);}
-/* Faint ruled ledger-paper texture over the page (light theme only). multiply of
-   the light cream texture barely touches content but adds the paper's fibers +
-   ruled lines — the "written in the ledger" feel. Dark keeps its flat night
-   ledger. Sits just under the Riso grain below. */
+/* Faint ruled ledger-paper texture over the page (desktop, light theme only): the
+   paper's fibers + ruled lines, the "written in the ledger" feel. Dark keeps its
+   flat night ledger. Sits just under the Riso grain below. */
 body::before{
   content:'';position:fixed;inset:0;z-index:2147483646;pointer-events:none;opacity:0.08;
   background-image:url('/decor/paper-texture.webp');
@@ -77,7 +76,9 @@ body::after{
    fades the art off the content. Hidden ≤980px. Shown in both themes; the dark
    treatment (if any) is set below. */
 .mdr-side{
-  position:fixed; top:64px; bottom:0; z-index:0;   /* start below the 64px header */
+  position:fixed; top:0; bottom:0; z-index:0;   /* full height: the header's content is
+     centred in the content column (app/_layout AppHeader) and its bar is transparent,
+     so the gutters are entirely ours */
   width:calc((100% - 640px) / 2);
   max-width:440px;
   pointer-events:none;
