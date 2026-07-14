@@ -35,7 +35,7 @@ body::before{
   background-image:url('/decor/paper-texture.webp');
   background-size:480px 480px;
 }
-:root[data-theme="dark"] body::before{opacity:0;}
+:root[data-theme="dark"] body::before{display:none;}  /* display:none also skips the fetch */
 /* Desktop light only — a plain low-opacity overlay (NO blend mode: a full-screen
    mix-blend-mode forces a whole-page recomposite and janks scroll, which is
    scored). Phones/dark keep just the Riso grain. */
@@ -89,6 +89,12 @@ body::after{
   -webkit-mask-image:linear-gradient(to right,#000 62%,transparent); mask-image:linear-gradient(to right,#000 62%,transparent); }
 .mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right;
   -webkit-mask-image:linear-gradient(to left,#000 62%,transparent); mask-image:linear-gradient(to left,#000 62%,transparent); }
+/* Night-ledger art: cream linework variants. Only the active theme's image is
+   fetched, and none at all ≤980px (display:none skips the request). Left =
+   Sabancı Camii + Taşköprü + palms; right = Büyük Saat Kulesi + Varda viaduct +
+   orange blossom + cotton — deliberately different Adana motifs per side. */
+:root[data-theme="dark"] .mdr-side-l{ background-image:url('/decor/margin-left-dark.webp'); }
+:root[data-theme="dark"] .mdr-side-r{ background-image:url('/decor/margin-right-dark.webp'); }
 @media (max-width:980px){ .mdr-side{ display:none; } }
 `;
 
