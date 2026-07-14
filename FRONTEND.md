@@ -50,6 +50,21 @@ same Riso ink language as the icons, never decoration for its own sake:
 - **Adana skyline** (`components/adana-skyline.tsx`) — a thin footer line-art of
   the Sabancı Merkez Camii (its six minarets are the city's signature), the
   Taşköprü arches, palms and the Seyhan (in petrol). Faint, decorative.
+- **Margin art** (`components/side-decor.tsx`, `public/decor/margin-*.webp`) —
+  two fixed panels filling the empty left/right gutters on wide screens, each
+  with a cream-linework dark variant. Different motifs per side, never a mirror:
+  left = Sabancı Camii + Taşköprü + palms, right = Büyük Saat Kulesi + the Varda
+  viadüğü + orange blossom + cotton. Web-only, `aria-hidden`,
+  `pointer-events:none`, and **not fetched at all ≤980px** — phones never pay for
+  it. Sized `calc((100% - 640px) / 2)` so it **can never touch the 640px content
+  column**; the header bar is transparent and its content sits in that same
+  column (`AppHeader`), which is what lets the art run the full viewport height.
+  - **Hidden on `/map-list`** — the one deliberately full-bleed screen, where the
+    map pane and the ledger pane are each `flex:1` across the whole viewport. The
+    panels would paint over the map and over the rows' ⟳/date/status columns, and
+    the geometry makes it strictly either/or (the map pane starts at `x=0`, same
+    as the left panel, at *every* width). The ledger's margins carry the art; the
+    map takes the whole desk. This also matches what 768–980px already ships.
 - Motion is CSS-only keyframes in `app/+html.tsx` (float, wing flutter, wave,
   Zzz), automatically frozen by the existing `prefers-reduced-motion` /
   `data-motion="reduce"` kill switch — so it's a still drawing for anyone who
@@ -116,7 +131,7 @@ Mobile-first, always. Build every screen at a ~375px viewport first, then check 
 - Text scales with system font size settings; nothing is set in fixed pixel units that ignores user preferences.
 - Contrast: `ink` on `paper` and `paper` on `petrol` both need verification against WCAG AA before shipping — check, don't assume.
 - Helper/dim text uses the solid `inkMuted` token, never `opacity` dimming (opacity can silently drop below AA).
-- Web shell (`app/+html.tsx`) carries three global touches: a 4%-opacity monochrome paper-grain overlay (the Riso print feel — far too faint to affect contrast), a `petrol` `:focus-visible` ring for keyboard users, and a `prefers-reduced-motion` kill switch for residual animation.
+- Web shell (`app/+html.tsx`) carries the global touches: a 4%-opacity monochrome paper-grain overlay (the Riso print feel — far too faint to affect contrast), an 8%-opacity ruled paper texture over it (desktop + light only — a **plain opacity, never a blend mode**: a full-viewport `mix-blend-mode` forces a whole-page recomposite and janks scroll, which is scored), the CSS for the two margin panels above, a `petrol` `:focus-visible` ring for keyboard users, and a `prefers-reduced-motion` kill switch for residual animation.
 - **Theming** (added 2026-07-12): `colors` in `lib/theme.ts` are CSS `var()` tokens; the concrete light / dark ("night ledger") / high-contrast palettes live in `PALETTES` and are emitted as `:root` / `[data-theme="dark"]` / `[data-contrast="hc"]` variable blocks in the web shell, swapped by a `data-*` attribute on `<html>`. A no-flash inline script applies the saved choice before first paint. All three palettes are WCAG-AA-checked (light unchanged from the original hex). The **Settings** screen (`lib/display-settings.tsx`) persists theme / high-contrast / text-size (a `zoom` step) / reduced-motion in localStorage — no account. Icons are the one non-var surface (baked into data-URIs): they switch by TONE (ink↔paper) because the category chip stays light in both themes.
 
 ## 8. Performance notes
