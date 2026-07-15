@@ -91,20 +91,25 @@ body::after{
    never the centred column; pointer-events:none. A soft inner mask fades the art
    off the content. Hidden ≤980px. Shown in both themes; the dark treatment is set
    below.
-   contain, NOT cover: the art is a tall 800×1756 illustration, and the gutter
-   narrows with the usable viewport width (calc). cover filled the panel but
-   cropped the SIDES on any narrow gutter — anchored bottom-right, it trimmed the
-   left, which cut the train off the Varda viaduct. The width where cover stops
-   cropping (~1390px viewport, more when tall) is easy to fall below whenever the
-   browser eats horizontal space (Edge's sidebar/vertical tabs, a smaller window,
-   zoom) — which is why it looked "half-rendered" in one browser and full in
-   another. contain always shows the WHOLE illustration, bottom-anchored to the
-   viewport edge; the trade is a little paper above/beside it on some sizes (the
-   inner side is masked-faded anyway), which reads as a clean margin.
-   The reserved column is 600 (not 640, the content is 560 → a steady 20px gap to
-   the art), so the gutter is 20px wider and the whole art renders a bit larger on
-   the mid/narrow widths where contain shrinks it — the wide look is unchanged
-   (still capped). */
+   contain, NOT cover: cover filled the panel but cropped the SIDES on any narrow
+   gutter — anchored bottom-right, it trimmed the left, which cut the train off
+   the Varda viaduct. contain always shows the WHOLE illustration, bottom-anchored
+   to the viewport edge.
+   The four source files (public/decor/margin-{left,right}[-dark].webp) are all
+   padded to the SAME aspect ratio, ~0.364 (width × 2.75) — extra transparent
+   canvas above the actual artwork, added with sharp (not a redraw). That aspect
+   is what lets contain fill the full viewport height on narrower browser windows
+   too, not just wide ones: a browser that reports less USABLE width than another
+   at the "same" size (Edge's sidebar/vertical tabs, a smaller window, zoom) gets a
+   narrower gutter — calc((100% - 600px)/2) — and the old 800×1756 shape (aspect
+   0.456) only filled the full height once the gutter was wide enough relative to
+   its height; below that it left a gap between the header and the top of the art.
+   Taller-than-wide art needs a proportionally SMALLER gutter to become
+   height-limited (contain's scale = min(gutterW/imgW, gutterH/imgH)), so this
+   closes that gap — the trade is the art renders a bit NARROWER everywhere
+   (verified: 1440px gutter art width 374px → 273px), since the same aspect now
+   applies at every width. All four files must stay in lock-step at this aspect,
+   or the two sides (or the two themes) reach the top at different points. */
 .mdr-side{
   position:fixed; top:0; bottom:0; z-index:0;
   width:calc((100% - 600px) / 2);
