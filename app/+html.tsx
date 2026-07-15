@@ -86,34 +86,40 @@ body::after{
 }
 :root[data-theme="dark"] .mdr-skyline{ background-image:url('/decor/skyline-band-dark.webp'); }
 :root[data-contrast="hc"] .mdr-skyline{ background-image:url('/decor/skyline-band.webp'); }
-/* Decorative Adana margin art (components/side-decor.tsx) — transparent WebP.
-   FIXED size, anchored to the CENTRED content — NOT the variable gutter. That was
-   the whole cross-browser problem: the gutter width tracks the browser's USABLE
-   width, so tying the art to it rendered it bigger in one browser and smaller in
-   another (Edge's sidebar/vertical tabs leave less width than a bare Chrome, same
-   for a smaller window or zoom). A fixed 260px panel placed a constant 20px
-   outside the 560px content column makes content+art ONE fixed composition that is
-   IDENTICAL in every browser — only the blank paper beyond it differs, and that's
-   just background. aspect-ratio matches the 800×1756 art, so the box is exactly the
-   image's shape and the WHOLE illustration (train included) always shows, no crop,
-   no letterbox. Bottom-anchored. A soft inner mask fades it off the content.
-   Hidden below 1120px — that's where the fixed art would reach the content, so
-   below it the margins are clean paper (same as phones). Shown in both themes. */
+/* Decorative Adana margin art (components/side-decor.tsx) — transparent WebP that
+   sits over the page directly. Two fixed panels fill ONLY the side gutters (calc),
+   never the centred column; pointer-events:none. A soft inner mask fades the art
+   off the content. Hidden ≤980px. Shown in both themes; the dark treatment is set
+   below.
+   contain, NOT cover: the art is a tall 800×1756 illustration, and the gutter
+   narrows with the usable viewport width (calc). cover filled the panel but
+   cropped the SIDES on any narrow gutter — anchored bottom-right, it trimmed the
+   left, which cut the train off the Varda viaduct. The width where cover stops
+   cropping (~1390px viewport, more when tall) is easy to fall below whenever the
+   browser eats horizontal space (Edge's sidebar/vertical tabs, a smaller window,
+   zoom) — which is why it looked "half-rendered" in one browser and full in
+   another. contain always shows the WHOLE illustration, bottom-anchored to the
+   viewport edge; the trade is a little paper above/beside it on some sizes (the
+   inner side is masked-faded anyway), which reads as a clean margin.
+   The reserved column is 600 (not 640, the content is 560 → a steady 20px gap to
+   the art), so the gutter is 20px wider and the whole art renders a bit larger on
+   the mid/narrow widths where contain shrinks it — the wide look is unchanged
+   (still capped). */
 .mdr-side{
-  position:fixed; bottom:0; z-index:0;
-  width:260px; aspect-ratio:800 / 1756;
+  position:fixed; top:0; bottom:0; z-index:0;
+  width:calc((100% - 600px) / 2);
+  max-width:460px;
   pointer-events:none;
   background-repeat:no-repeat;
-  background-size:contain; background-position:bottom;
+  background-size:contain;
   opacity:0.92;
 }
-/* right/left edge a constant 300px from centre = 20px outside the 280px half-column */
-.mdr-side-l{ right:calc(50% + 300px); background-image:url('/decor/margin-left.webp');
+.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left;
   -webkit-mask-image:linear-gradient(to right,#000 62%,transparent); mask-image:linear-gradient(to right,#000 62%,transparent); }
-.mdr-side-r{ left:calc(50% + 300px);  background-image:url('/decor/margin-right.webp');
+.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right;
   -webkit-mask-image:linear-gradient(to left,#000 62%,transparent); mask-image:linear-gradient(to left,#000 62%,transparent); }
 /* Night-ledger art: cream linework variants. Only the active theme's image is
-   fetched, and none at all below 1120px (display:none skips the request). Left =
+   fetched, and none at all ≤980px (display:none skips the request). Left =
    Sabancı Camii + Taşköprü + palms; right = Büyük Saat Kulesi + Varda viaduct +
    orange blossom + cotton — deliberately different Adana motifs per side. */
 :root[data-theme="dark"] .mdr-side-l{ background-image:url('/decor/margin-left-dark.webp'); }
@@ -124,7 +130,7 @@ body::after{
    same way it does for the colour tokens. */
 :root[data-contrast="hc"] .mdr-side-l{ background-image:url('/decor/margin-left.webp'); }
 :root[data-contrast="hc"] .mdr-side-r{ background-image:url('/decor/margin-right.webp'); }
-@media (max-width:1119px){ .mdr-side{ display:none; } }
+@media (max-width:980px){ .mdr-side{ display:none; } }
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display
