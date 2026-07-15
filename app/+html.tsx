@@ -91,37 +91,36 @@ body::after{
    never the centred column; pointer-events:none. A soft inner mask fades the art
    off the content. Hidden ≤980px. Shown in both themes; the dark treatment is set
    below.
-   contain, NOT cover: cover filled the panel but cropped the SIDES on any narrow
-   gutter — anchored bottom-right, it trimmed the left, which cut the train off
-   the Varda viaduct. contain always shows the WHOLE illustration, bottom-anchored
-   to the viewport edge.
-   The four source files (public/decor/margin-{left,right}[-dark].webp) are all
-   padded to the SAME aspect ratio, ~0.364 (width × 2.75) — extra transparent
-   canvas above the actual artwork, added with sharp (not a redraw). That aspect
-   is what lets contain fill the full viewport height on narrower browser windows
-   too, not just wide ones: a browser that reports less USABLE width than another
-   at the "same" size (Edge's sidebar/vertical tabs, a smaller window, zoom) gets a
-   narrower gutter — calc((100% - 600px)/2) — and the old 800×1756 shape (aspect
-   0.456) only filled the full height once the gutter was wide enough relative to
-   its height; below that it left a gap between the header and the top of the art.
-   Taller-than-wide art needs a proportionally SMALLER gutter to become
-   height-limited (contain's scale = min(gutterW/imgW, gutterH/imgH)), so this
-   closes that gap — the trade is the art renders a bit NARROWER everywhere
-   (verified: 1440px gutter art width 374px → 273px), since the same aspect now
-   applies at every width. All four files must stay in lock-step at this aspect,
-   or the two sides (or the two themes) reach the top at different points. */
+   cover + bottom-center = the standard "fill an area with an image at any size"
+   (the hero-image pattern). cover ALWAYS fills the gutter — every viewport width,
+   every browser, every zoom level — because that is what cover does by definition;
+   it scales to the LARGER of gutterW/imgW and gutterH/imgH and crops the overflow.
+   So there is never a gap between the header and the top of the art, and zoom can
+   never open one (contain could — its fill depended on the gutter's width:height
+   ratio, which zoom shifts because calc subtracts a fixed 600px).
+   The crop is absorbed almost entirely by design, so no real content is lost:
+   - the four source files are padded with a tall band of TRANSPARENT canvas on top
+     (~0.364 aspect, width × 2.75), so on wider gutters cover crops that empty band,
+     not the artwork;
+   - the artwork is bottom-weighted and bottom-anchored, and the position is CENTRE,
+     so on the narrowest desktop gutters (~1120px, where cover trims the sides) the
+     trim is symmetric and tiny — measured 16px total, 8px per side — nowhere near
+     the central clock tower / viaduct / train / mosque.
+   Verified filling top-to-bottom with the train intact at 1120, 1280 and 1600px.
+   All four files stay in lock-step at the same aspect. */
 .mdr-side{
   position:fixed; top:0; bottom:0; z-index:0;
   width:calc((100% - 600px) / 2);
   max-width:460px;
   pointer-events:none;
   background-repeat:no-repeat;
-  background-size:contain;
+  background-size:cover;
+  background-position:bottom center;
   opacity:0.92;
 }
-.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left;
+.mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');
   -webkit-mask-image:linear-gradient(to right,#000 62%,transparent); mask-image:linear-gradient(to right,#000 62%,transparent); }
-.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp'); background-position:bottom right;
+.mdr-side-r{ right:0; background-image:url('/decor/margin-right.webp');
   -webkit-mask-image:linear-gradient(to left,#000 62%,transparent); mask-image:linear-gradient(to left,#000 62%,transparent); }
 /* Night-ledger art: cream linework variants. Only the active theme's image is
    fetched, and none at all ≤980px (display:none skips the request). Left =
