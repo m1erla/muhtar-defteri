@@ -64,56 +64,51 @@ const hb = StyleSheet.create({
   },
 });
 
-// The wordmark, doubling as the home link — the site-logo convention. It reads
-// "Mahalle Defteri · <screen>", so the brand is always in view and one tap gets
-// you out of any depth of the flow (‹ Geri only walks back one step). navigate()
-// rather than push(): it pops to the existing Home if it's already in the stack
-// instead of piling a second copy on top. Petrol (the app's link colour) so it
-// reads as tappable, not as a title. Below 360px it steps aside (#mdr-brand in
-// app/+html.tsx) rather than squeezing the screen title off the bar.
-function HomeLink() {
+// The wordmark, centred as the brand. On Home it IS the page's heading — you're
+// already there, so it's plain ink text, not a link. On every other screen it's
+// the one-tap home link (‹ Geri only walks back a single step); navigate() rather
+// than push() pops to an existing Home instead of stacking a second copy. Petrol
+// there so it reads as tappable. The screen's own heading lives in its content
+// (not the header), so the bar stays a clean brand + two controls.
+function Brand({ home }: { home: boolean }) {
   const router = useRouter();
+  if (home) {
+    return (
+      <Text style={hdr.brand} accessibilityRole="header" numberOfLines={1}>
+        Mahalle Defteri
+      </Text>
+    );
+  }
   return (
-    <View style={hdr.brand} nativeID="mdr-brand">
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel="Ana sayfaya dön"
-        onPress={() => router.navigate('/home')}
-        style={hdr.brandBtn}
-        hitSlop={6}
-      >
-        <Text style={hdr.wordmark}>Mahalle Defteri</Text>
-      </Pressable>
-      <Text style={hdr.sep}>·</Text>
-    </View>
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel="Ana sayfaya dön"
+      onPress={() => router.navigate('/home')}
+      style={hdr.brandBtn}
+      hitSlop={8}
+    >
+      <Text style={[hdr.brand, hdr.brandLink]} numberOfLines={1}>
+        Mahalle Defteri
+      </Text>
+    </Pressable>
   );
 }
 
-// The header bar. Its content is constrained to the SAME centred column as the
-// page content (640px), and the bar itself is transparent — so the left/right
-// gutters stay completely clear and the Adana margin art can run the full height
-// of the viewport behind it, instead of being pushed below a full-width header.
-// On phones maxWidth is a no-op, so the header looks exactly as before.
-function AppHeader({ title }: { title: string }) {
+// The header bar: a clean three-slot chrome bar — back on the left, the
+// "Mahalle Defteri" wordmark centred as the home link, the theme toggle on the
+// right. Equal flex:1 side slots keep the wordmark dead-centre whatever the back
+// button's width. The row is constrained to the 560px content column and the bar
+// is transparent, so the Adana margin art owns the full-height gutters behind it.
+function AppHeader() {
   const home = isHomePath(usePathname());
   return (
     <View style={hdr.bar}>
       <View style={hdr.inner}>
-        {/* On Home the title IS "Mahalle Defteri" — no back, no self-link. */}
-        {home ? null : (
-          <>
-            <HeaderBack />
-            <HomeLink />
-          </>
-        )}
-        {/* The screen's heading. React Navigation's default HeaderTitle emitted
-            role="heading"; a plain <Text> does not, and five screens (home,
-            map-list, routing-result, add-to-map, report-detail) have no other
-            heading — so replacing the header left them with none at all. */}
-        <Text style={hdr.title} accessibilityRole="header" numberOfLines={1}>
-          {title}
-        </Text>
-        <ThemeToggle />
+        <View style={hdr.slot}>{home ? null : <HeaderBack />}</View>
+        <Brand home={home} />
+        <View style={[hdr.slot, hdr.slotRight]}>
+          <ThemeToggle />
+        </View>
       </View>
     </View>
   );
@@ -134,42 +129,30 @@ const hdr = StyleSheet.create({
   inner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
     width: '100%',
     // 560 + the same 20px padding every screen's content column uses, so the back
-    // button and the title line up with the page text beneath them instead of
-    // hanging 44px to its left. Still well inside the 640px column the margin art
-    // leaves clear (app/+html.tsx), so the gutters stay the art's.
+    // button lines up with the page text beneath it. Still inside the 640px column
+    // the margin art leaves clear (app/+html.tsx), so the gutters stay the art's.
     maxWidth: 560,
     alignSelf: 'center',
     paddingHorizontal: 20,
   },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexShrink: 0, // the title truncates before the brand does
-  },
+  // Equal-width side slots so the centred brand is truly centred whatever the back
+  // button's width. Left slot left-aligns its content (back), right slot right-aligns
+  // (theme toggle).
+  slot: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  slotRight: { justifyContent: 'flex-end' },
   brandBtn: {
     minHeight: 44,
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
-  wordmark: {
-    fontFamily: fonts.sansSemiBold,
-    fontSize: 15,
-    color: colors.petrol,
-  },
-  sep: {
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    color: colors.inkMuted,
-  },
-  title: {
-    flex: 1,
+  brand: {
     fontFamily: fonts.sansSemiBold,
     fontSize: 17,
     color: colors.ink,
   },
+  brandLink: { color: colors.petrol },
 });
 
 // expo-router renders this instead of a blank white screen if any route throws.
@@ -228,9 +211,11 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             contentStyle: { backgroundColor: colors.paper },
-            // Custom header: content centred in the content column, bar transparent,
-            // so the margin art owns the full-height gutters.
-            header: ({ options }) => <AppHeader title={options.title ?? ''} />,
+            // Custom header: back / centred wordmark / theme toggle, all inside the
+            // content column, bar transparent, so the margin art owns the full-height
+            // gutters. The per-screen title now lives in each screen's content, so the
+            // `title` option only feeds the document/tab title.
+            header: () => <AppHeader />,
           }}
         />
       </ThemeProvider>

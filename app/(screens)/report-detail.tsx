@@ -177,7 +177,9 @@ export default function ReportDetail() {
                 size={40}
                 iconSize={24}
               />
-              <Text style={styles.category}>{getCategory(ready.report.category)?.label}</Text>
+              <Text style={styles.category} accessibilityRole="header">
+                {getCategory(ready.report.category)?.label}
+              </Text>
             </View>
 
             <Text style={styles.place}>{ready.report.neighborhood || 'Adana'}</Text>

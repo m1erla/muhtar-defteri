@@ -86,7 +86,9 @@ export default function AddToMap() {
         <View style={{ alignItems: 'center' }}>
           <Sivri size={88} mood="idle" />
         </View>
-        <Text style={styles.heading}>Haritaya eklemek ister misin?</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          Haritaya eklemek ister misin?
+        </Text>
         <Text style={styles.body}>
           Fotoğrafın ve yaklaşık konumun herkese açık haritada görünür. Kişisel bilgin paylaşılmaz.
         </Text>

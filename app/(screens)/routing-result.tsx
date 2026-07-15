@@ -121,7 +121,9 @@ export default function RoutingResult() {
     <>
       <Stack.Screen options={{ title: 'Doğru Kanal' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>İşte doğru yer:</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          İşte doğru yer:
+        </Text>
         <Text style={styles.sub}>
           {category.label} için başvurabileceğin resmi kanallar. Bu uygulama resmi bir kanal
           değildir — seni doğru yere yönlendirir.

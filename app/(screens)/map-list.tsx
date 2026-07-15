@@ -260,6 +260,11 @@ export default function MapList() {
           </>
         ) : null}
 
+        {/* The screen's own heading (the header bar shows only the wordmark now). */}
+        <Text style={styles.screenTitle} accessibilityRole="header">
+          Mahalle Kaydı
+        </Text>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -331,6 +336,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingTop: 16,
+  },
+  screenTitle: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 20,
+    color: colors.ink,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 2,
   },
   chipBar: {
     flexGrow: 0,
