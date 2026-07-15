@@ -100,11 +100,15 @@ body::after{
    zoom) — which is why it looked "half-rendered" in one browser and full in
    another. contain always shows the WHOLE illustration, bottom-anchored to the
    viewport edge; the trade is a little paper above/beside it on some sizes (the
-   inner side is masked-faded anyway), which reads as a clean margin. */
+   inner side is masked-faded anyway), which reads as a clean margin.
+   The reserved column is 600 (not 640, the content is 560 → a steady 20px gap to
+   the art), so the gutter is 20px wider and the whole art renders a bit larger on
+   the mid/narrow widths where contain shrinks it — the wide look is unchanged
+   (still capped). */
 .mdr-side{
   position:fixed; top:0; bottom:0; z-index:0;
-  width:calc((100% - 640px) / 2);
-  max-width:440px;
+  width:calc((100% - 600px) / 2);
+  max-width:460px;
   pointer-events:none;
   background-repeat:no-repeat;
   background-size:contain;
