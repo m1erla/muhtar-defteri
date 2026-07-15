@@ -86,22 +86,28 @@ body::after{
 }
 :root[data-theme="dark"] .mdr-skyline{ background-image:url('/decor/skyline-band-dark.webp'); }
 :root[data-contrast="hc"] .mdr-skyline{ background-image:url('/decor/skyline-band.webp'); }
-/* Decorative Adana margin art (components/side-decor.tsx) — now genuinely
-   transparent PNG→WebP, so no blend hacks: the art sits over the page directly.
-   Two fixed panels fill ONLY the side gutters (calc), never the centred column;
-   pointer-events:none. cover anchored to the outer-bottom corner fills any
-   viewport height while keeping the edge stripe + skyline; a soft inner mask
-   fades the art off the content. Hidden ≤980px. Shown in both themes; the dark
-   treatment (if any) is set below. */
+/* Decorative Adana margin art (components/side-decor.tsx) — transparent WebP that
+   sits over the page directly. Two fixed panels fill ONLY the side gutters (calc),
+   never the centred column; pointer-events:none. A soft inner mask fades the art
+   off the content. Hidden ≤980px. Shown in both themes; the dark treatment is set
+   below.
+   contain, NOT cover: the art is a tall 800×1756 illustration, and the gutter
+   narrows with the usable viewport width (calc). cover filled the panel but
+   cropped the SIDES on any narrow gutter — anchored bottom-right, it trimmed the
+   left, which cut the train off the Varda viaduct. The width where cover stops
+   cropping (~1390px viewport, more when tall) is easy to fall below whenever the
+   browser eats horizontal space (Edge's sidebar/vertical tabs, a smaller window,
+   zoom) — which is why it looked "half-rendered" in one browser and full in
+   another. contain always shows the WHOLE illustration, bottom-anchored to the
+   viewport edge; the trade is a little paper above/beside it on some sizes (the
+   inner side is masked-faded anyway), which reads as a clean margin. */
 .mdr-side{
-  position:fixed; top:0; bottom:0; z-index:0;   /* full height: the header's content is
-     centred in the content column (app/_layout AppHeader) and its bar is transparent,
-     so the gutters are entirely ours */
+  position:fixed; top:0; bottom:0; z-index:0;
   width:calc((100% - 640px) / 2);
   max-width:440px;
   pointer-events:none;
   background-repeat:no-repeat;
-  background-size:cover;
+  background-size:contain;
   opacity:0.92;
 }
 .mdr-side-l{ left:0;  background-image:url('/decor/margin-left.webp');  background-position:bottom left;
