@@ -19,8 +19,11 @@ import { Platform } from 'react-native';
 export const ADS_ENABLED = Platform.OS === 'web' && process.env.EXPO_PUBLIC_ADS === '1';
 
 // AdSense publisher id (ca-pub-…) and per-placement slot ids, created in the
-// AdSense dashboard after approval. All config, no code.
-export const ADSENSE_CLIENT = process.env.EXPO_PUBLIC_ADSENSE_CLIENT ?? '';
+// AdSense dashboard after approval. The publisher id is committed as the
+// default (it is public by design — visible in ads.txt and any page source);
+// the env var still wins if ever set. Slot ids stay env-only until approval.
+export const ADSENSE_CLIENT =
+  process.env.EXPO_PUBLIC_ADSENSE_CLIENT ?? 'ca-pub-3856977788453087';
 export const AD_SLOT_IDS = {
   rect: process.env.EXPO_PUBLIC_ADSENSE_SLOT_RECT ?? '',
   infeed: process.env.EXPO_PUBLIC_ADSENSE_SLOT_INFEED ?? '',

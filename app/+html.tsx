@@ -176,6 +176,12 @@ export default function Root({ children }: PropsWithChildren) {
           media="(prefers-color-scheme: dark)"
         />
 
+        {/* AdSense site-ownership verification (Sites → muhtar-defteri.com).
+            A static meta tag + public/ads.txt — deliberately NOT the JS snippet,
+            which would load ad code unconditionally and bypass the KVKK consent
+            gate in lib/ads.ts. The publisher id is public by design. */}
+        <meta name="google-adsense-account" content="ca-pub-3856977788453087" />
+
         {/* Apply saved theme/contrast/text-size/motion before paint. */}
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
 
