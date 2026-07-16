@@ -18,6 +18,7 @@ import {
 import Head from 'expo-router/head';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import AdsConsent from '@/components/ads-consent';
 import OutlineButton from '@/components/outline-button';
 import SideDecor from '@/components/side-decor';
 import ThemeToggle from '@/components/theme-toggle';
@@ -222,6 +223,9 @@ export default function RootLayout() {
       {/* Decorative Adana margin art on wide screens (web-only, ≥980px, light
           theme) — never touches the centred content. */}
       <SideDecor />
+      {/* KVKK ad-cookie consent — renders nothing unless EXPO_PUBLIC_ADS=1
+          (dormant ad system, lib/ads.ts / OPERATIONS.md § Reklamlar). */}
+      <AdsConsent />
     </DisplaySettingsProvider>
   );
 }

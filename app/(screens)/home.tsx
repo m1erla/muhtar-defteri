@@ -1,6 +1,7 @@
 import { Link, Stack, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AdSlot from '@/components/ad-slot';
 import AdanaSkyline from '@/components/adana-skyline';
 import Icon from '@/components/icon';
 import LedgerRow from '@/components/ledger-row';
@@ -93,6 +94,11 @@ export default function Home() {
             </View>
           ) : null}
         </View>
+
+        {/* Dormant ad slot (null unless EXPO_PUBLIC_ADS=1) — below the ledger
+            preview so it never touches the CTA→ledger path; strictly one unit
+            on this short screen (placement plan, OPERATIONS.md § Reklamlar). */}
+        <AdSlot format="rect" />
 
         <Link href="/channels" style={styles.footerLink}>
           Kanal Rehberi — tüm resmi hatlar

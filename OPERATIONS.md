@@ -262,3 +262,74 @@ create table reports_backup_YYYYMMDD as select * from reports;
 create table confirmations_backup_YYYYMMDD as select * from confirmations;
 ```
 Drop the snapshot tables when done — they're visible to nothing but the owner.
+
+## Reklamlar (dormant ad system — DO NOT enable before the competition)
+
+Implemented 2026-07-15, ships **disabled**. With `EXPO_PUBLIC_ADS` unset, every
+ad component renders `null`, no ad script exists on any page, and the site is
+byte-identical in behaviour to the pre-ads app. The jury must see it that way:
+ads add ~200-300KB JS to the scored cold load and put a KVKK consent banner in
+front of the first visit.
+
+**Honest economics first** (2026-07 research): Turkey is a bottom-tier AdSense
+market (~$0.10-0.15 CPC; realistic page RPM $0.30-1.50, and a task-completion
+civic tool sits at the LOW end). Expect ~$3-15/month at 5-20k pageviews/month;
+AdSense pays out at $100, so the first payout is months-to-years away. A local
+sponsorship or a small grant likely beats display ads at this scale.
+
+### Enabling (after the competition, config-only — no code changes)
+
+1. **Privacy page first**: AdSense approval needs a crawlable privacy/cookie
+   policy (KVKK aydınlatma metni). Add a simple `/gizlilik` screen before
+   applying — approval reviewers reject utility sites without one.
+2. Apply at adsense.google.com with muhtar-defteri.com (site must be live with
+   the ads code enabled; approval typically days to 2-4 weeks; low-value-content
+   rejection is a real risk for a 12-screen tool — the how-it-works guide and
+   about-sivri page are the "content" reviewers will see).
+3. In the AdSense dashboard create three display units and note their slot ids:
+   a medium rectangle (rect), a horizontal in-feed (infeed), a 300x600 (sky).
+4. In Cloudflare Workers → muhtar-defteri → Settings → Build → environment
+   variables, add:
+   - `EXPO_PUBLIC_ADS=1`
+   - `EXPO_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX`
+   - `EXPO_PUBLIC_ADSENSE_SLOT_RECT=…` / `…_SLOT_INFEED=…` / `…_SLOT_SKY=…`
+5. Push any commit (or re-run the build). Metro inlines `EXPO_PUBLIC_*` at
+   build time — a plain redeploy without a build won't pick them up.
+
+### What turns on
+
+Five placements only (2026-07-15 placement analysis — the harm-free set):
+end of report-detail (below all civic actions), map-list in-feed (1 per 10
+rows, never before row 10), end of how-it-works, home below the ledger preview,
+and the desktop right gutter (replaces the right margin art; left art stays).
+Every unit: fixed reserved height (zero CLS), lazy via IntersectionObserver,
+labelled "Reklam", never styled like app content.
+
+**Hard do-not list** (trust/safety — do not add slots here later): anywhere in
+the report flow (category → details → routing-result → add-to-map), beside any
+official channel number (an ad next to ALO 153 reads as a paid listing — or
+gets called), mobile sticky anchors (overlap the bottom action rows), and
+anything shaped like a ledger row or channel card.
+
+### Consent (KVKK)
+
+KVKK requires prior explicit opt-in for ad cookies. The banner
+(components/ads-consent.tsx) appears once per device with equal-prominence
+accept/decline; **decline = the ad script never loads for that device** (the
+clean reading — no "legitimate interest" games). Consent is stored in
+localStorage (`mdr:ads-consent`); users can clear site data to reset it. If ads
+are ever enabled for EEA visitors too, Google requires a certified CMP — the
+custom banner is only defensible for TR-targeted traffic.
+
+### Copy duties when enabling
+
+The app deliberately never claims "no cookies", so no live copy becomes false —
+but add these when flipping the flag: a one-line funding note in how-it-works
+("Reklamlar bu defterin barındırma masrafını karşılar"), and the /gizlilik page
+from step 1. Never let any ad render on the same screen as copy promising the
+absence of tracking (currently none exists).
+
+### Kill switch
+
+Remove `EXPO_PUBLIC_ADS` from the build env and push. Everything (slots,
+banner, script, consent) vanishes; stored consents become inert.

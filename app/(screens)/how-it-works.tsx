@@ -2,6 +2,7 @@ import { Link, Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AdSlot from '@/components/ad-slot';
 import AdanaSkyline from '@/components/adana-skyline';
 import Disclosure from '@/components/disclosure';
 import Sivri from '@/components/sivri';
@@ -228,6 +229,12 @@ export default function HowItWorks() {
         <Link href="/channels" style={styles.directoryLink}>
           Kanal Rehberi'ni aç — tüm hatlar tek sayfada →
         </Link>
+
+        {/* Dormant ad slot (null unless EXPO_PUBLIC_ADS=1) — end of the guide,
+            the only article-shaped page with real dwell time. Kept BELOW the
+            channel-list paragraph and directory link: an ad among official
+            numbers would read as a paid listing (OPERATIONS.md § Reklamlar). */}
+        <AdSlot format="rect" />
 
         <AdanaSkyline opacity={0.45} />
       </ScrollView>

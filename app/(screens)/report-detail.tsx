@@ -3,6 +3,7 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AdSlot from '@/components/ad-slot';
 import CategoryMark from '@/components/category-mark';
 import FlagForm from '@/components/flag-form';
 import LoadStateView from '@/components/load-state-view';
@@ -327,6 +328,13 @@ export default function ReportDetail() {
                 <Text style={styles.flagLink}>Bir sorun bildir</Text>
               </Pressable>
             )}
+
+            {/* Dormant ad slot (null unless EXPO_PUBLIC_ADS=1). Strictly BELOW
+                every civic action (confirm/watch/share/flag): an ad above or
+                between them would tax the community-verification signal, and a
+                layout shift near "Ben de Gördüm" risks misclicks on a
+                once-per-session action. Placement plan: OPERATIONS.md § Reklamlar. */}
+            <AdSlot format="rect" />
           </>
         ) : null}
       </ScrollView>

@@ -1,7 +1,8 @@
 import { Stack, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import AdSlot from '@/components/ad-slot';
 import CategoryMark from '@/components/category-mark';
 import LedgerRow from '@/components/ledger-row';
 import LoadStateView from '@/components/load-state-view';
@@ -213,13 +214,21 @@ export default function MapList() {
             <>
               <Text style={styles.legend}>Mahalle · tarih · kaç kişi doğruladı · durum</Text>
               <View style={styles.ledgerFrame}>
-                {visible.map((r) => (
-                  <LedgerRow
-                    key={r.id}
-                    report={r}
-                    clusterCount={counts.get(clusterKey(r)) ?? 1}
-                    onPress={() => openDetail(r.id)}
-                  />
+                {visible.map((r, i) => (
+                  <Fragment key={r.id}>
+                    {/* Dormant in-feed ad (null unless EXPO_PUBLIC_ADS=1): one
+                        per 10 rows, never before row 10 — the stats strip,
+                        spotlight and first screenful stay ad-free. Framed and
+                        labelled, deliberately NOT shaped like a ledger row (an
+                        ad that reads as a report is a fake report). Keyed by
+                        list position so units don't jump when filters toggle. */}
+                    {i > 0 && i % 10 === 0 ? <AdSlot format="infeed" /> : null}
+                    <LedgerRow
+                      report={r}
+                      clusterCount={counts.get(clusterKey(r)) ?? 1}
+                      onPress={() => openDetail(r.id)}
+                    />
+                  </Fragment>
                 ))}
               </View>
             </>

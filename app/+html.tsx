@@ -135,6 +135,18 @@ body::after{
 :root[data-contrast="hc"] .mdr-side-l{ background-image:url('/decor/margin-left.webp'); }
 :root[data-contrast="hc"] .mdr-side-r{ background-image:url('/decor/margin-right.webp'); }
 @media (max-width:980px){ .mdr-side{ display:none; } }
+/* Right-gutter ad wrapper (components/side-decor.tsx, dormant ad system —
+   only rendered when the app is built with EXPO_PUBLIC_ADS=1). Same geometry
+   gate as the art: never shown ≤980px, so phones pay nothing. Unlike .mdr-side
+   it accepts pointer events — ads need clicks. */
+.mdr-ad-gutter{
+  position:fixed; right:0; top:0; bottom:0; z-index:0;
+  width:calc((100% - 600px) / 2);
+  max-width:460px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 8px;
+}
+@media (max-width:980px){ .mdr-ad-gutter{ display:none; } }
 `;
 
 // Runs before first paint (no light->dark flash): apply the saved display

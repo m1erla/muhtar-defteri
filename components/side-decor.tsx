@@ -1,6 +1,9 @@
 import { usePathname } from 'expo-router';
 import { Platform } from 'react-native';
 
+import AdSlot from '@/components/ad-slot';
+import { ADS_ENABLED } from '@/lib/ads';
+
 // Decorative side panels for wide screens — the AI-generated Adana margin art
 // (public/decor/margin-{left,right}[-dark].webp). Left = Sabancı Camii, Taşköprü
 // and palms; right = Büyük Saat Kulesi, the Varda viadüğü, orange blossom and
@@ -24,7 +27,18 @@ export default function SideDecor() {
   return (
     <>
       <div className="mdr-side mdr-side-l" aria-hidden="true" />
-      <div className="mdr-side mdr-side-r" aria-hidden="true" />
+      {/* With the dormant ad system enabled (EXPO_PUBLIC_ADS=1), the RIGHT
+          gutter carries the desktop skyscraper instead of the art — one panel
+          stays Adana, one earns hosting costs. The wrapper is clickable (ads
+          need clicks, unlike the art) and, like the art, never renders ≤980px
+          (.mdr-ad-gutter in app/+html.tsx) so phones never pay for it. */}
+      {ADS_ENABLED ? (
+        <div className="mdr-ad-gutter">
+          <AdSlot format="sky" />
+        </div>
+      ) : (
+        <div className="mdr-side mdr-side-r" aria-hidden="true" />
+      )}
     </>
   );
 }
