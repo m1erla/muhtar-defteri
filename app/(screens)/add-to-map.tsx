@@ -7,6 +7,7 @@ import PrimaryButton from '@/components/primary-button';
 import Sivri from '@/components/sivri';
 import { useResolvedTheme } from '@/lib/display-settings';
 import { signalReportAdded } from '@/lib/flash';
+import { inAdana } from '@/lib/geocode';
 import { getDraft, resetDraft } from '@/lib/report-draft';
 import { submitReport } from '@/lib/reports';
 import { friendlyDbError } from '@/lib/supabase';
@@ -54,6 +55,15 @@ export default function AddToMap() {
         setState('error');
         setErrorText(
           'Haritaya eklemek için konum gerekli. Konum iznini ver ya da detaylara dönüp pini elle yerleştir.'
+        );
+        return;
+      }
+      // Same Adana-bounds check the details screen applies: a device outside
+      // the province must fail HERE with a clear message, not at the DB insert.
+      if (!inAdana(latitude, longitude)) {
+        setState('error');
+        setErrorText(
+          'Konumun Adana sınırları dışında görünüyor — bu defter yalnızca Adana içindeki sorunlar için. Detaylara dönüp pini sorunun olduğu noktaya yerleştir.'
         );
         return;
       }

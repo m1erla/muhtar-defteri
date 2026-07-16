@@ -4,6 +4,7 @@ import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { clusterReports } from '@/lib/cluster';
+import { ADANA_BBOX, inAdana } from '@/lib/geocode';
 import type { Report } from '@/lib/reports';
 import { colors } from '@/lib/theme';
 
@@ -73,7 +74,23 @@ export function LocationPickerMap({
   focusKey?: number;
 }) {
   return (
-    <MapContainer center={[latitude, longitude]} zoom={16} style={{ width: '100%', height: '100%' }}>
+    <MapContainer
+      center={[latitude, longitude]}
+      zoom={16}
+      // Adana only: the view cannot be panned outside the same box the DB's
+      // reports_within_adana guard enforces (viscosity 1 = a hard wall, no
+      // elastic drift), and minZoom keeps the box from shrinking into a
+      // world map. With every visible pixel inside the box, a dragged pin
+      // can't land outside it either — the dragend check below is the
+      // belt-and-braces second layer.
+      maxBounds={[
+        [ADANA_BBOX.minLat, ADANA_BBOX.minLon],
+        [ADANA_BBOX.maxLat, ADANA_BBOX.maxLon],
+      ]}
+      maxBoundsViscosity={1.0}
+      minZoom={8}
+      style={{ width: '100%', height: '100%' }}
+    >
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -90,7 +107,14 @@ export function LocationPickerMap({
         draggable
         eventHandlers={{
           dragend: (event) => {
-            const pos = (event.target as LeafletMarker).getLatLng();
+            const marker = event.target as LeafletMarker;
+            const pos = marker.getLatLng();
+            // Outside Adana → snap the pin back to its last valid spot instead
+            // of accepting coordinates the DB would reject three screens later.
+            if (!inAdana(pos.lat, pos.lng)) {
+              marker.setLatLng([latitude, longitude]);
+              return;
+            }
             onMove(pos.lat, pos.lng);
           },
         }}

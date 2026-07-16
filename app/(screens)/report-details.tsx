@@ -12,7 +12,7 @@ import OutlineButton from '@/components/outline-button';
 import PrimaryButton from '@/components/primary-button';
 import { ADANA_DISTRICTS, getDistrict } from '@/lib/adana-districts';
 import { useResolvedTheme } from '@/lib/display-settings';
-import { searchAdanaAddress, type GeoResult } from '@/lib/geocode';
+import { inAdana, searchAdanaAddress, type GeoResult } from '@/lib/geocode';
 import { getDraft, updateDraft } from '@/lib/report-draft';
 import { colors, fonts } from '@/lib/theme';
 import { useLazyMap } from '@/lib/use-lazy-map';
@@ -155,6 +155,15 @@ export default function ReportDetails() {
         Location.getCurrentPositionAsync({}),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10_000)),
       ]);
+      // A device outside the province must not move the pin: this defter is
+      // Adana-only, and out-of-box coordinates would only fail at the DB three
+      // screens later. Say it here, at the moment it happens.
+      if (!inAdana(pos.coords.latitude, pos.coords.longitude)) {
+        setLocationError(
+          'Konumun Adana sınırları dışında görünüyor — bu defter yalnızca Adana içindeki sorunlar için. Pini elle ya da adres/ilçe seçerek yerleştirebilirsin.'
+        );
+        return;
+      }
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
       setAddressQuery('');
       jumpTo(16);

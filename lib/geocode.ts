@@ -18,9 +18,25 @@
 // rectangle can't perfectly trace the border, so a sliver of Tarsus (~lon 34.89,
 // next to Adana's own Pozantı) is unavoidably inside; that's the tightest a box
 // gets without dropping Pozantı.
-const BBOX = { minLat: 36.35, maxLat: 38.5, minLon: 34.7, maxLon: 36.5 };
+export const ADANA_BBOX = { minLat: 36.35, maxLat: 38.5, minLon: 34.7, maxLon: 36.5 };
+const BBOX = ADANA_BBOX;
 // Nominatim viewbox is minLon,minLat,maxLon,maxLat.
 const VIEWBOX = `${BBOX.minLon},${BBOX.minLat},${BBOX.maxLon},${BBOX.maxLat}`;
+
+// The one client-side membership test for the Adana box — the same numbers as
+// schema.sql's reports_within_adana guard. Used by the address-search filter,
+// the picker map's drag snap-back, and both geolocation paths, so no path can
+// set coordinates the DB would reject.
+export function inAdana(latitude: number, longitude: number): boolean {
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= BBOX.minLat &&
+    latitude <= BBOX.maxLat &&
+    longitude >= BBOX.minLon &&
+    longitude <= BBOX.maxLon
+  );
+}
 
 export type GeoResult = {
   label: string; // short, human-readable place label (Turkish)
@@ -68,15 +84,7 @@ export async function searchAdanaAddress(query: string): Promise<GeoResult[]> {
     .map((r) => ({ latitude: Number(r.lat), longitude: Number(r.lon), display_name: r.display_name }))
     // Defence in depth: even with bounded=1, keep only points actually inside
     // the Adana box, so a picked result can never fail the insert guard.
-    .filter(
-      (r) =>
-        Number.isFinite(r.latitude) &&
-        Number.isFinite(r.longitude) &&
-        r.latitude >= BBOX.minLat &&
-        r.latitude <= BBOX.maxLat &&
-        r.longitude >= BBOX.minLon &&
-        r.longitude <= BBOX.maxLon
-    )
+    .filter((r) => inAdana(r.latitude, r.longitude))
     .map((r) => ({
       label: shortLabel(r.display_name),
       latitude: r.latitude,
