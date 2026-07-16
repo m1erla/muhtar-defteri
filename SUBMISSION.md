@@ -11,9 +11,9 @@ değerlendirme), ve amacı, hedef kitleyi ve kaynakları belirtir.
 ## Proje açıklaması
 
 Mahalle Defteri, Adana'da yaşayanların karşılaştığı yerel sorunları — çöp ve
-temizlik, hatalı park, bozuk kaldırım ve altyapı, okul çevresi güvenliği — doğru
-resmi kanala saniyeler içinde yönlendiren, mobil öncelikli bir web
-uygulamasıdır. Kullanıcı sorununun türünü birkaç dokunuşla seçer; uygulama ona
+temizlik, hatalı park, kaldırım ve altyapı, okul çevresi güvenliği, sokak
+aydınlatması, su ve kanalizasyon, sokak hayvanları, gürültü — doğru resmi
+kanala saniyeler içinde yönlendiren, mobil öncelikli bir web uygulamasıdır. Kullanıcı sorununun türünü birkaç dokunuşla seçer; uygulama ona
 hangi numarayı arayacağını ya da hangi formu dolduracağını (ALO 153, Adana
 e-Belediye, 112, Alo 181 veya CİMER) ve yanına alması gerekenleri söyler.
 
