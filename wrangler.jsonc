@@ -2,6 +2,14 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "muhtar-defteri",
   "compatibility_date": "2026-07-10",
+  // Both hostnames as custom domains. www did NOT resolve at all (NXDOMAIN),
+  // which broke AdSense's site verification — its crawler tries the www
+  // variant, and real users type it too. Declaring it here makes the deploy
+  // provision the DNS record + certificate (the zone is on this account).
+  "routes": [
+    { "pattern": "muhtar-defteri.com", "custom_domain": true },
+    { "pattern": "www.muhtar-defteri.com", "custom_domain": true }
+  ],
   "observability": {
     "enabled": true
   },
