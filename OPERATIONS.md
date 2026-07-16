@@ -263,13 +263,14 @@ create table confirmations_backup_YYYYMMDD as select * from confirmations;
 ```
 Drop the snapshot tables when done — they're visible to nothing but the owner.
 
-## Reklamlar (ad system — enable by setting build env vars)
+## Reklamlar (ad system — ON by default since 2026-07-15)
 
-Implemented 2026-07-15. With `EXPO_PUBLIC_ADS` unset (or the AdSense ids
-missing), every ad component renders `null`, no ad script exists on any page,
-and the site behaves exactly like the pre-ads app. Ads add ~200-300KB of
-third-party JS and a KVKK consent banner, so keep them off unless they're
-actually earning.
+Live with committed defaults: publisher ca-pub-3856977788453087, units
+mdr-rect 4650307975 / mdr-infeed 7983048320 / mdr-sky 2152017003. The ad
+script still only loads after a device taps "İzin ver" on the KVKK banner —
+no consent, no bytes. **Kill switch:** set `EXPO_PUBLIC_ADS=0` in the
+Cloudflare Workers build env (or in a commit) and push — every slot, the
+banner and the loader vanish; stored consents become inert.
 
 **Honest economics first** (2026-07 research): Turkey is a bottom-tier AdSense
 market (~$0.10-0.15 CPC; realistic page RPM $0.30-1.50, and a task-completion
@@ -277,24 +278,18 @@ civic tool sits at the LOW end). Expect ~$3-15/month at 5-20k pageviews/month;
 AdSense pays out at $100, so the first payout is months-to-years away. A local
 sponsorship or a small grant likely beats display ads at this scale.
 
-### Enabling (config-only — no code changes)
+### Account state (2026-07-15)
 
-The `/gizlilik` privacy/cookie page (KVKK aydınlatma) is live and linked from
-how-it-works and the consent banner — AdSense approval requires it.
-
-1. Apply at adsense.google.com with muhtar-defteri.com (site must be live with
-   the ads code enabled; approval typically days to 2-4 weeks; low-value-content
-   rejection is a real risk for a 12-screen tool — the how-it-works guide and
-   about-sivri page are the "content" reviewers will see).
-2. In the AdSense dashboard create three display units and note their slot ids:
-   a medium rectangle (rect), a horizontal in-feed (infeed), a 300x600 (sky).
-3. In Cloudflare Workers → muhtar-defteri → Settings → Build → environment
-   variables, add:
-   - `EXPO_PUBLIC_ADS=1`
-   - `EXPO_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX`
-   - `EXPO_PUBLIC_ADSENSE_SLOT_RECT=…` / `…_SLOT_INFEED=…` / `…_SLOT_SKY=…`
-4. Push any commit (or re-run the build). Metro inlines `EXPO_PUBLIC_*` at
-   build time — a plain redeploy without a build won't pick them up.
+Site verified via ads.txt + meta tag (the JS-snippet method was deliberately
+NOT used — it would bypass the consent gate). Auto ads OFF (manual units
+only). Google's EEA CMP message: 3-choice variant. Site review REQUESTED —
+until approval lands, slots render as quietly empty consented frames; they
+start filling when the review passes. If the review rejects for "low value
+content", appeal citing the how-it-works guide, gizlilik and about-sivri
+pages. Payments + TR tax info must be completed in the dashboard for payout.
+The env vars (`EXPO_PUBLIC_ADSENSE_CLIENT`, `…_SLOT_*`) still override the
+committed defaults if ever needed. Metro inlines `EXPO_PUBLIC_*` at build
+time — env changes need a build, not just a redeploy.
 
 ### What turns on
 

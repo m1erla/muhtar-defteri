@@ -53,8 +53,8 @@ lib/
   display-settings.tsx (theme/a11y prefs), geocode.ts (Adana-bounded
   Nominatim), adana-districts.ts, tr-normalize.ts, watchlist.ts
   (device-local follows), flags.ts, flash.ts,
-  ads.ts (ad system — null unless EXPO_PUBLIC_ADS=1 + AdSense ids are set
-  in the build env; runbook + do-not-place list in OPERATIONS.md)
+  ads.ts (ad system — ON by default on web, KVKK consent-gated; kill switch
+  EXPO_PUBLIC_ADS=0; runbook + HARD do-not-place list in OPERATIONS.md)
 public/                  -- copied verbatim to the web export root
   favicon.svg, apple-touch-icon.png, og-image.png, _headers
   decor/                 -- ~1.4MB of Adana art (margin-*, skyline-band-*,

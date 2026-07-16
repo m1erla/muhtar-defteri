@@ -58,10 +58,17 @@ function MountedAdSlot({ format }: { format: AdFormat }) {
 
   useEffect(() => subscribeAdsConsent(setConsent), []);
 
-  // Arm an observer that flips `near` once the slot approaches the viewport.
+  // Flip `near` once the slot approaches the viewport. The mount-time rect
+  // check handles slots already on/near screen deterministically (IO delivery
+  // can lag behind first paint); the observer covers the genuinely below-fold
+  // ones (e.g. the 500-row map-list feed) without any scroll listeners.
   useEffect(() => {
     const el = boxRef.current;
     if (!el || near) return;
+    if (el.getBoundingClientRect().top < window.innerHeight + 600) {
+      setNear(true);
+      return;
+    }
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {

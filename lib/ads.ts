@@ -1,12 +1,9 @@
 import { Platform } from 'react-native';
 
-// Dormant ad system — OFF unless EXPO_PUBLIC_ADS=1 at build time.
-//
-// Decided 2026-07-15 (owner): ads are implemented but ship DISABLED until after
-// the competition (load speed is a scored criterion; ad JS is ~200-300KB, and
-// KVKK requires a consent banner that must not be the jury's first impression).
-// Enabling is config-only — no code edits: set the env vars below in the
-// Cloudflare Workers build env and push. Full runbook: OPERATIONS.md § Reklamlar.
+// Ad system — ON by default on web since 2026-07-15 (owner decision; the
+// competition submission was withdrawn, so the keep-dormant constraint is gone).
+// Kill switch: set EXPO_PUBLIC_ADS=0 in the build env and push — every slot,
+// the banner and the loader vanish. Full runbook: OPERATIONS.md § Reklamlar.
 //
 // Placement plan + revenue analysis (2026-07-15, subagent survey): the five
 // slots wired to AdSlot are the only harm-free inventory — end of report-detail,
@@ -16,18 +13,18 @@ import { Platform } from 'react-native';
 // ALO 153 reads as a paid listing — or worse, gets called), mobile sticky
 // anchors (overlap the 44px action rows), and anything styled like app content
 // (a ledger-row-shaped ad is indistinguishable from a fake report).
-export const ADS_ENABLED = Platform.OS === 'web' && process.env.EXPO_PUBLIC_ADS === '1';
+export const ADS_ENABLED = Platform.OS === 'web' && process.env.EXPO_PUBLIC_ADS !== '0';
 
-// AdSense publisher id (ca-pub-…) and per-placement slot ids, created in the
-// AdSense dashboard after approval. The publisher id is committed as the
-// default (it is public by design — visible in ads.txt and any page source);
-// the env var still wins if ever set. Slot ids stay env-only until approval.
+// AdSense publisher + per-placement unit ids (AdSense dashboard → By ad unit:
+// mdr-rect / mdr-infeed / mdr-sky, created 2026-07-15). Committed as defaults —
+// these are public by design, visible in ads.txt and any page's source; the
+// env vars still win if ever set.
 export const ADSENSE_CLIENT =
   process.env.EXPO_PUBLIC_ADSENSE_CLIENT ?? 'ca-pub-3856977788453087';
 export const AD_SLOT_IDS = {
-  rect: process.env.EXPO_PUBLIC_ADSENSE_SLOT_RECT ?? '',
-  infeed: process.env.EXPO_PUBLIC_ADSENSE_SLOT_INFEED ?? '',
-  sky: process.env.EXPO_PUBLIC_ADSENSE_SLOT_SKY ?? '',
+  rect: process.env.EXPO_PUBLIC_ADSENSE_SLOT_RECT ?? '4650307975',
+  infeed: process.env.EXPO_PUBLIC_ADSENSE_SLOT_INFEED ?? '7983048320',
+  sky: process.env.EXPO_PUBLIC_ADSENSE_SLOT_SKY ?? '2152017003',
 } as const;
 
 export type AdFormat = keyof typeof AD_SLOT_IDS;
