@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import AdSlot from '@/components/ad-slot';
 import AdanaSkyline from '@/components/adana-skyline';
 import Disclosure from '@/components/disclosure';
+import { ADS_ENABLED } from '@/lib/ads';
 import Sivri from '@/components/sivri';
 import StatusStamp from '@/components/status-stamp';
 import { colors, fonts } from '@/lib/theme';
@@ -217,6 +218,15 @@ export default function HowItWorks() {
           (OpenStreetMap) gönderilir. Bu yüzden arama kutusuna kişisel bilgi değil, adres/mahalle
           bilgisi yazman yeterli.
         </Text>
+        {ADS_ENABLED ? (
+          <Text style={styles.body}>
+            Bazı sayfalarda "REKLAM" etiketiyle işaretli reklamlar görebilirsin — bunlar defterin
+            barındırma masrafını karşılar ve yalnızca sen izin verirsen reklam çerezi kullanır.
+          </Text>
+        ) : null}
+        <Link href="/gizlilik" style={styles.directoryLink}>
+          Gizlilik ve veriler — nelerin nerede tutulduğu →
+        </Link>
 
         <Text style={styles.subheading} accessibilityRole="header">
           Yönlendirdiği kanallar

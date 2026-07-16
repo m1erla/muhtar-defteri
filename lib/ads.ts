@@ -65,6 +65,18 @@ export function subscribeAdsConsent(cb: (c: AdsConsent) => void): () => void {
   return () => listeners.delete(cb);
 }
 
+// KVKK requires consent to be as easy to withdraw as to give. Clearing the
+// stored choice re-surfaces the banner; already-loaded ad scripts only stop on
+// the next page load (noted on the /gizlilik page).
+export function clearAdsConsent() {
+  try {
+    window.localStorage.removeItem(CONSENT_KEY);
+  } catch {
+    // ignore
+  }
+  listeners.forEach((cb) => cb(null));
+}
+
 // ── Loader ───────────────────────────────────────────────────────────────────
 // adsbygoogle.js is injected at most once, only when ads are enabled, configured
 // AND consented — and never on the critical path: AdSlot calls this from an

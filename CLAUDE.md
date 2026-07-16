@@ -33,12 +33,13 @@ app/
   _layout.tsx            -- root Stack, font loading, global ErrorBoundary
   +html.tsx              -- static web shell: lang, meta/OG, favicon links
   index.tsx              -- redirect to /home
-  (screens)/             -- the 12 screens (home, report-category, report-details,
+  (screens)/             -- the 13 screens (home, report-category, report-details,
                             routing-result, add-to-map, map-list, report-detail,
                             how-it-works, channels = Kanal Rehberi directory,
                             settings = Görünüm/erişilebilirlik,
                             watchlist = Takip Ettiklerim, device-local,
-                            about-sivri = the mascot's story)
+                            about-sivri = the mascot's story,
+                            gizlilik = KVKK privacy page)
 components/              -- sibling of app/, NOT inside it — expo-router treats
                             files under app/ as routes. maps.tsx (the ONLY leaflet
                             import site), sivri.tsx (the mascot), side-decor.tsx +
@@ -52,8 +53,8 @@ lib/
   display-settings.tsx (theme/a11y prefs), geocode.ts (Adana-bounded
   Nominatim), adana-districts.ts, tr-normalize.ts, watchlist.ts
   (device-local follows), flags.ts, flash.ts,
-  ads.ts (DORMANT ad system — null unless EXPO_PUBLIC_ADS=1; never enable
-  before the competition; runbook + do-not-place list in OPERATIONS.md)
+  ads.ts (ad system — null unless EXPO_PUBLIC_ADS=1 + AdSense ids are set
+  in the build env; runbook + do-not-place list in OPERATIONS.md)
 public/                  -- copied verbatim to the web export root
   favicon.svg, apple-touch-icon.png, og-image.png, _headers
   decor/                 -- ~1.4MB of Adana art (margin-*, skyline-band-*,

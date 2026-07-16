@@ -263,13 +263,13 @@ create table confirmations_backup_YYYYMMDD as select * from confirmations;
 ```
 Drop the snapshot tables when done — they're visible to nothing but the owner.
 
-## Reklamlar (dormant ad system — DO NOT enable before the competition)
+## Reklamlar (ad system — enable by setting build env vars)
 
-Implemented 2026-07-15, ships **disabled**. With `EXPO_PUBLIC_ADS` unset, every
-ad component renders `null`, no ad script exists on any page, and the site is
-byte-identical in behaviour to the pre-ads app. The jury must see it that way:
-ads add ~200-300KB JS to the scored cold load and put a KVKK consent banner in
-front of the first visit.
+Implemented 2026-07-15. With `EXPO_PUBLIC_ADS` unset (or the AdSense ids
+missing), every ad component renders `null`, no ad script exists on any page,
+and the site behaves exactly like the pre-ads app. Ads add ~200-300KB of
+third-party JS and a KVKK consent banner, so keep them off unless they're
+actually earning.
 
 **Honest economics first** (2026-07 research): Turkey is a bottom-tier AdSense
 market (~$0.10-0.15 CPC; realistic page RPM $0.30-1.50, and a task-completion
@@ -277,23 +277,23 @@ civic tool sits at the LOW end). Expect ~$3-15/month at 5-20k pageviews/month;
 AdSense pays out at $100, so the first payout is months-to-years away. A local
 sponsorship or a small grant likely beats display ads at this scale.
 
-### Enabling (after the competition, config-only — no code changes)
+### Enabling (config-only — no code changes)
 
-1. **Privacy page first**: AdSense approval needs a crawlable privacy/cookie
-   policy (KVKK aydınlatma metni). Add a simple `/gizlilik` screen before
-   applying — approval reviewers reject utility sites without one.
-2. Apply at adsense.google.com with muhtar-defteri.com (site must be live with
+The `/gizlilik` privacy/cookie page (KVKK aydınlatma) is live and linked from
+how-it-works and the consent banner — AdSense approval requires it.
+
+1. Apply at adsense.google.com with muhtar-defteri.com (site must be live with
    the ads code enabled; approval typically days to 2-4 weeks; low-value-content
    rejection is a real risk for a 12-screen tool — the how-it-works guide and
    about-sivri page are the "content" reviewers will see).
-3. In the AdSense dashboard create three display units and note their slot ids:
+2. In the AdSense dashboard create three display units and note their slot ids:
    a medium rectangle (rect), a horizontal in-feed (infeed), a 300x600 (sky).
-4. In Cloudflare Workers → muhtar-defteri → Settings → Build → environment
+3. In Cloudflare Workers → muhtar-defteri → Settings → Build → environment
    variables, add:
    - `EXPO_PUBLIC_ADS=1`
    - `EXPO_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX`
    - `EXPO_PUBLIC_ADSENSE_SLOT_RECT=…` / `…_SLOT_INFEED=…` / `…_SLOT_SKY=…`
-5. Push any commit (or re-run the build). Metro inlines `EXPO_PUBLIC_*` at
+4. Push any commit (or re-run the build). Metro inlines `EXPO_PUBLIC_*` at
    build time — a plain redeploy without a build won't pick them up.
 
 ### What turns on
@@ -321,13 +321,12 @@ localStorage (`mdr:ads-consent`); users can clear site data to reset it. If ads
 are ever enabled for EEA visitors too, Google requires a certified CMP — the
 custom banner is only defensible for TR-targeted traffic.
 
-### Copy duties when enabling
+### Copy that flips automatically with the flag
 
-The app deliberately never claims "no cookies", so no live copy becomes false —
-but add these when flipping the flag: a one-line funding note in how-it-works
-("Reklamlar bu defterin barındırma masrafını karşılar"), and the /gizlilik page
-from step 1. Never let any ad render on the same screen as copy promising the
-absence of tracking (currently none exists).
+The funding note in how-it-works and the "Reklamlar ve çerezler" section of
+/gizlilik are gated on the same flag — an ads-on build discloses them, an
+ads-off build never claims cookies it doesn't set. No manual copy edits needed
+in either direction.
 
 ### Kill switch
 

@@ -78,6 +78,7 @@ No persona requires technical sophistication. Copy and interaction design should
 | **How it works** | States plainly: this is a community information and routing layer, not an official government channel, and doesn't guarantee any outcome. |
 | **Watchlist (Takip Ettiklerim)** | The reports this device chose to follow, newest first. Device-local (`localStorage`), no account, nothing leaves the device — following is how a resident checks back on their issues without us needing an identity to notify. Added 2026-07-13. |
 | **Sivri kim? (about-sivri)** | The mascot's story: why an Adana app leans into the mosquito, and what "ısırmaz, yazar" means. Warm and neutral — Sivri is a neighbourhood face, never an official emblem. Added 2026-07-13. |
+| **Gizlilik** | KVKK aydınlatma in plain Turkish: what stays on-device, what becomes public, which third-party services are involved. The ads/cookies section (incl. consent withdrawal) only renders in ads-enabled builds, so the page is always true. Added 2026-07-15. |
 
 ## 9. Non-functional requirements
 
